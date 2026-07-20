@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CorrigePro Web</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; background: #f0f2f5; text-align: center; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        video, img { width: 100%; border-radius: 8px; margin-top: 10px; }
+        button { background: #007bff; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; margin-top: 15px; width: 100%; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        .card-resultado { margin-top: 20px; padding: 15px; border-radius: 8px; background: #eef9ff; border: 1px solid #b6e0fe; text-align: left; }
+        .nota { font-size: 22px; font-weight: bold; color: #155724; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🎓 CorrigePro Web</h2>
+    <p>Aponta a câmera para o gabarito e clique para corrigir.</p>
+    
+    <!-- Câmera Nativa Fluida (60 FPS) -->
+    <video id="webcam" autoplay playsinline></video>
+    <button id="btnCapturar">📸 CAPTURAR E CORRIGIR</button>
+
+    <!-- Canvas oculto para extrair a foto -->
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <!-- Resultado devolvido pelo Python -->
+    <div id="painelResultado" style="display:none;" class="card-resultado">
+        <div class="nota" id="textNota"></div>
+        <p><strong>Gabarito Oficial:</strong> BDCBCDCBAB</p>
+        <p><strong>Respostas Lidas:</strong> <span id="textRespostas"></span></p>
+        <h4>🔍 Análise de Leitura (Warped)</h4>
+        <img id="imgWarped" src="" alt="Resultado Leitura">
+    </div>
+</div>
+
+<script>
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
+    const btnCapturar = document.getElementById('btnCapturar');
+    const painelResultado = document.getElementById('painelResultado');
+
+    // 1. Liga a Câmera diretamente no Hardware do Aparelho (Zero Lag)
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } })
+        .then(stream => { video.srcObject = stream; })
+        .catch(err => alert("Erro ao acessar a câmera: " + err));
+
+    // 2. Tira a foto e envia para a API Python
+    btnCapturar.addEventListener('click', () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(blob => {
+            const formData = new FormData();
+            formData.append('file', blob, 'gabarito.jpg');
+            formData.append('gabarito', 'BDCBCDCBAB');
+
+            btnCapturar.innerText = "⏳ Processando...";
+
+            fetch('/corrigir', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                btnCapturar.innerText = "📸 CAPTURAR E CORRIGIR";
+                if(data.sucesso) {
+                    painelResultado.style.display = 'block';
+                    document.getElementById('textNota').innerText = `NOTA: ${data.nota.toFixed(1)} / 10.0 (${data.acertos} acertos)`;
+                    document.getElementById('textRespostas').innerText = data.respostas;
+                    document.getElementById('imgWarped').src = data.imagem_warped;
+                } else {
+                    alert(data.mensagem);
+                }
+            })
+            .catch(err => {
+                btnCapturar.innerText = "📸 CAPTURAR E CORRIGIR";
+                alert("Erro ao se conectar com o servidor Python!");
+            });
+        }, 'image/jpeg');
+    });
+</script>
+
+</body>
+</html>
