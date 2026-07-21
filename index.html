@@ -1,27 +1,21 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/style.css">
-
-    <script src="js/app.js"></script>
-<script async src="https://docs.opencv.org/4.9.0/opencv.js"></script>
-    
-    <title>Corrigindo...</title>
-   
+    <title>Correr...</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header>
-    <h2>🎓 Corretor de gabaritos</h2>
+    <h2>🎓 CorrigePro - Gestão de Correção</h2>
 </header>
 
 <nav>
-    <button class="tab-btn active" onclick="trocarAba('abaCorrecao')">📝 Correção</button>
-    <button class="tab-btn" onclick="trocarAba('abaCalibragem')">⚙️ Calibragem</button>
-    <button class="tab-btn" onclick="trocarAba('abaExportar')">📄 Exportar Notas</button>
+    <button class="tab-btn active" onclick="trocarAba('abaCorrecao', event)">📝 Correção</button>
+    <button class="tab-btn" onclick="trocarAba('abaCalibragem', event)">⚙️ Calibragem</button>
+    <button class="tab-btn" onclick="trocarAba('abaExportar', event)">📄 Exportar Notas</button>
 </nav>
 
 <div class="container">
@@ -115,13 +109,8 @@
         <button class="btn-close-modal" onclick="fecharModalCamera()">&times;</button>
         <h3 id="nomeAlunoModal">Lendo Prova...</h3>
         
-        <!-- Banner de Nota Corrigida -->
         <div id="notaBannerModal"></div>
-        
-        <!-- Câmera ao vivo -->
         <video id="webcamScan" autoplay playsinline></video>
-        
-        <!-- Foto recortada e corrigida com marcas Verdes/Vermelhas -->
         <canvas id="canvasScanResult" style="display:none;"></canvas>
         
         <button class="btn-action" id="btnEscanearAluno">📸 ESCANEAR E SALVAR NOTA</button>
@@ -130,7 +119,8 @@
 
 <canvas id="canvasHidden" style="display:none;"></canvas>
 
-
-
+<!-- Scripts em ordem estrita de dependência -->
+<script src="script.js"></script>
+<script async src="https://docs.opencv.org/4.9.0/opencv.js"></script>
 </body>
 </html>
