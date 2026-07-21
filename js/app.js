@@ -1,4 +1,17 @@
-
+    let cvReady = false;
+    var Module = {
+        onRuntimeInitialized: function() {
+            cvReady = true;
+            const statusEl = document.getElementById('statusCv');
+            if (statusEl) {
+                statusEl.innerText = "✅ Motor de visão computacional pronto!";
+                statusEl.style.background = "#d4edda"; statusEl.style.color = "#155724";
+                setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+            }
+            const btnCap = document.getElementById('btnCapturarModelo');
+            if (btnCap) btnCap.disabled = false;
+        }
+    };
     // ================= 1. CONSTANTES E VARIÁVEIS GLOBAIS =================
     const LETRAS_TODAS = ["A", "B", "C", "D", "E"];
     const defaultGabarito = ['B','D','C','B','C','D','C','B','A','B'];
