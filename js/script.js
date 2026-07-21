@@ -33,7 +33,7 @@ let jaDigitalizado = false;
 // ================= 2. CARREGAMENTO DO JSON DE ALUNOS =================
 async function carregarDadosJSON() {
     try {
-        const resposta = await fetch('alunos.json');
+        const resposta = await fetch('js/alunos.json');
         if (!resposta.ok) {
             throw new Error(`Erro ao carregar alunos.json: ${resposta.status}`);
         }
