@@ -114,11 +114,53 @@ th {
     background: #d4edda;
     color: #155724;
 }
+/* 1. Fundo do Modal cobrindo a tela real em todos os navegadores */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh; /* dvh = Dynamic Viewport Height (Corrige a barra do Safari/Chrome mobile) */
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    box-sizing: border-box;
+}
 
-.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 12px; max-width: 600px; width: 90%; text-align: center; position: relative; }
-        video, canvas { width: 100%; border-radius: 8px; background: #111; }
-.btn-close-modal {
+/* 2. Container do Modal com tamanho e limites travados */
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 550px;
+    max-height: 85vh;
+    max-height: 85dvh; /* Evita que o modal ultrapasse a tela visível */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    box-sizing: border-box;
+    overflow-y: auto; /* Adiciona rolagem apenas se a tela for extremamente pequena */
+}
+
+/* 3. Câmera e Canvas padronizados com a mesma proporção */
+video, canvas {
+    width: 100%;
+    height: auto;
+    max-height: 50vh;
+    max-height: 50dvh;
+    aspect-ratio: 4 / 3; /* Força exatamente a mesma proporção no Safari, Chrome e Firefox */
+    object-fit: contain;
+    border-radius: 8px;
+    background: #111;
+    margin: 10px 0;
+    flex-shrink: 0; /* Impede que os navegadores esmaguem o vídeo */
+}.btn-close-modal {
     position: absolute;
     top: 10px;
     right: 15px;
