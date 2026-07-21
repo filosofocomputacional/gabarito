@@ -132,34 +132,34 @@ th {
 }
 
 /* 2. Container do Modal com tamanho e limites travados */
+/* Modal ajustado para caber na tela do celular sem estourar a altura */
 .modal-content {
     background: white;
     padding: 20px;
     border-radius: 12px;
-    width: 100%;
-    max-width: 550px;
-    max-height: 85vh;
-    max-height: 85dvh; /* Evita que o modal ultrapasse a tela visível */
+    max-width: 600px;
+    width: 90%;
+    text-align: center;
+    max-height: 90vh; /* Impede que o modal fique maior que a tela do celular */
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     align-items: center;
+    overflow-y: auto; /* Adiciona rolagem se a tela for muito pequena */
     position: relative;
     box-sizing: border-box;
-    overflow-y: auto; /* Adiciona rolagem apenas se a tela for extremamente pequena */
 }
 
-/* 3. Câmera e Canvas padronizados com a mesma proporção */
+/* Câmera e Canvas com proporção e altura máxima controladas */
 video, canvas {
     width: 100%;
-    height: auto;
-    max-height: 50vh;
-    max-height: 50dvh;
-    aspect-ratio: 4 / 3; /* Força exatamente a mesma proporção no Safari, Chrome e Firefox */
-    object-fit: contain;
+    max-height: 55vh; /* Limita a altura para a câmera não ficar gigante */
+    object-fit: contain; /* Garante que a imagem mantenha a proporção real sem cortar os cantos */
     border-radius: 8px;
     background: #111;
     margin: 10px 0;
-    flex-shrink: 0; /* Impede que os navegadores esmaguem o vídeo */
+}
+/* Impede que os navegadores esmaguem o vídeo */
 }.btn-close-modal {
     position: absolute;
     top: 10px;
