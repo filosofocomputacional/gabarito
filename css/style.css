@@ -129,31 +129,8 @@ th {
 }
 
 /* Modal ajustado para caber na tela do celular sem estourar a altura */
-.modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    max-width: 600px;
-    width: 90%;
-    max-height: 90vh; /* Impede que o modal fique maior que a tela do celular */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    overflow-y: auto; /* Adiciona rolagem se a tela for muito pequena */
-    position: relative;
-    box-sizing: border-box;
-}
-
-/* Câmera e Canvas com proporção e altura máxima controladas */
-video, canvas {
-    width: 100%;
-    max-height: 55vh; /* Limita a altura para a câmera não ficar gigante */
-    object-fit: contain; /* Garante que a imagem mantenha a proporção real sem cortar os cantos */
-    border-radius: 8px;
-    background: #111;
-    margin: 10px 0;
-}
+.modal-content { background: white; padding: 20px; border-radius: 12px; max-width: 600px; width: 90%; text-align: center; position: relative; }
+        video, canvas { width: 100%; border-radius: 8px; background: #111; }
 
 .btn-close-modal {
     position: absolute;
