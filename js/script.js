@@ -21,29 +21,8 @@ const LETRAS_TODAS = ["A", "B", "C", "D", "E"];
 const defaultGabarito = ['B','D','C','B','C','D','C','B','A','B'];
 const sliders = ['x1', 'y1', 'x2', 'y2', 'spX', 'spY'];
 
-const DADOS_ALUNOS = {
-    "Ensino Fundamental": {
-        "801": [
-            "AGATHA LAVINIA OLIVEIRA DA SILVA",
-            "ARTHUR FERREIRA DOS SANTOS",
-            "BEATRIZ SOUZA LIMA"
-        ],
-        "802": [
-            "CAIO HENRIQUE ALMEIDA",
-            "DANIELA CASTRO ROCHA"
-        ]
-    },
-    "Ensino Médio": {
-        "1001": [
-            "ENZO GABRIEL RIBEIRO",
-            "GABRIELA MARTINS COSTA"
-        ],
-        "2001": [
-            "HUGO GUIMARAES PINTO",
-            "ISABELA SILVEIRA RAMOS"
-        ]
-    }
-};
+// Objeto vazio que será preenchido pelo arquivo alunos.json
+let DADOS_ALUNOS = {};
 
 let alunoAtualParaCaptura = null;
 let bancoNotasLocais = JSON.parse(localStorage.getItem('corrigePro_notas_alunos')) || {};
@@ -51,7 +30,25 @@ let streamVideoGlobal = null;
 let imagemBaseWarpedCanvas = document.createElement('canvas');
 let jaDigitalizado = false;
 
-// ================= 2. COOKIES E CALIBRAGEM =================
+// ================= 2. CARREGAMENTO DO JSON DE ALUNOS =================
+async function carregarDadosJSON() {
+    try {
+        const resposta = await fetch('alunos.json');
+        if (!resposta.ok) {
+            throw new Error(`Erro ao carregar alunos.json: ${resposta.status}`);
+        }
+        DADOS_ALUNOS = await resposta.json();
+        inicializarSelects();
+    } catch (erro) {
+        console.error("Erro ao carregar o JSON de alunos:", erro);
+        const tbody = document.getElementById('listaAlunosBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">⚠️ Não foi possível carregar o arquivo alunos.json</td></tr>';
+        }
+    }
+}
+
+// ================= 3. COOKIES E CALIBRAGEM =================
 function setCookie(name, value, days) {
     let expires = "";
     if (days) {
@@ -155,7 +152,7 @@ function desenharPreviewAjuste() {
     }
 }
 
-// ================= 3. NAVEGAÇÃO E DROPDOWNS =================
+// ================= 4. NAVEGAÇÃO E DROPDOWNS =================
 window.trocarAba = function(idAba, event) {
     document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -225,7 +222,7 @@ window.carregarAlunos = function() {
     });
 };
 
-// ================= 4. CÂMERA E MODAL DE CORREÇÃO =================
+// ================= 5. CÂMERA E MODAL DE CORREÇÃO =================
 function iniciarCamera(elementId) {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } })
@@ -319,7 +316,7 @@ function processarPerspectivaCompleta(src) {
     }
 }
 
-// ================= 5. EXPORTAÇÃO E GERENCIAMENTO =================
+// ================= 6. EXPORTAÇÃO E GERENCIAMENTO =================
 function atualizarListaTurmasAlteradas() {
     const ul = document.getElementById('listaTurmasAlteradas');
     if (!ul) return;
@@ -390,9 +387,10 @@ window.limparTodasNotas = function() {
     alert("🗑️ Todas as notas foram apagadas com sucesso!");
 };
 
-// ================= 6. EVENT LISTENERS APÓS CARREGAR A TELA =================
+// ================= 7. EVENT LISTENERS APÓS CARREGAR A TELA =================
 document.addEventListener('DOMContentLoaded', () => {
-    inicializarSelects();
+    // Busca os dados do alunos.json
+    carregarDadosJSON();
 
     const selectNumOpcoes = document.getElementById('selectNumOpcoes');
     if (selectNumOpcoes && configCalib.numOpcoes) {
