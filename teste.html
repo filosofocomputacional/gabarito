@@ -260,7 +260,6 @@
             margin-bottom: 10px;
         }
 
-        /* AVISO PARA ROTACIONAR O CELULAR */
         .aviso-rotacao {
             display: none;
             background: #ff9800;
@@ -280,7 +279,6 @@
             100% { opacity: 1; }
         }
 
-        /* Só mostra o aviso se o celular estiver em pé (Retrato) */
         @media screen and (orientation: portrait) {
             .aviso-rotacao {
                 display: block;
@@ -401,19 +399,18 @@
         </div>
 
         <div id="painelSliders" class="card" style="display: none;">
-            <h3>3. Ajuste Fino dos Círculos de Leitura (Horizontal)</h3>
+            <h3>3. Ajuste Fino (Eixo X: Questões | Eixo Y: Opções)</h3>
             <div class="preview-container">
-                <!-- Proporção Horizontal: 600x450 -->
                 <canvas id="canvasCalibPreview" style="max-width: 100%; width: 400px; height: 300px; background: #eee;"></canvas>
             </div>
 
             <div style="margin-top: 15px;">
-                <div class="form-group"><label>X Coluna 1: <span id="val_x1"></span></label><input type="range" id="input_x1" min="0" max="600"></div>
-                <div class="form-group"><label>Y Coluna 1: <span id="val_y1"></span></label><input type="range" id="input_y1" min="0" max="450"></div>
-                <div class="form-group"><label>X Coluna 2: <span id="val_x2"></span></label><input type="range" id="input_x2" min="0" max="600"></div>
-                <div class="form-group"><label>Y Coluna 2: <span id="val_y2"></span></label><input type="range" id="input_y2" min="0" max="450"></div>
-                <div class="form-group"><label>Espaçamento X (Largura letras): <span id="val_spX"></span></label><input type="range" id="input_spX" min="10" max="80"></div>
-                <div class="form-group"><label>Espaçamento Y (Altura linhas): <span id="val_spY"></span></label><input type="range" id="input_spY" min="10" max="80"></div>
+                <div class="form-group"><label>X Bloco 1 (Q1-Q5): <span id="val_x1"></span></label><input type="range" id="input_x1" min="0" max="600"></div>
+                <div class="form-group"><label>Y Bloco 1 (Início Opção A): <span id="val_y1"></span></label><input type="range" id="input_y1" min="0" max="450"></div>
+                <div class="form-group"><label>X Bloco 2 (Q6-Q10): <span id="val_x2"></span></label><input type="range" id="input_x2" min="0" max="600"></div>
+                <div class="form-group"><label>Y Bloco 2 (Início Opção A): <span id="val_y2"></span></label><input type="range" id="input_y2" min="0" max="450"></div>
+                <div class="form-group"><label>Espaçamento X (Entre Questões): <span id="val_spX"></span></label><input type="range" id="input_spX" min="10" max="100"></div>
+                <div class="form-group"><label>Espaçamento Y (Entre Opções A, B, C...): <span id="val_spY"></span></label><input type="range" id="input_spY" min="10" max="100"></div>
             </div>
 
             <button onclick="salvarCalibracaoCookie()" class="btn btn-success">💾 Salvar Calibragem & Gabarito</button>
@@ -532,10 +529,11 @@ function getCookie(name) {
     return null;
 }
 
-// Valores padrão ajustados para o layout HORIZONTAL (600x450)
+// Valores padrão ajustados: Eixo X (Questões) | Eixo Y (Opções)
 function carregarCalibracaoCookie() {
-    const cookie = getCookie('corrigePro_calib_v2_horizontal');
-    return cookie || { x1: 100, y1: 104, x2: 356, y2: 105, spX: 33, spY: 51, numOpcoes: 5, gabarito: defaultGabarito };
+    const cookie = getCookie('corrigePro_calib_v3_transposta');
+    // Valores iniciais sugeridos para Blocos 1 e 2
+    return cookie || { x1: 100, y1: 100, x2: 100, y2: 260, spX: 50, spY: 25, numOpcoes: 5, gabarito: defaultGabarito };
 }
 
 let configCalib = carregarCalibracaoCookie();
@@ -550,9 +548,9 @@ window.salvarCalibracaoCookie = function() {
         config.gabarito.push(el ? el.value : "A");
     }
     
-    setCookie('corrigePro_calib_v2_horizontal', config, 365);
+    setCookie('corrigePro_calib_v3_transposta', config, 365);
     configCalib = config;
-    alert("✅ Calibragem Horizontal e Gabarito salvos com sucesso!");
+    alert("✅ Calibragem Horizontal (Transposta) e Gabarito salvos com sucesso!");
 };
 
 function renderizarGridGabarito() {
@@ -576,13 +574,13 @@ function renderizarGridGabarito() {
     }
 }
 
+// ================= LÓGICA DE DESENHO TRANSPOSTA =================
 function desenharPreviewAjuste() {
     if (!imagemBaseWarpedCanvas.width) return;
 
     const canvas = document.getElementById('canvasCalibPreview');
     if (!canvas) return;
 
-    // Tamanho nativo Horizontal
     canvas.width = 600; 
     canvas.height = 450;
     
@@ -601,14 +599,18 @@ function desenharPreviewAjuste() {
     ctx.lineWidth = 2;
 
     for (let q = 0; q < 10; q++) {
-        let isCol2 = q >= 5;
-        let colBaseX = isCol2 ? v_x2 : v_x1;
-        let colBaseY = isCol2 ? v_y2 : v_y1;
-        let linhaIdx = isCol2 ? (q - 5) : q;
-        let yPonto = colBaseY + (linhaIdx * v_spY);
+        let isBloco2 = q >= 5;
+        let baseX = isBloco2 ? v_x2 : v_x1;
+        let baseY = isBloco2 ? v_y2 : v_y1;
+        let qIdx = isBloco2 ? (q - 5) : q; // Reseta índice (0 a 4) para o bloco 2
+        
+        // EIXO X = NÚMERO DA QUESTÃO
+        let xPonto = baseX + (qIdx * v_spX);
 
         for (let i = 0; i < numOpcoes; i++) {
-            let xPonto = colBaseX + (i * v_spX);
+            // EIXO Y = OPÇÕES (A, B, C, D, E)
+            let yPonto = baseY + (i * v_spY);
+            
             ctx.beginPath();
             ctx.arc(xPonto, yPonto, 10, 0, 2 * Math.PI);
             ctx.stroke();
@@ -686,10 +688,9 @@ window.carregarAlunos = function() {
     });
 };
 
-// ================= 5. CÂMERA E PROCESSAMENTO HORIZONTAL (WIDESCREEN) =================
+// ================= 5. CÂMERA E PROCESSAMENTO HORIZONTAL =================
 function iniciarCamera(elementId) {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        // Pede resolução de câmera em Widescreen/Paisagem
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } })
             .then(stream => {
                 streamVideoGlobal = stream;
@@ -766,7 +767,6 @@ function processarPerspectivaCompleta(src) {
 
         let srcComPontos = src.clone();
         
-        // PROPORÇÃO HORIZONTAL (WIDESCREEN): 600 de Largura x 450 de Altura
         let dW = 600, dH = 450; 
         
         let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [tl.x, tl.y, tr.x, tr.y, bl.x, bl.y, br.x, br.y]);
@@ -898,8 +898,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const canvasHidden = document.getElementById('canvasHidden');
-        
-        // Passa a imagem da câmera na orientação Horizontal
         canvasHidden.width = video.videoWidth; 
         canvasHidden.height = video.videoHeight;
         canvasHidden.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
@@ -921,7 +919,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ================= BOTÃO ESCANEAR ALUNO =================
+    // ================= BOTÃO ESCANEAR ALUNO (LÓGICA TRANSPOSTA) =================
     document.getElementById('btnEscanearAluno')?.addEventListener('click', () => {
         if (jaDigitalizado) {
             fecharModalCamera();
@@ -942,7 +940,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const canvasHidden = document.getElementById('canvasHidden');
         const ctx = canvasHidden.getContext('2d');
         
-        // Câmera captura perfeitamente o formato Widescreen/Paisagem
         canvasHidden.width = video.videoWidth;
         canvasHidden.height = video.videoHeight;
         ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
@@ -975,21 +972,23 @@ document.addEventListener('DOMContentLoaded', () => {
         let grayColor = new cv.Scalar(200, 200, 200, 255);
 
         for (let q = 0; q < 10; q++) {
-            let isCol2 = q >= 5;
-            let colBaseX = isCol2 ? configCalib.x2 : configCalib.x1;
-            let colBaseY = isCol2 ? configCalib.y2 : configCalib.y1;
-            let linhaIdx = isCol2 ? (q - 5) : q;
-            let yPonto = colBaseY + (linhaIdx * configCalib.spY);
+            let isBloco2 = q >= 5;
+            let baseX = isBloco2 ? configCalib.x2 : configCalib.x1;
+            let baseY = isBloco2 ? configCalib.y2 : configCalib.y1;
+            let qIdx = isBloco2 ? (q - 5) : q;
+            
+            // EIXO X = QUESTÃO
+            let xPonto = baseX + (qIdx * configCalib.spX);
 
             let valoresAlternativas = [];
             let coords = [];
 
             for (let i = 0; i < numOpcoes; i++) {
-                let xPonto = colBaseX + (i * configCalib.spX);
+                // EIXO Y = OPÇÕES
+                let yPonto = baseY + (i * configCalib.spY);
                 coords.push({ x: xPonto, y: yPonto });
 
                 let totalPixels = 0;
-                // Formato Horizontal: X vai até 600, Y vai até 450
                 if (yPonto >= 12 && yPonto < 450 - 12 && xPonto >= 12 && xPonto < 600 - 12) {
                     let roi = warpedThresh.roi(new cv.Rect(xPonto - 12, yPonto - 12, 24, 24));
                     totalPixels = cv.countNonZero(roi);
@@ -1037,7 +1036,6 @@ document.addEventListener('DOMContentLoaded', () => {
         bancoNotasLocais[chaveNota] = notaFinal;
         localStorage.setItem('corrigePro_notas_alunos', JSON.stringify(bancoNotasLocais));
 
-        // Mostra a prova corrigida na horizontal
         cv.imshow('canvasScanResult', warped);
         document.getElementById('webcamScan').style.display = 'none';
         document.getElementById('canvasScanResult').style.display = 'block';
