@@ -369,25 +369,25 @@
         <div class="card">
             <h3>2. Capturar Modelo de Referência</h3>
             <div class="preview-container">
-                <video id="webcamCalib" autoplay playsinline style="max-width: 400px;"></video>
+                <video id="webcamCalib" autoplay playsinline style="max-width: 400px; border: 2px solid #ccc;"></video>
                 <button id="btnCapturarModelo" class="btn btn-primary" disabled>📸 Capturar Imagem de Referência</button>
             </div>
         </div>
 
         <div id="painelSliders" class="card" style="display: none;">
-            <h3>3. Ajuste Fino dos Círculos de Leitura</h3>
+            <h3>3. Ajuste Fino dos Círculos de Leitura (Vertical)</h3>
             <div class="preview-container">
-                <canvas id="canvasFotoOriginalAjuste"></canvas>
-                <canvas id="canvasCalibPreview"></canvas>
+                <p style="font-size: 12px; color: #666; margin:0;">Miras endireitadas para o formato Retrato (450x600 px)</p>
+                <canvas id="canvasCalibPreview" style="max-width: 100%; width: 300px; height: 400px; background: #eee;"></canvas>
             </div>
 
             <div style="margin-top: 15px;">
-                <div class="form-group"><label>X Coluna 1: <span id="val_x1"></span></label><input type="range" id="input_x1" min="0" max="300"></div>
-                <div class="form-group"><label>Y Coluna 1: <span id="val_y1"></span></label><input type="range" id="input_y1" min="0" max="300"></div>
-                <div class="form-group"><label>X Coluna 2: <span id="val_x2"></span></label><input type="range" id="input_x2" min="200" max="500"></div>
-                <div class="form-group"><label>Y Coluna 2: <span id="val_y2"></span></label><input type="range" id="input_y2" min="0" max="300"></div>
-                <div class="form-group"><label>Espaçamento X: <span id="val_spX"></span></label><input type="range" id="input_spX" min="10" max="80"></div>
-                <div class="form-group"><label>Espaçamento Y: <span id="val_spY"></span></label><input type="range" id="input_spY" min="10" max="80"></div>
+                <div class="form-group"><label>X Coluna 1: <span id="val_x1"></span></label><input type="range" id="input_x1" min="0" max="450"></div>
+                <div class="form-group"><label>Y Coluna 1: <span id="val_y1"></span></label><input type="range" id="input_y1" min="0" max="600"></div>
+                <div class="form-group"><label>X Coluna 2: <span id="val_x2"></span></label><input type="range" id="input_x2" min="0" max="450"></div>
+                <div class="form-group"><label>Y Coluna 2: <span id="val_y2"></span></label><input type="range" id="input_y2" min="0" max="600"></div>
+                <div class="form-group"><label>Espaçamento X (Largura letras): <span id="val_spX"></span></label><input type="range" id="input_spX" min="10" max="80"></div>
+                <div class="form-group"><label>Espaçamento Y (Altura linhas): <span id="val_spY"></span></label><input type="range" id="input_spY" min="10" max="100"></div>
             </div>
 
             <button onclick="salvarCalibracaoCookie()" class="btn btn-success">💾 Salvar Calibragem & Gabarito</button>
@@ -446,7 +446,7 @@ const LETRAS_TODAS = ["A", "B", "C", "D", "E"];
 const defaultGabarito = ['B','D','C','B','C','D','C','B','A','B'];
 const sliders = ['x1', 'y1', 'x2', 'y2', 'spX', 'spY'];
 
-// Dados padrão caso o alunos.json não exista na pasta local
+// Dados padrão caso o alunos.json não exista
 const DADOS_ALUNOS_PADRAO = {
     "Ensino Fundamental": {
         "801": ["AGATHA LAVINIA OLIVEIRA DA SILVA", "ARTHUR FERREIRA DOS SANTOS", "BEATRIZ SOUZA LIMA"],
@@ -502,9 +502,10 @@ function getCookie(name) {
     return null;
 }
 
+// Valores padrão ajustados para o layout VERTICAL (450x600)
 function carregarCalibracaoCookie() {
-    const cookie = getCookie('corrigePro_calib_v1');
-    return cookie || { x1: 100, y1: 104, x2: 356, y2: 105, spX: 33, spY: 51, numOpcoes: 5, gabarito: defaultGabarito };
+    const cookie = getCookie('corrigePro_calib_v1_vertical');
+    return cookie || { x1: 70, y1: 150, x2: 260, y2: 150, spX: 25, spY: 55, numOpcoes: 5, gabarito: defaultGabarito };
 }
 
 let configCalib = carregarCalibracaoCookie();
@@ -519,9 +520,9 @@ window.salvarCalibracaoCookie = function() {
         config.gabarito.push(el ? el.value : "A");
     }
     
-    setCookie('corrigePro_calib_v1', config, 365);
+    setCookie('corrigePro_calib_v1_vertical', config, 365);
     configCalib = config;
-    alert("✅ Calibragem e Gabarito salvos com sucesso!");
+    alert("✅ Calibragem Vertical e Gabarito salvos com sucesso!");
 };
 
 function renderizarGridGabarito() {
@@ -551,7 +552,10 @@ function desenharPreviewAjuste() {
     const canvas = document.getElementById('canvasCalibPreview');
     if (!canvas) return;
 
-    canvas.width = 600; canvas.height = 450;
+    // Tamanho nativo Vertical
+    canvas.width = 450; 
+    canvas.height = 600;
+    
     const ctx = canvas.getContext('2d');
     ctx.drawImage(imagemBaseWarpedCanvas, 0, 0);
 
@@ -652,9 +656,10 @@ window.carregarAlunos = function() {
     });
 };
 
-// ================= 5. CÂMERA E MODAL FULL SCREEN =================
+// ================= 5. CÂMERA E PROCESSAMENTO NATIVO VERTICAL =================
 function iniciarCamera(elementId) {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        // Câmera traseira ideal
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } })
             .then(stream => {
                 streamVideoGlobal = stream;
@@ -689,6 +694,7 @@ window.fecharModalCamera = function() {
     carregarAlunos();
 };
 
+// Função unificada para Recortar a folha VERTICAL (Retrato)
 function processarPerspectivaCompleta(src) {
     let gray = new cv.Mat(), blurred = new cv.Mat(), thresh = new cv.Mat(), morphed = new cv.Mat();
     let kernel = null, contours = new cv.MatVector(), hierarchy = new cv.Mat();
@@ -730,7 +736,10 @@ function processarPerspectivaCompleta(src) {
         let tr = anchors[diff.indexOf(Math.min(...diff))], bl = anchors[diff.indexOf(Math.max(...diff))];
 
         let srcComPontos = src.clone();
-        let dW = 600, dH = 450;
+        
+        // PROPORÇÃO VERTICAL NATIVA (RETRATO): 450 de Largura x 600 de Altura
+        let dW = 450, dH = 600; 
+        
         let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [tl.x, tl.y, tr.x, tr.y, bl.x, bl.y, br.x, br.y]);
         let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dW, 0, 0, dH, dW, dH]);
         let M_warp = cv.getPerspectiveTransform(srcTri, dstTri);
@@ -846,7 +855,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // BOTÃO CAPTURAR MODELO (CALIBRAGEM)
+    // ================= BOTÃO CAPTURAR CALIBRAGEM =================
     document.getElementById('btnCapturarModelo')?.addEventListener('click', () => {
         if (!window.cvReady) {
             alert("Aguarde o motor OpenCV.js carregar.");
@@ -860,21 +869,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const canvasHidden = document.getElementById('canvasHidden');
+        
+        // Passa a imagem da câmera na sua orientação NATIVA
         canvasHidden.width = video.videoWidth; 
         canvasHidden.height = video.videoHeight;
-        canvasHidden.getContext('2d').drawImage(video, 0, 0);
+        canvasHidden.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
 
         let src = cv.imread(canvasHidden);
         let res = processarPerspectivaCompleta(src);
         src.delete();
 
         if (res) {
-            const canvasOrig = document.getElementById('canvasFotoOriginalAjuste');
-            if (canvasOrig) cv.imshow(canvasOrig, res.srcComPontos);
-            res.srcComPontos.delete();
-
-            imagemBaseWarpedCanvas.width = 600; 
-            imagemBaseWarpedCanvas.height = 450;
+            imagemBaseWarpedCanvas.width = 450; 
+            imagemBaseWarpedCanvas.height = 600;
             cv.imshow(imagemBaseWarpedCanvas, res.warped);
             res.warped.delete();
 
@@ -885,7 +892,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // BOTÃO ESCANEAR ALUNO (CÂMERA FULL SCREEN COM ROTAÇÃO AUTOMÁTICA)
+    // ================= BOTÃO ESCANEAR ALUNO =================
     document.getElementById('btnEscanearAluno')?.addEventListener('click', () => {
         if (jaDigitalizado) {
             fecharModalCamera();
@@ -906,31 +913,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const canvasHidden = document.getElementById('canvasHidden');
         const ctx = canvasHidden.getContext('2d');
         
-        // ======== ROTAÇÃO AUTOMÁTICA DA IMAGEM VERTICAL ========
-        if (video.videoHeight > video.videoWidth) {
-            canvasHidden.width = video.videoHeight;
-            canvasHidden.height = video.videoWidth;
-            
-            ctx.translate(0, video.videoWidth);
-            ctx.rotate(-Math.PI / 2);
-            ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-        } else {
-            canvasHidden.width = video.videoWidth;
-            canvasHidden.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0);
-        }
+        // Removemos o truque de rotacionar: agora desenha nativamente como a câmera vê
+        canvasHidden.width = video.videoWidth;
+        canvasHidden.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
 
         let src = cv.imread(canvasHidden);
         let res = processarPerspectivaCompleta(src);
         src.delete();
 
         if (!res) {
-            alert("⚠️ Os 4 cantos do gabarito não foram identificados. Tente aproximar a folha.");
+            alert("⚠️ Os 4 cantos do gabarito não foram identificados. Tente aproximar a folha e veja a iluminação.");
             return;
         }
 
         let warped = res.warped;
-        res.srcComPontos.delete();
 
         let warpedGray = new cv.Mat();
         cv.cvtColor(warped, warpedGray, cv.COLOR_RGBA2GRAY);
@@ -963,7 +960,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 coords.push({ x: xPonto, y: yPonto });
 
                 let totalPixels = 0;
-                if (yPonto >= 12 && yPonto < 450 - 12 && xPonto >= 12 && xPonto < 600 - 12) {
+                // Ajustado o limite de verificação (ROI) para o formato Retrato (Y vai até 600, X vai até 450)
+                if (yPonto >= 12 && yPonto < 600 - 12 && xPonto >= 12 && xPonto < 450 - 12) {
                     let roi = warpedThresh.roi(new cv.Rect(xPonto - 12, yPonto - 12, 24, 24));
                     totalPixels = cv.countNonZero(roi);
                     roi.delete();
@@ -980,7 +978,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (maior > LIMIAR_MINIMO_TINTA) {
                 if (segundaMaior > LIMIAR_MINIMO_TINTA && segundaMaior > (maior * 0.60)) {
-                    respostaAluno = "*";
+                    respostaAluno = "*"; // Dupla Marcação
                 } else {
                     let outras = valoresAlternativas.filter((_, idx) => idx !== idxMarcado);
                     let mediaOutras = outras.reduce((a, b) => a + b, 0) / (outras.length || 1);
@@ -993,14 +991,15 @@ document.addEventListener('DOMContentLoaded', () => {
             let acertou = (respostaAluno === stringGabarito[q]);
             if (acertou) acertos++;
 
+            // Desenha as bolinhas verdes ou vermelhas na imagem na vertical
             coords.forEach((c, idx) => {
                 let center = new cv.Point(c.x, c.y);
                 if (idx === idxMarcado && respostaAluno !== "-") {
                     cv.circle(warped, center, 8, acertou ? greenColor : redColor, -1);
                 } else if (respostaAluno === "*" && valoresAlternativas[idx] > LIMIAR_MINIMO_TINTA) {
-                    cv.circle(warped, center, 8, redColor, -1);
+                    cv.circle(warped, center, 8, redColor, -1); // Marca vermelha em caso de dupla opção
                 } else {
-                    cv.circle(warped, center, 3, grayColor, -1);
+                    cv.circle(warped, center, 3, grayColor, -1); // Guia cinza
                 }
             });
         }
@@ -1010,6 +1009,7 @@ document.addEventListener('DOMContentLoaded', () => {
         bancoNotasLocais[chaveNota] = notaFinal;
         localStorage.setItem('corrigePro_notas_alunos', JSON.stringify(bancoNotasLocais));
 
+        // Mostra o canvas na vertical e oculta a câmera
         cv.imshow('canvasScanResult', warped);
         document.getElementById('webcamScan').style.display = 'none';
         document.getElementById('canvasScanResult').style.display = 'block';
