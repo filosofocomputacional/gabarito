@@ -482,7 +482,7 @@ window.fecharModalCamera = function() {
     carregarAlunos();
 };
 
-function processarPerspectivaCompleta(src) {
+ffunction processarPerspectivaCompleta(src) {
     let gray = new cv.Mat(), blurred = new cv.Mat(), thresh = new cv.Mat(), morphed = new cv.Mat();
     let kernel = null, contours = new cv.MatVector(), hierarchy = new cv.Mat();
 
@@ -522,7 +522,16 @@ function processarPerspectivaCompleta(src) {
         let tr = anchors[diff.indexOf(Math.min(...diff))], bl = anchors[diff.indexOf(Math.max(...diff))];
 
         let srcComPontos = src.clone();
-        let dW = 600, dH = 450;
+
+        // --- LARGURA E ALTURA CALCULADAS AUTOMATICAMENTE ---
+        let widthTop = Math.hypot(tr.x - tl.x, tr.y - tl.y);
+        let widthBottom = Math.hypot(br.x - bl.x, br.y - bl.y);
+        let dW = Math.round(Math.max(widthTop, widthBottom));
+
+        let heightLeft = Math.hypot(bl.x - tl.x, bl.y - tl.y);
+        let heightRight = Math.hypot(br.x - tr.x, br.y - tr.y);
+        let dH = Math.round(Math.max(heightLeft, heightRight));
+
         let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [tl.x, tl.y, tr.x, tr.y, bl.x, bl.y, br.x, br.y]);
         let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dW, 0, 0, dH, dW, dH]);
         let M_warp = cv.getPerspectiveTransform(srcTri, dstTri);
@@ -613,14 +622,30 @@ function processarCorrecaoFinal(warped) {
     cv.GaussianBlur(warpedGray, warpedBlur, new cv.Size(3, 3), 0);
     cv.threshold(warpedBlur, warpedThresh, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
 
-    // VARIÁVEIS DINÂMICAS PARA A CORREÇÃO
     let stringGabarito = configCalib.gabarito;
     let numOpcoes = configCalib.numOpcoes || 5;
     let numQuestoes = configCalib.numQuestoes || 10;
     let numColunas = configCalib.numColunas || 2;
     let valorProva = configCalib.valorProva || 10.0;
-    
+
+    // DIMENSÕES DINÂMICAS DO RECORTE
+    let dW = warped.cols;
+    let dH = warped.rows;
+
+    // --- CÁLCULO PROPORCIONAL AUTOMÁTICO DOS EIXOS ---
+    let marginY = dH * 0.12; 
+    let marginX = dW * 0.10;
     let qPorColuna = Math.ceil(numQuestoes / numColunas);
+
+    let spY = (dH - (2 * marginY)) / Math.max(qPorColuna - 1, 1);
+    let larguraColuna = dW / numColunas;
+    let spX = (larguraColuna - (2 * marginX)) / Math.max(numOpcoes - 1, 1);
+
+    let x1 = marginX;
+    let y1 = marginY;
+    let x2 = (dW / 2) + marginX;
+    let y2 = marginY;
+
     let acertos = 0;
     let respostasLidas = [];
 
@@ -631,20 +656,20 @@ function processarCorrecaoFinal(warped) {
 
     for (let q = 0; q < numQuestoes; q++) {
         let isCol2 = (numColunas === 2) && (q >= qPorColuna);
-        let colBaseX = isCol2 ? configCalib.x2 : configCalib.x1;
-        let colBaseY = isCol2 ? configCalib.y2 : configCalib.y1;
+        let colBaseX = isCol2 ? x2 : x1;
+        let colBaseY = isCol2 ? y2 : y1;
         let linhaIdx = isCol2 ? (q - qPorColuna) : q;
-        let yPonto = colBaseY + (linhaIdx * configCalib.spY);
+        let yPonto = Math.round(colBaseY + (linhaIdx * spY));
 
         let valoresAlternativas = [];
         let coords = [];
 
         for (let i = 0; i < numOpcoes; i++) {
-            let xPonto = colBaseX + (i * configCalib.spX);
+            let xPonto = Math.round(colBaseX + (i * spX));
             coords.push({ x: xPonto, y: yPonto });
 
             let totalPixels = 0;
-            if (yPonto >= 12 && yPonto < 450 - 12 && xPonto >= 12 && xPonto < 600 - 12) {
+            if (yPonto >= 12 && yPonto < dH - 12 && xPonto >= 12 && xPonto < dW - 12) {
                 let roi = warpedThresh.roi(new cv.Rect(xPonto - 12, yPonto - 12, 24, 24));
                 totalPixels = cv.countNonZero(roi);
                 roi.delete();
@@ -661,7 +686,7 @@ function processarCorrecaoFinal(warped) {
 
         if (maior > LIMIAR_MINIMO_TINTA) {
             if (segundaMaior > LIMIAR_MINIMO_TINTA && segundaMaior > (maior * 0.60)) {
-                respostaAluno = "*"; // Dupla Marcação
+                respostaAluno = "*";
             } else {
                 let outras = valoresAlternativas.filter((_, idx) => idx !== idxMarcado);
                 let mediaOutras = outras.reduce((a, b) => a + b, 0) / (outras.length || 1);
@@ -688,6 +713,35 @@ function processarCorrecaoFinal(warped) {
         });
     }
 
+    let notaFinal = (acertos / numQuestoes) * valorProva;
+    
+    const chaveNota = `${alunoAtualParaCaptura.turma}_${alunoAtualParaCaptura.nome}`;
+    bancoNotasLocais[chaveNota] = notaFinal;
+    localStorage.setItem('corrigePro_notas_alunos', JSON.stringify(bancoNotasLocais));
+
+    cv.imshow('canvasScanResult', warped);
+    document.getElementById('webcamScan').style.display = 'none';
+    document.getElementById('canvasScanResult').style.display = 'block';
+
+    const banner = document.getElementById('notaBannerModal');
+    banner.innerText = `NOTA: ${notaFinal.toFixed(1)} / ${valorProva.toFixed(1)} (${acertos} acertos)`;
+    banner.style.display = 'block';
+
+    const btnEsc = document.getElementById('btnEscanearAluno');
+    btnEsc.innerText = "✅ CONCLUÍDO (FECHAR)";
+    btnEsc.style.background = "#007bff";
+    jaDigitalizado = true;
+
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        osc.connect(audioCtx.destination); osc.frequency.value = 800; osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+    } catch(e) {}
+
+    if (streamVideoGlobal) streamVideoGlobal.getTracks().forEach(track => track.stop());
+
+    warped.delete(); warpedGray.delete(); warpedBlur.delete(); warpedThresh.delete();
+}
     // --- CÁLCULO DA NOTA DINÂMICO ---
     let notaFinal = (acertos / numQuestoes) * valorProva;
     
