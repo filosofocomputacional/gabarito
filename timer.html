@@ -44,54 +44,108 @@
         
         #notaBannerModal { display: none; font-size: 22px; font-weight: bold; color: #155724; background: #d4edda; border: 1px solid #c3e6cb; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
 
-        /* Estilo da Caixa de Calibragem Interativa (Arestas) */
-        .calib-box-wrapper {
-            position: relative;
-            background: #1a1a1a;
-            border: 2px solid #333;
+        /* ================= QUADRO DE CALIBRAGEM (BORDAS COMO SLIDERS) ================= */
+        .calib-frame-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #1e1e1e;
+            padding: 15px;
             border-radius: 12px;
-            padding: 45px 55px;
-            margin: 15px 0;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-        }
-        .calib-canvas-container {
-            position: relative;
-            width: 100%;
-        }
-        .calib-canvas-container canvas {
-            display: block;
-            width: 100%;
-            height: auto;
-            border: 1px solid #444;
+            border: 2px solid #333;
+            margin: 20px 0;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
         }
 
-        /* Sliders posicionados nas Arestas */
-        .edge-control {
-            position: absolute;
+        .frame-edge {
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            width: 100%;
             color: #fff;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
-            background: rgba(0, 0, 0, 0.65);
-            padding: 4px 8px;
-            border-radius: 6px;
-            backdrop-filter: blur(4px);
         }
-        .edge-control input[type="range"] {
+
+        .frame-top {
+            flex-direction: column;
+            margin-bottom: 8px;
+        }
+
+        .frame-bottom {
+            flex-direction: column;
+            margin-top: 8px;
+        }
+
+        .frame-middle {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            width: 100%;
+            gap: 12px;
+        }
+
+        .frame-left, .frame-right {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+        }
+
+        .frame-center {
+            flex: 1;
+            max-width: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px dashed #555;
+        }
+
+        .frame-center canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Sliders nas Bordas */
+        .slider-h {
+            width: 100%;
+            max-width: 600px;
+            height: 12px;
             cursor: pointer;
             accent-color: var(--primary);
         }
-        .edge-top-left { top: 8px; left: 55px; }
-        .edge-top-right { top: 8px; right: 55px; }
-        .edge-bottom { bottom: 8px; left: 50%; transform: translateX(-50%); }
-        .edge-left-top { top: 55px; left: 8px; }
-        .edge-left-bottom { bottom: 55px; left: 8px; }
-        .edge-right { top: 50%; right: 8px; transform: translateY(-50%); writing-mode: vertical-lr; }
-        .edge-right input[type="range"] { width: 120px; writing-mode: horizontal-tb; }
 
-        /* Ajustes de Formulário na Calibragem */
+        .slider-v {
+            writing-mode: vertical-lr;
+            direction: rtl; /* Direção do topo para a base */
+            height: 100%;
+            min-height: 280px;
+            width: 18px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .edge-label {
+            margin: 4px 0;
+            color: #4da3ff;
+            font-size: 13px;
+        }
+
+        .edge-label-v {
+            writing-mode: vertical-lr;
+            transform: rotate(180deg);
+            text-align: center;
+            margin: 6px 0;
+            color: #4da3ff;
+            font-size: 12px;
+        }
+
+        /* Formulário de Configurações */
         .slider-group { margin: 12px 0; text-align: left; }
         .slider-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 3px; }
         
@@ -100,7 +154,7 @@
         .grid-gabarito select { padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; }
         .preview-title { font-size: 14px; font-weight: bold; color: #495057; margin-top: 15px; margin-bottom: 5px; text-align: left; }
 
-        /* Botões Gerais */
+        /* Botões */
         .btn-action { background: var(--success); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; transition: 0.2s; }
         .btn-action:hover { opacity: 0.9; }
 
@@ -122,6 +176,7 @@
 <div class="container">
     <div id="statusCv">⏳ Baixando motor de visão computacional (OpenCV.js)...</div>
 
+    <!-- TAB 1: CORREÇÃO -->
     <div id="abaCorrecao" class="tab-content">
         <div class="filter-group">
             <div>
@@ -148,9 +203,10 @@
         </table>
     </div>
 
+    <!-- TAB 2: CALIBRAGEM COM QUADRO/MOLDURA -->
     <div id="abaCalibragem" class="tab-content" style="display:none;">
         <h3>🎛️ Calibragem do Modelo Mestre</h3>
-        <p style="font-size: 13px; color: #666;">Tire a foto de um gabarito modelo para alinhar os eixos nas arestas e definir as respostas corretas. Os ajustes ficarão gravados nos Cookies.</p>
+        <p style="font-size: 13px; color: #666;">Tire a foto de um gabarito para alinhar a grade ajustando as bordas do próprio quadro.</p>
         
         <video id="webcamCalib" autoplay playsinline></video>
         <button class="btn-action" id="btnCapturarModelo" style="background:#007bff;" disabled>📸 CAPTURAR FOTO PARA AJUSTAR</button>
@@ -159,53 +215,42 @@
             <div class="preview-title">🟢 1. Cantos Mapeados (Foto Original):</div>
             <canvas id="canvasFotoOriginalAjuste"></canvas>
 
-            <div class="preview-title" style="margin-top:20px;">🎯 2. Alinhamento dos Eixos (Ajuste nas Arestas do Quadro):</div>
-            <p style="font-size: 12px; color: #666; text-align: left; margin-top:0;">Use os sliders nas bordas do quadro para alinhar a posição X, Y, a largura e altura das letras.</p>
+            <div class="preview-title" style="margin-top:20px;">🎯 2. Alinhamento dos Eixos nas Bordas do Quadro:</div>
             
-            <!-- QUADRO COM SLIDERS NAS ARESTAS -->
-            <div class="calib-box-wrapper">
-                <!-- Aresta Superior (X1 e X2) -->
-                <div class="edge-control edge-top-left">
-                    <span>X1:</span>
-                    <input type="range" id="input_x1" min="0" max="400" value="100">
-                    <span id="val_x1">100</span>px
-                </div>
-                <div class="edge-control edge-top-right" id="group_x2">
-                    <span>X2:</span>
-                    <input type="range" id="input_x2" min="200" max="600" value="356">
-                    <span id="val_x2">356</span>px
+            <!-- ESTRUTURA DE QUADRO / MOLDURA COM SLIDERS NAS BORDAS -->
+            <div class="calib-frame-container">
+                
+                <!-- BORDA SUPERIOR: X1 -->
+                <div class="frame-edge frame-top">
+                    <span class="edge-label">⬆️ Borda Superior — Posição Inicial X (X1): <b id="val_x1">100</b>px</span>
+                    <input type="range" id="input_x1" min="0" max="400" value="100" class="slider-h">
                 </div>
 
-                <!-- Aresta Esquerda (Y1 e Y2) -->
-                <div class="edge-control edge-left-top">
-                    <span>Y1:</span>
-                    <input type="range" id="input_y1" min="0" max="400" value="104">
-                    <span id="val_y1">104</span>px
-                </div>
-                <div class="edge-control edge-left-bottom" id="group_y2">
-                    <span>Y2:</span>
-                    <input type="range" id="input_y2" min="0" max="400" value="105">
-                    <span id="val_y2">105</span>px
+                <div class="frame-middle">
+                    <!-- BORDA ESQUERDA: Y1 -->
+                    <div class="frame-edge frame-left">
+                        <span class="edge-label-v">⬅️ Borda Esquerda — Posição Y (Y1): <b id="val_y1">104</b>px</span>
+                        <input type="range" id="input_y1" min="0" max="400" value="104" class="slider-v">
+                    </div>
+
+                    <!-- CANVAS CENTRAL DA FOTO DESENTORTADA -->
+                    <div class="frame-center">
+                        <canvas id="canvasCalibPreview"></canvas>
+                    </div>
+
+                    <!-- BORDA DIREITA: spY -->
+                    <div class="frame-edge frame-right">
+                        <span class="edge-label-v">➡️ Borda Direita — Altura/Espaçamento V (spY): <b id="val_spY">51</b>px</span>
+                        <input type="range" id="input_spY" min="5" max="150" value="51" class="slider-v">
+                    </div>
                 </div>
 
-                <!-- Canvas Central -->
-                <div class="calib-canvas-container">
-                    <canvas id="canvasCalibPreview"></canvas>
+                <!-- BORDA INFERIOR: spX -->
+                <div class="frame-edge frame-bottom">
+                    <input type="range" id="input_spX" min="5" max="100" value="33" class="slider-h">
+                    <span class="edge-label">⬇️ Borda Inferior — Largura/Espaçamento H (spX): <b id="val_spX">33</b>px</span>
                 </div>
 
-                <!-- Aresta Direita (Altura spY) -->
-                <div class="edge-control edge-right">
-                    <span style="transform: rotate(-90deg);">Alt (spY)</span>
-                    <input type="range" id="input_spY" min="5" max="150" value="51">
-                    <span id="val_spY" style="transform: rotate(-90deg);">51</span>
-                </div>
-
-                <!-- Aresta Inferior (Largura spX) -->
-                <div class="edge-control edge-bottom">
-                    <span>Largura Letra (spX):</span>
-                    <input type="range" id="input_spX" min="5" max="100" value="33">
-                    <span id="val_spX">33</span>px
-                </div>
             </div>
 
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
@@ -244,6 +289,7 @@
         </div>
     </div>
 
+    <!-- TAB 3: EXPORTAR -->
     <div id="abaExportar" class="tab-content" style="display:none;">
         <h3>📊 Resumo das Turmas Alteradas</h3>
         <p>Abaixo estão apenas as turmas que possuem alunos com notas corrigidas no sistema:</p>
@@ -257,6 +303,7 @@
     </div>
 </div>
 
+<!-- MODAL CÂMERA -->
 <div id="modalCamera" class="modal">
     <div class="modal-content">
         <button class="btn-close-modal" onclick="fecharModalCamera()">&times;</button>
@@ -294,7 +341,7 @@ window.Module = {
 
 const LETRAS_TODAS = ["A", "B", "C", "D", "E"];
 const defaultGabarito = ['B','D','C','B','C','D','C','B','A','B'];
-const sliders = ['x1', 'y1', 'x2', 'y2', 'spX', 'spY'];
+const sliders = ['x1', 'y1', 'spX', 'spY'];
 
 let DADOS_ALUNOS = {};
 let alunoAtualParaCaptura = null;
@@ -302,7 +349,7 @@ let bancoNotasLocais = JSON.parse(localStorage.getItem('corrigePro_notas_alunos'
 let streamVideoGlobal = null;
 let imagemBaseWarpedCanvas = document.createElement('canvas');
 
-// Controle de Loop, Timer e Captura Automática
+// Controle de Timer e Captura Automática (0,5s / 10 tentativas)
 let jaDigitalizado = false;
 let isBuscandoGabarito = false;
 let contagemIntervalo = null;
@@ -354,8 +401,8 @@ function getCookie(name) {
 }
 
 function carregarCalibracaoCookie() {
-    const cookie = getCookie('corrigePro_calib_v2');
-    return cookie || { x1: 100, y1: 104, x2: 356, y2: 105, spX: 33, spY: 51, numOpcoes: 5, gabarito: defaultGabarito, numQuestoes: 10, numColunas: 2, valorProva: 10.0 };
+    const cookie = getCookie('corrigePro_calib_v3');
+    return cookie || { x1: 100, y1: 104, spX: 33, spY: 51, numOpcoes: 5, gabarito: defaultGabarito, numQuestoes: 10, numColunas: 2, valorProva: 10.0 };
 }
 
 let configCalib = carregarCalibracaoCookie();
@@ -367,14 +414,17 @@ window.salvarCalibracaoCookie = function() {
     const valorProva = parseFloat(document.getElementById('input_valorProva').value) || 10.0;
     
     const config = { numOpcoes, numQuestoes, numColunas, valorProva, gabarito: [] };
-    sliders.forEach(s => config[s] = parseInt(document.getElementById(`input_${s}`).value));
+    sliders.forEach(s => {
+        const el = document.getElementById(`input_${s}`);
+        if (el) config[s] = parseInt(el.value);
+    });
     
     for (let i = 0; i < numQuestoes; i++) {
         const el = document.getElementById(`qc_${i}`);
         config.gabarito.push(el ? el.value : "A");
     }
     
-    setCookie('corrigePro_calib_v2', config, 365);
+    setCookie('corrigePro_calib_v3', config, 365);
     configCalib = config;
     alert("✅ Calibragem e Gabarito salvos com sucesso nos Cookies!");
 };
@@ -413,8 +463,6 @@ function desenharPreviewAjuste() {
 
     const v_x1 = parseInt(document.getElementById('input_x1').value);
     const v_y1 = parseInt(document.getElementById('input_y1').value);
-    const v_x2 = parseInt(document.getElementById('input_x2').value);
-    const v_y2 = parseInt(document.getElementById('input_y2').value);
     const v_spX = parseInt(document.getElementById('input_spX').value);
     const v_spY = parseInt(document.getElementById('input_spY').value);
     
@@ -424,10 +472,9 @@ function desenharPreviewAjuste() {
     
     const qPorColuna = Math.ceil(numQuestoes / numColunas);
 
-    // Oculta/Exibe os controles da Coluna 2
-    const displayCol2 = (numColunas === 2) ? 'flex' : 'none';
-    document.getElementById('group_x2').style.display = displayCol2;
-    document.getElementById('group_y2').style.display = displayCol2;
+    // Cálculo automático para a Coluna 2 (alinhada lado a lado)
+    const v_x2 = v_x1 + (numOpcoes * v_spX) + 35;
+    const v_y2 = v_y1;
 
     ctx.strokeStyle = "#ff0000";
     ctx.lineWidth = 2;
@@ -518,7 +565,7 @@ window.carregarAlunos = function() {
     });
 };
 
-// ================= 5. VISÃO COMPUTACIONAL E CÂMERA =================
+// ================= 5. CÂMERA E VISÃO COMPUTACIONAL =================
 function iniciarCamera(elementId) {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } })
@@ -619,7 +666,7 @@ function processarPerspectivaCompleta(src) {
     }
 }
 
-// ================= 6. FUNÇÕES DE TIMER E AUTO-CAPTURA (A CADA 0.5s) =================
+// ================= 6. AUTO-CAPTURA A CADA 0,5 SEGUNDOS =================
 window.acionarCaptura = function() {
     if (jaDigitalizado) {
         fecharModalCamera();
@@ -692,7 +739,7 @@ function tentarCapturaEmLoop() {
     }
 
     if (tentativasCount < MAX_TENTATIVAS) {
-        loopCapturaTimeout = setTimeout(tentarCapturaEmLoop, 500); // 0,5 segundos
+        loopCapturaTimeout = setTimeout(tentarCapturaEmLoop, 500);
     } else {
         isBuscandoGabarito = false;
         btnEsc.innerText = "❌ NÃO RECONHECIDO. TENTAR NOVAMENTE";
@@ -723,10 +770,13 @@ function processarCorrecaoFinal(warped) {
     let redColor = new cv.Scalar(255, 0, 0, 255);
     let grayColor = new cv.Scalar(200, 200, 200, 255);
 
+    let v_x2 = configCalib.x1 + (numOpcoes * configCalib.spX) + 35;
+    let v_y2 = configCalib.y1;
+
     for (let q = 0; q < numQuestoes; q++) {
         let isCol2 = (numColunas === 2) && (q >= qPorColuna);
-        let colBaseX = isCol2 ? configCalib.x2 : configCalib.x1;
-        let colBaseY = isCol2 ? configCalib.y2 : configCalib.y1;
+        let colBaseX = isCol2 ? v_x2 : configCalib.x1;
+        let colBaseY = isCol2 ? v_y2 : configCalib.y1;
         let linhaIdx = isCol2 ? (q - qPorColuna) : q;
         let yPonto = colBaseY + (linhaIdx * configCalib.spY);
 
