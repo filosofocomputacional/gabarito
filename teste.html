@@ -3,69 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CorrigePro - Captura Automática</title>
-    <style>
-        :root {
-            --primary: #007bff;
-            --success: #28a745;
-            --danger: #dc3545;
-            --dark: #343a40;
-            --light: #f8f9fa;
-        }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; color: #333; }
-        header { background: var(--dark); color: white; padding: 15px; text-align: center; }
-        nav { display: flex; justify-content: center; background: #e9ecef; border-bottom: 2px solid #ccc; }
-        .tab-btn { background: none; border: none; padding: 15px 25px; cursor: pointer; font-size: 16px; font-weight: bold; color: #555; }
-        .tab-btn.active { border-bottom: 3px solid var(--primary); color: var(--primary); }
-        .container { max-width: 900px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        .form-control { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
-        .btn-action { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; background: var(--primary); width: 100%; margin-top: 10px;}
-        .btn-success { background: var(--success); }
-        .btn-danger { background: var(--danger); }
-        
-        .slider-group { margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
-        .slider-group label { width: 60%; font-size: 14px; font-weight: bold;}
-        .slider-group input { width: 35%; }
-        
-        .grid-gabarito { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 15px; }
-        .questao-item { display: flex; justify-content: space-between; align-items: center; background: var(--light); padding: 5px 10px; border-radius: 4px; border: 1px solid #ddd;}
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: var(--light); }
-        
-        /* Modal da Câmera */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); }
-        .modal-content { background-color: white; margin: 5% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 650px; position: relative; text-align: center; }
-        .btn-close-modal { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; border: none; background: none; }
-        
-        .video-container { position: relative; display: inline-block; margin-top: 15px; max-width: 100%; }
-        canvas { max-width: 100%; border: 2px solid #333; border-radius: 4px; height: auto; }
-        
-        #statusCv { text-align: center; font-weight: bold; padding: 10px; background: #fff3cd; color: #856404; margin-bottom: 15px; border-radius: 4px; }
-    </style>
+    <title>Correr...</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <header>
-    <h2 style="margin: 0;">🎓 CorrigePro - OpenCV AutoCapture</h2>
+    <h2>🎓 CorrigePro - Gestão de Correção</h2>
 </header>
 
 <nav>
-    <button class="tab-btn active" onclick="trocarAba('abaCorrecao', this)">📝 Correção</button>
-    <button class="tab-btn" onclick="trocarAba('abaCalibragem', this)">⚙️ Calibragem</button>
+    <button class="tab-btn active" onclick="trocarAba('abaCorrecao', event)">📝 Correção</button>
+    <button class="tab-btn" onclick="trocarAba('abaCalibragem', event)">⚙️ Calibragem</button>
+    <button class="tab-btn" onclick="trocarAba('abaExportar', event)">📄 Exportar Notas</button>
 </nav>
 
 <div class="container">
-    <div id="statusCv">⏳ Baixando motor de visão computacional (OpenCV.js)... aguarde.</div>
+    <div id="statusCv">⏳ Baixando motor de visão computacional (OpenCV.js)...</div>
 
     <!-- ================= ABA 1: CORREÇÃO ================= -->
-    <div id="abaCorrecao" class="tab-content active">
-        <p>Alunos para correção (Demonstração):</p>
+    <div id="abaCorrecao" class="tab-content">
+        <div class="filter-group">
+            <div>
+                <label><strong>Etapa de Ensino:</strong></label>
+                <select id="selectEtapa" class="form-control" onchange="carregarTurmas()"></select>
+            </div>
+            <div>
+                <label><strong>Turma:</strong></label>
+                <select id="selectTurma" class="form-control" onchange="carregarAlunos()"></select>
+            </div>
+        </div>
+
         <table>
             <thead>
                 <tr>
@@ -74,477 +42,106 @@
                     <th style="text-align: center; width: 100px;">Nota</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td>João Silva</td>
-                    <td style="text-align: center;"><button class="btn-action" style="margin:0; padding: 5px;" onclick="abrirCamera('João Silva')">📸</button></td>
-                    <td style="text-align: center; font-weight: bold;" id="nota-joao">-</td>
-                </tr>
+            <tbody id="listaAlunosBody">
+                <tr><td colspan="3" style="text-align:center;">Selecione a etapa e a turma.</td></tr>
             </tbody>
         </table>
     </div>
 
     <!-- ================= ABA 2: CALIBRAGEM ================= -->
-    <div id="abaCalibragem" class="tab-content">
-        <h3>🎛️ Grade Automática e Gabarito</h3>
-        
-        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-            <div style="flex: 1;">
-                <label><strong>Valor da Prova:</strong></label>
-                <input type="number" id="inputValorProva" class="form-control" value="10.0" step="0.1" onchange="salvarConfig()">
+    <div id="abaCalibragem" class="tab-content" style="display:none;">
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+            <h4 style="text-align:left;">⚙️ Configurações da Prova</h4>
+            
+            <div class="slider-group">
+                <label>Número de Questões:</label>
+                <input type="number" id="input_numQuestoes" min="1" max="100" value="10" class="form-control" style="width:100%">
             </div>
-            <div style="flex: 1;">
-                <label><strong>Número de Colunas:</strong></label>
-                <select id="selectColunas" class="form-control" onchange="salvarConfig()">
+            <div class="slider-group">
+                <label>Número de Colunas:</label>
+                <select id="select_numColunas" class="form-control" style="width:100%">
                     <option value="1">1 Coluna</option>
                     <option value="2" selected>2 Colunas</option>
-                    <option value="3">3 Colunas</option>
-                    <option value="4">4 Colunas</option>
                 </select>
             </div>
+            <div class="slider-group">
+                <label>Valor da Prova (Nota Máxima):</label>
+                <input type="number" id="input_valorProva" min="0" step="0.1" value="10.0" class="form-control" style="width:100%">
+            </div>
+            
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+            <h4 style="text-align:left; margin-top:20px;">🎛️ Controles de Posição dos Eixos (X, Y)</h4>
+        <h3>🎛️ Calibragem do Modelo Mestre</h3>
+        <p style="font-size: 13px; color: #666;">Tire a foto de um gabarito modelo para alinhar os eixos e definir as respostas corretas. Os ajustes ficarão gravados nos Cookies.</p>
+        
+        <video id="webcamCalib" autoplay playsinline></video>
+        <button class="btn-action" id="btnCapturarModelo" style="background:#007bff;" disabled>📸 CAPTURAR FOTO PARA AJUSTAR</button>
+
+        <div id="painelSliders" style="display:none; margin-top:20px;">
+            <div class="preview-title">🟢 1. Cantos Mapeados (Foto Original):</div>
+            <canvas id="canvasFotoOriginalAjuste"></canvas>
+
+            <div class="preview-title" style="margin-top:20px;">🎯 2. Alinhamento dos Eixos (Imagem Desentortada):</div>
+            <p style="font-size: 12px; color: #666; text-align: left; margin-top:0;">Mova os sliders abaixo para posicionar as miras sobre as bolinhas do gabarito.</p>
+            <canvas id="canvasCalibPreview"></canvas>
+
+            <h4 style="text-align:left; margin-top:20px;">🎛️ Controles de Posição dos Eixos (X, Y)</h4>
+            <div class="slider-group"><label>Q01-05 Horiz (X1): <span id="val_x1">100</span>px</label><input type="range" id="input_x1" min="0" max="400" value="100"></div>
+            <div class="slider-group"><label>Q01-05 Vert (Y1): <span id="val_y1">104</span>px</label><input type="range" id="input_y1" min="0" max="400" value="104"></div>
+            <div class="slider-group"><label>Q06-10 Horiz (X2): <span id="val_x2">356</span>px</label><input type="range" id="input_x2" min="200" max="600" value="356"></div>
+            <div class="slider-group"><label>Q06-10 Vert (Y2): <span id="val_y2">105</span>px</label><input type="range" id="input_y2" min="0" max="400" value="105"></div>
+            <div class="slider-group"><label>Largura Letras (spX): <span id="val_spX">33</span>px</label><input type="range" id="input_spX" min="5" max="100" value="33"></div>
+            <div class="slider-group"><label>Altura Linhas (spY): <span id="val_spY">51</span>px</label><input type="range" id="input_spY" min="5" max="150" value="51"></div>
+
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+
+            <div style="text-align: left; margin-bottom: 15px;">
+                <label><strong>Quantidade de Opções por Questão:</strong></label>
+                <select id="selectNumOpcoes" class="form-control" style="margin-top: 5px;">
+                    <option value="4">4 Opções (A, B, C, D)</option>
+                    <option value="5" selected>5 Opções (A, B, C, D, E)</option>
+                </select>
+            </div>
+
+            <h4 style="text-align:left; margin-top:15px;">📝 Configurar Gabarito Oficial Correto</h4>
+            <div class="grid-gabarito" id="containerGabaritoCalib"></div>
+
+            <button class="btn-action" onclick="salvarCalibracaoCookie()">💾 SALVAR AJUSTES NO COOKIE</button>
         </div>
+    </div>
 
-        <div style="background: var(--light); padding: 15px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
-            <label><strong>Quantidade de Questões:</strong></label><br>
-            <button class="btn-action btn-danger" style="width: auto; display: inline-block;" onclick="mudarQtdQuestoes(-1)">- Menos</button>
-            <span id="txtQtdQuestoes" style="font-size: 18px; font-weight: bold; margin: 0 15px;">10</span>
-            <button class="btn-action btn-success" style="width: auto; display: inline-block;" onclick="mudarQtdQuestoes(1)">+ Mais</button>
+    <!-- ================= ABA 3: EXPORTAÇÃO E GERENCIAMENTO ================= -->
+    <div id="abaExportar" class="tab-content" style="display:none;">
+        <h3>📊 Resumo das Turmas Alteradas</h3>
+        <p>Abaixo estão apenas as turmas que possuem alunos com notas corrigidas no sistema:</p>
+        
+        <ul id="listaTurmasAlteradas" style="text-align: left; margin: 20px 0;"></ul>
+
+        <div class="btn-group-export">
+            <button class="btn-action" onclick="exportarCSV()">📥 BAIXAR NOTAS EM CSV</button>
+            <button class="btn-action btn-danger" onclick="limparTodasNotas()">🗑️ LIMPAR TODAS AS NOTAS</button>
         </div>
-
-        <h4 style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">🎛️ Posição e Alinhamento</h4>
-        <div class="slider-group"><label>Posição X da 1ª Coluna: <span id="val_x_inicial">50</span></label><input type="range" id="x_inicial" min="0" max="300" value="50" oninput="atualizarSlider(this)"></div>
-        <div class="slider-group"><label>Distância entre Colunas (X): <span id="val_dist_colunas">180</span></label><input type="range" id="dist_colunas" min="100" max="300" value="180" oninput="atualizarSlider(this)"></div>
-        <div class="slider-group"><label>Alinhamento do Topo (Y): <span id="val_y_topo">100</span></label><input type="range" id="y_topo" min="0" max="300" value="100" oninput="atualizarSlider(this)"></div>
-        <div class="slider-group"><label>Alinhamento do Fundo (Y): <span id="val_y_fim">420</span></label><input type="range" id="y_fim" min="150" max="450" value="420" oninput="atualizarSlider(this)"></div>
-        <div class="slider-group"><label>Espaço entre Alternativas: <span id="val_spX">24</span></label><input type="range" id="spX" min="10" max="80" value="24" oninput="atualizarSlider(this)"></div>
-
-        <h4 style="border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 20px;">📝 Respostas Corretas</h4>
-        <div class="grid-gabarito" id="containerGabarito"></div>
-
-        <button class="btn-action" onclick="salvarConfig()" style="margin-top: 20px;">💾 SALVAR CONFIGURAÇÕES</button>
     </div>
 </div>
 
-<!-- MODAL DA CÂMERA -->
+<!-- MODAL DA CÂMERA DE ESCANEAMENTO -->
 <div id="modalCamera" class="modal">
     <div class="modal-content">
-        <button class="btn-close-modal" onclick="fecharModal()">&times;</button>
+        <button class="btn-close-modal" onclick="fecharModalCamera()">&times;</button>
         <h3 id="nomeAlunoModal">Lendo Prova...</h3>
         
-        <div class="video-container">
-            <!-- Vídeo transparente rolando em segundo plano (evita bloqueio do navegador) -->
-            <video id="webcamScan" autoplay playsinline style="position: absolute; opacity: 0; pointer-events: none; width: 600px; height: 450px;"></video>
-            
-            <!-- Canvas onde o OpenCV desenhará os frames visíveis -->
-            <canvas id="canvasOverlay" width="600" height="450"></canvas>
-        </div>
+        <div id="notaBannerModal"></div>
+        <video id="webcamScan" autoplay playsinline></video>
+        <canvas id="canvasScanResult" style="display:none;"></canvas>
         
-        <div id="resultadoFinal" style="margin-top: 15px; font-size: 18px; font-weight: bold; display: none;"></div>
-        <button class="btn-action btn-danger" id="btnTentarNovamente" style="display:none;" onclick="reiniciarCaptura()">🔄 Tentar Novamente</button>
+        <button class="btn-action" id="btnEscanearAluno">📸 ESCANEAR E SALVAR NOTA</button>
     </div>
 </div>
 
-<!-- OPENCV.JS -->
-<script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+<canvas id="canvasHidden" style="display:none;"></canvas>
 
-<script>
-    // --- VARIÁVEIS GLOBAIS DE ESTADO ---
-    let calib = {
-        totalQuestoes: 10,
-        numColunas: 2,
-        valorProva: 10.0,
-        x_inicial: 50,
-        dist_colunas: 180,
-        y_topo: 100,
-        y_fim: 420,
-        spX: 24,
-        respostas: []
-    };
-
-    let cvReady = false;
-    let streaming = false;
-    let video = document.getElementById('webcamScan');
-    let canvasOverlay = document.getElementById('canvasOverlay');
-    let ctxOverlay = canvasOverlay.getContext('2d', { willReadFrequently: true });
-    let scanStream = null;
-    let loopFrameId;
-
-    // Variáveis de Estabilização e Captura
-    let contadorEstavel = 0;
-    const LIMIAR_ESTAVEL = 12; // Aprox 0.4s a 30fps
-    let travaCaptura = false;
-    let imgWarped = null;
-
-    // --- INICIALIZAÇÃO ---
-    function onOpenCvReady() {
-        cvReady = true;
-        document.getElementById('statusCv').innerHTML = "✅ Sistema pronto para capturar!";
-        document.getElementById('statusCv').style.background = "#d4edda";
-        document.getElementById('statusCv').style.color = "#155724";
-        carregarConfig();
-    }
-
-    function trocarAba(abaId, btn) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(abaId).classList.add('active');
-        btn.classList.add('active');
-        if (abaId === 'abaCalibragem') renderizarGabarito();
-    }
-
-    // --- CONFIGURAÇÕES ---
-    function carregarConfig() {
-        let salvo = localStorage.getItem("corrigePro_config");
-        if (salvo) {
-            let s = JSON.parse(salvo);
-            Object.assign(calib, s);
-            document.getElementById('inputValorProva').value = calib.valorProva;
-            document.getElementById('selectColunas').value = calib.numColunas;
-            document.getElementById('txtQtdQuestoes').innerText = calib.totalQuestoes;
-            document.getElementById('x_inicial').value = calib.x_inicial;
-            document.getElementById('dist_colunas').value = calib.dist_colunas;
-            document.getElementById('y_topo').value = calib.y_topo;
-            document.getElementById('y_fim').value = calib.y_fim;
-            document.getElementById('spX').value = calib.spX;
-            atualizarTextosSliders();
-        } else {
-            for (let i=0; i<calib.totalQuestoes; i++) calib.respostas.push("A");
-        }
-        renderizarGabarito();
-    }
-
-    function salvarConfig() {
-        calib.valorProva = parseFloat(document.getElementById('inputValorProva').value);
-        calib.numColunas = parseInt(document.getElementById('selectColunas').value);
-        calib.x_inicial = parseInt(document.getElementById('x_inicial').value);
-        calib.dist_colunas = parseInt(document.getElementById('dist_colunas').value);
-        calib.y_topo = parseInt(document.getElementById('y_topo').value);
-        calib.y_fim = parseInt(document.getElementById('y_fim').value);
-        calib.spX = parseInt(document.getElementById('spX').value);
-
-        let selects = document.querySelectorAll('.resp-select');
-        calib.respostas = [];
-        selects.forEach(s => calib.respostas.push(s.value));
-
-        localStorage.setItem("corrigePro_config", JSON.stringify(calib));
-        alert("Configurações Salvas!");
-    }
-
-    function mudarQtdQuestoes(val) {
-        let nova = calib.totalQuestoes + val;
-        if (nova >= 1 && nova <= 100) {
-            calib.totalQuestoes = nova;
-            document.getElementById('txtQtdQuestoes').innerText = nova;
-            
-            if (nova > calib.respostas.length) {
-                let falta = nova - calib.respostas.length;
-                for(let i=0; i<falta; i++) calib.respostas.push("A");
-            } else if (nova < calib.respostas.length) {
-                calib.respostas = calib.respostas.slice(0, nova);
-            }
-            renderizarGabarito();
-        }
-    }
-
-    function atualizarSlider(el) {
-        document.getElementById(`val_${el.id}`).innerText = el.value;
-    }
-
-    function atualizarTextosSliders() {
-        ['x_inicial','dist_colunas','y_topo','y_fim','spX'].forEach(id => {
-            document.getElementById(`val_${id}`).innerText = calib[id];
-        });
-    }
-
-    function renderizarGabarito() {
-        let c = document.getElementById('containerGabarito');
-        c.innerHTML = "";
-        let opcoes = ["A","B","C","D","E"];
-        
-        for (let i = 0; i < calib.totalQuestoes; i++) {
-            let d = document.createElement("div");
-            d.className = "questao-item";
-            
-            let html = `<span>Q${i+1}</span> <select class="resp-select" style="padding: 2px;">`;
-            opcoes.forEach(op => {
-                let sel = (calib.respostas[i] === op) ? "selected" : "";
-                html += `<option value="${op}" ${sel}>${op}</option>`;
-            });
-            html += `</select>`;
-            
-            d.innerHTML = html;
-            c.appendChild(d);
-        }
-    }
-
-    // --- CÂMERA E PROCESSAMENTO (OPENCV) ---
-    function abrirCamera(nomeAluno) {
-        if (!cvReady) { alert("Aguarde o OpenCV carregar."); return; }
-        
-        document.getElementById('nomeAlunoModal').innerText = `Lendo Prova de: ${nomeAluno}`;
-        document.getElementById('modalCamera').style.display = 'block';
-        document.getElementById('resultadoFinal').style.display = 'none';
-        document.getElementById('btnTentarNovamente').style.display = 'none';
-        
-        travaCaptura = false;
-        contadorEstavel = 0;
-        
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
-            .then(function(stream) {
-                scanStream = stream;
-                video.srcObject = stream;
-                video.onloadeddata = () => {
-                    // Força dimensões de reprodução
-                    video.width = 600;
-                    video.height = 450;
-                    streaming = true;
-                    processVideo();
-                };
-            })
-            .catch(function(err) {
-                console.error("Erro na câmera: " + err);
-                alert("Erro ao acessar a câmera. Verifique as permissões.");
-                fecharModal();
-            });
-    }
-
-    function fecharModal() {
-        document.getElementById('modalCamera').style.display = 'none';
-        pararCamera();
-    }
-
-    function pararCamera() {
-        streaming = false;
-        if (scanStream) {
-            scanStream.getTracks().forEach(t => t.stop());
-            scanStream = null;
-        }
-        if (loopFrameId) cancelAnimationFrame(loopFrameId);
-    }
-
-    function reiniciarCaptura() {
-        document.getElementById('resultadoFinal').style.display = 'none';
-        document.getElementById('btnTentarNovamente').style.display = 'none';
-        travaCaptura = false;
-        contadorEstavel = 0;
-        processVideo(); // Volta pro loop contínuo
-    }
-
-    function processVideo() {
-        if (!streaming || travaCaptura) return;
-
-        try {
-            // Desenha vídeo no tamanho exato para que os Mat tenham tamanhos padronizados e válidos
-            ctxOverlay.drawImage(video, 0, 0, 600, 450);
-            let imageData = ctxOverlay.getImageData(0, 0, 600, 450);
-            
-            let src = cv.matFromImageData(imageData);
-            let gray = new cv.Mat();
-            cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-            cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
-            cv.Canny(gray, gray, 50, 150);
-
-            let contours = new cv.MatVector();
-            let hierarchy = new cv.Mat();
-            cv.findContours(gray, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-
-            let maiorContorno = null;
-            let maiorArea = 0;
-
-            // Busca o maior polígono com 4 pontas
-            for (let i = 0; i < contours.size(); i++) {
-                let cnt = contours.get(i);
-                let area = cv.contourArea(cnt);
-                if (area > 20000) { // Tamanho mínimo de um papel na tela
-                    let peri = cv.arcLength(cnt, true);
-                    let approx = new cv.Mat();
-                    cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
-                    
-                    if (approx.rows === 4 && area > maiorArea) {
-                        maiorArea = area;
-                        if (maiorContorno) maiorContorno.delete();
-                        maiorContorno = approx.clone();
-                    }
-                    approx.delete();
-                }
-                cnt.delete();
-            }
-
-            // Exibição em tempo real na tela (Canvas)
-            if (maiorContorno) {
-                contadorEstavel++;
-                
-                // Desenha borda verde e cantos
-                for (let i = 0; i < 4; i++) {
-                    let pt1 = new cv.Point(maiorContorno.intPtr(i, 0)[0], maiorContorno.intPtr(i, 0)[1]);
-                    let pt2 = new cv.Point(maiorContorno.intPtr((i+1)%4, 0)[0], maiorContorno.intPtr((i+1)%4, 0)[1]);
-                    cv.line(src, pt1, pt2, new cv.Scalar(0, 255, 0, 255), 3);
-                    cv.circle(src, pt1, 8, new cv.Scalar(255, 0, 0, 255), -1);
-                }
-
-                // Barra de progresso visual de captura (Estabilização)
-                let pct = (contadorEstavel / LIMIAR_ESTAVEL) * 100;
-                ctxOverlay.putImageData(new ImageData(new Uint8ClampedArray(src.data), src.cols, src.rows), 0, 0);
-                
-                ctxOverlay.fillStyle = "rgba(0,0,0,0.5)";
-                ctxOverlay.fillRect(10, 10, 580, 40);
-                ctxOverlay.fillStyle = "#28a745";
-                ctxOverlay.fillRect(10, 10, (580 * (pct/100)), 40);
-                
-                ctxOverlay.fillStyle = "white";
-                ctxOverlay.font = "20px Arial";
-                ctxOverlay.fillText(`Estabilizando: ${Math.floor(pct)}%`, 220, 38);
-
-                if (contadorEstavel >= LIMIAR_ESTAVEL) {
-                    travaCaptura = true;
-                    // --- GATILHO: FOTO TIRADA! ---
-                    cortarECorrigir(imageData, maiorContorno);
-                }
-                maiorContorno.delete();
-
-            } else {
-                contadorEstavel = 0; // Perdeu o papel, zera contador
-                ctxOverlay.putImageData(new ImageData(new Uint8ClampedArray(src.data), src.cols, src.rows), 0, 0);
-                
-                ctxOverlay.fillStyle = "rgba(255,0,0,0.6)";
-                ctxOverlay.fillRect(0, 0, 600, 30);
-                ctxOverlay.fillStyle = "white";
-                ctxOverlay.font = "16px Arial";
-                ctxOverlay.fillText("Aponte para o gabarito. Mantenha visível os 4 cantos.", 100, 20);
-            }
-
-            src.delete(); gray.delete(); contours.delete(); hierarchy.delete();
-            
-            if (!travaCaptura) {
-                loopFrameId = requestAnimationFrame(processVideo);
-            }
-
-        } catch (err) {
-            console.error(err);
-            if (!travaCaptura) loopFrameId = requestAnimationFrame(processVideo);
-        }
-    }
-
-    // --- CORTE (WARP) E CORREÇÃO ---
-    function cortarECorrigir(imagemOriginal, contorno) {
-        try {
-            let src = cv.matFromImageData(imagemOriginal);
-            
-            // Ordenar os 4 cantos (Top-Left, Top-Right, Bottom-Right, Bottom-Left)
-            let pts = [];
-            for (let i = 0; i < 4; i++) {
-                pts.push({ x: contorno.intPtr(i, 0)[0], y: contorno.intPtr(i, 0)[1] });
-            }
-            pts.sort((a, b) => a.y - b.y);
-            let top = pts.slice(0, 2).sort((a, b) => a.x - b.x);
-            let bottom = pts.slice(2, 4).sort((a, b) => a.x - b.x);
-            
-            let ptSrc = cv.matFromArray(4, 1, cv.CV_32FC2, [
-                top[0].x, top[0].y, top[1].x, top[1].y,
-                bottom[1].x, bottom[1].y, bottom[0].x, bottom[0].y
-            ]);
-
-            // Tamanho final fixo da imagem escaneada (Proporção A4 vertical)
-            let wA4 = 600, hA4 = 850; 
-            let ptDst = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, wA4, 0, wA4, hA4, 0, hA4]);
-
-            let M = cv.getPerspectiveTransform(ptSrc, ptDst);
-            imgWarped = new cv.Mat();
-            cv.warpPerspective(src, imgWarped, M, new cv.Size(wA4, hA4));
-            
-            // Filtro de Threshold para destacar o preenchimento a lápis/caneta
-            let grayWarp = new cv.Mat();
-            cv.cvtColor(imgWarped, grayWarp, cv.COLOR_RGBA2GRAY);
-            cv.adaptiveThreshold(grayWarp, grayWarp, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 11, 2);
-
-            // --- LÓGICA DE DETECÇÃO DAS BOLINHAS (CORREÇÃO) ---
-            let notaParcial = 0;
-            let totalQ = calib.totalQuestoes;
-            let ptPorQuestao = calib.valorProva / totalQ;
-            let qPorColuna = Math.ceil(totalQ / calib.numColunas);
-            
-            let spY = (qPorColuna > 1) ? (calib.y_fim - calib.y_topo) / (qPorColuna - 1) : 0;
-            let letras = ["A", "B", "C", "D", "E"];
-
-            // Desenhar grid por cima e verificar preenchimento
-            for (let i = 0; i < totalQ; i++) {
-                let col = Math.floor(i / qPorColuna);
-                let linha = i % qPorColuna;
-                
-                let bX = calib.x_inicial + (col * calib.dist_colunas);
-                let bY = calib.y_topo + (linha * spY);
-                
-                let maxPixels = 0;
-                let altMarcada = -1;
-
-                // Checa A, B, C, D, E
-                for (let a = 0; a < 5; a++) {
-                    let rectX = Math.round(bX + (a * calib.spX) - 10);
-                    let rectY = Math.round(bY - 10);
-                    
-                    // Proteção contra leitura fora do limite da imagem
-                    if (rectX < 0 || rectY < 0 || rectX + 20 > wA4 || rectY + 20 > hA4) continue;
-                    
-                    let roi = grayWarp.roi(new cv.Rect(rectX, rectY, 20, 20));
-                    let pixelsEscuros = cv.countNonZero(roi); // Conta pixels pretos da caneta
-                    roi.delete();
-
-                    // Feedback visual na tela cortada
-                    cv.circle(imgWarped, new cv.Point(rectX+10, rectY+10), 10, new cv.Scalar(0, 0, 255, 255), 1);
-
-                    if (pixelsEscuros > maxPixels) {
-                        maxPixels = pixelsEscuros;
-                        altMarcada = a;
-                    }
-                }
-
-                // Regra: se preencheu muito pouco, não marcou nada
-                if (maxPixels < 50) altMarcada = -1; 
-
-                // Verifica se acertou
-                let respCorreta = calib.respostas[i];
-                let marcou = (altMarcada >= 0) ? letras[altMarcada] : "Nenhuma";
-                
-                let corDesenho = new cv.Scalar(255, 0, 0, 255); // Azul = Errou
-                if (marcou === respCorreta) {
-                    notaParcial += ptPorQuestao;
-                    corDesenho = new cv.Scalar(0, 255, 0, 255); // Verde = Acertou
-                }
-                
-                // Pinta a bolinha escolhida pelo aluno para mostrar na tela
-                if (altMarcada >= 0) {
-                    cv.circle(imgWarped, new cv.Point(bX + (altMarcada * calib.spX), bY), 8, corDesenho, -1);
-                }
-            }
-
-            // Mostra o resultado congelado no Canvas
-            // Redimensiona o wA4, hA4 para caber no nosso canvas 600x450 mantendo aspecto
-            let telaFinal = new cv.Mat();
-            cv.resize(imgWarped, telaFinal, new cv.Size(600, 850 * (600/600)), 0, 0, cv.INTER_AREA);
-            
-            ctxOverlay.clearRect(0,0,600,450);
-            // Desenha com offset ou escala para caber (aqui vamos comprimir verticalmente só pra visualizar)
-            cv.resize(imgWarped, telaFinal, new cv.Size(300, 425), 0, 0, cv.INTER_AREA); 
-            ctxOverlay.putImageData(new ImageData(new Uint8ClampedArray(telaFinal.data), telaFinal.cols, telaFinal.rows), 150, 12);
-
-            let resultDiv = document.getElementById('resultadoFinal');
-            resultDiv.style.display = 'block';
-            resultDiv.innerHTML = `<span style="color: var(--success);">✔️ Correção Finalizada!</span><br>Nota Calculada: <span style="font-size: 24px; color: var(--primary);">${notaParcial.toFixed(1)}</span> / ${calib.valorProva}`;
-            document.getElementById('btnTentarNovamente').style.display = 'inline-block';
-            
-            // Atualiza na tabela (somente demonstrativo para a primeira linha)
-            document.getElementById('nota-joao').innerText = notaParcial.toFixed(1);
-            document.getElementById('nota-joao').style.color = (notaParcial >= calib.valorProva*0.6) ? 'var(--success)' : 'var(--danger)';
-
-            // Limpeza
-            ptSrc.delete(); ptDst.delete(); M.delete(); grayWarp.delete(); src.delete(); telaFinal.delete();
-            
-        } catch (e) {
-            console.error("Erro no corte (Warp):", e);
-            reiniciarCaptura(); // Falhou o corte matemático, tenta ler de novo
-        }
-    }
-</script>
-
+<!-- Scripts em ordem estrita de dependência -->
+<script src="js/script.js"></script>
+<script async src="https://docs.opencv.org/4.9.0/opencv.js"></script>
 </body>
 </html>
