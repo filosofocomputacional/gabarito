@@ -9,6 +9,7 @@
             --primary: #007bff;
             --success: #28a745;
             --warning: #ff9800;
+            --danger: #dc3545;
             --dark: #343a40;
             --light: #f8f9fa;
         }
@@ -20,7 +21,7 @@
         nav button { background: none; border: none; color: #aaa; padding: 14px 20px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         nav button.active { color: white; border-bottom: 3px solid var(--primary); background: rgba(255,255,255,0.05); }
 
-        .container { max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .container { max-width: 850px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
         
         /* Selects de Turmas */
         .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
@@ -43,10 +44,56 @@
         
         #notaBannerModal { display: none; font-size: 22px; font-weight: bold; color: #155724; background: #d4edda; border: 1px solid #c3e6cb; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
 
-        /* Aba Calibragem */
+        /* Estilo da Caixa de Calibragem Interativa (Arestas) */
+        .calib-box-wrapper {
+            position: relative;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 45px 55px;
+            margin: 15px 0;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .calib-canvas-container {
+            position: relative;
+            width: 100%;
+        }
+        .calib-canvas-container canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            border: 1px solid #444;
+        }
+
+        /* Sliders posicionados nas Arestas */
+        .edge-control {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.65);
+            padding: 4px 8px;
+            border-radius: 6px;
+            backdrop-filter: blur(4px);
+        }
+        .edge-control input[type="range"] {
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+        .edge-top-left { top: 8px; left: 55px; }
+        .edge-top-right { top: 8px; right: 55px; }
+        .edge-bottom { bottom: 8px; left: 50%; transform: translateX(-50%); }
+        .edge-left-top { top: 55px; left: 8px; }
+        .edge-left-bottom { bottom: 55px; left: 8px; }
+        .edge-right { top: 50%; right: 8px; transform: translateY(-50%); writing-mode: vertical-lr; }
+        .edge-right input[type="range"] { width: 120px; writing-mode: horizontal-tb; }
+
+        /* Ajustes de Formulário na Calibragem */
         .slider-group { margin: 12px 0; text-align: left; }
         .slider-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 3px; }
-        .slider-group input, .slider-group select { width: 100%; }
         
         .grid-gabarito { display: grid; grid-template-rows: repeat(5, auto); grid-auto-flow: column; gap: 10px 20px; margin: 15px 0; text-align: left; }
         .grid-gabarito div { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 6px 12px; border-radius: 6px; border: 1px solid #e9ecef; }
@@ -103,7 +150,7 @@
 
     <div id="abaCalibragem" class="tab-content" style="display:none;">
         <h3>🎛️ Calibragem do Modelo Mestre</h3>
-        <p style="font-size: 13px; color: #666;">Tire a foto de um gabarito modelo para alinhar os eixos e definir as respostas corretas. Os ajustes ficarão gravados nos Cookies.</p>
+        <p style="font-size: 13px; color: #666;">Tire a foto de um gabarito modelo para alinhar os eixos nas arestas e definir as respostas corretas. Os ajustes ficarão gravados nos Cookies.</p>
         
         <video id="webcamCalib" autoplay playsinline></video>
         <button class="btn-action" id="btnCapturarModelo" style="background:#007bff;" disabled>📸 CAPTURAR FOTO PARA AJUSTAR</button>
@@ -112,39 +159,74 @@
             <div class="preview-title">🟢 1. Cantos Mapeados (Foto Original):</div>
             <canvas id="canvasFotoOriginalAjuste"></canvas>
 
-            <div class="preview-title" style="margin-top:20px;">🎯 2. Alinhamento dos Eixos (Imagem Desentortada):</div>
-            <p style="font-size: 12px; color: #666; text-align: left; margin-top:0;">Mova os sliders abaixo para posicionar as miras sobre as bolinhas do gabarito.</p>
-            <canvas id="canvasCalibPreview"></canvas>
+            <div class="preview-title" style="margin-top:20px;">🎯 2. Alinhamento dos Eixos (Ajuste nas Arestas do Quadro):</div>
+            <p style="font-size: 12px; color: #666; text-align: left; margin-top:0;">Use os sliders nas bordas do quadro para alinhar a posição X, Y, a largura e altura das letras.</p>
+            
+            <!-- QUADRO COM SLIDERS NAS ARESTAS -->
+            <div class="calib-box-wrapper">
+                <!-- Aresta Superior (X1 e X2) -->
+                <div class="edge-control edge-top-left">
+                    <span>X1:</span>
+                    <input type="range" id="input_x1" min="0" max="400" value="100">
+                    <span id="val_x1">100</span>px
+                </div>
+                <div class="edge-control edge-top-right" id="group_x2">
+                    <span>X2:</span>
+                    <input type="range" id="input_x2" min="200" max="600" value="356">
+                    <span id="val_x2">356</span>px
+                </div>
+
+                <!-- Aresta Esquerda (Y1 e Y2) -->
+                <div class="edge-control edge-left-top">
+                    <span>Y1:</span>
+                    <input type="range" id="input_y1" min="0" max="400" value="104">
+                    <span id="val_y1">104</span>px
+                </div>
+                <div class="edge-control edge-left-bottom" id="group_y2">
+                    <span>Y2:</span>
+                    <input type="range" id="input_y2" min="0" max="400" value="105">
+                    <span id="val_y2">105</span>px
+                </div>
+
+                <!-- Canvas Central -->
+                <div class="calib-canvas-container">
+                    <canvas id="canvasCalibPreview"></canvas>
+                </div>
+
+                <!-- Aresta Direita (Altura spY) -->
+                <div class="edge-control edge-right">
+                    <span style="transform: rotate(-90deg);">Alt (spY)</span>
+                    <input type="range" id="input_spY" min="5" max="150" value="51">
+                    <span id="val_spY" style="transform: rotate(-90deg);">51</span>
+                </div>
+
+                <!-- Aresta Inferior (Largura spX) -->
+                <div class="edge-control edge-bottom">
+                    <span>Largura Letra (spX):</span>
+                    <input type="range" id="input_spX" min="5" max="100" value="33">
+                    <span id="val_spX">33</span>px
+                </div>
+            </div>
 
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
             <h4 style="text-align:left;">⚙️ Configurações da Prova</h4>
             
             <div class="slider-group">
                 <label>Número de Questões:</label>
-                <input type="number" id="input_numQuestoes" min="1" max="100" value="10" class="form-control" style="width:100%">
+                <input type="number" id="input_numQuestoes" min="1" max="100" value="10" class="form-control">
             </div>
             <div class="slider-group">
                 <label>Número de Colunas:</label>
-                <select id="select_numColunas" class="form-control" style="width:100%">
+                <select id="select_numColunas" class="form-control">
                     <option value="1">1 Coluna</option>
                     <option value="2" selected>2 Colunas</option>
                 </select>
             </div>
             <div class="slider-group">
                 <label>Valor da Prova (Nota Máxima):</label>
-                <input type="number" id="input_valorProva" min="0" step="0.1" value="10.0" class="form-control" style="width:100%">
+                <input type="number" id="input_valorProva" min="0" step="0.1" value="10.0" class="form-control">
             </div>
             
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
-
-            <h4 style="text-align:left; margin-top:20px;">🎛️ Controles de Posição dos Eixos (X, Y)</h4>
-            <div class="slider-group"><label>Horiz (X1): <span id="val_x1">100</span>px</label><input type="range" id="input_x1" min="0" max="400" value="100"></div>
-            <div class="slider-group"><label>Vert (Y1): <span id="val_y1">104</span>px</label><input type="range" id="input_y1" min="0" max="400" value="104"></div>
-            <div class="slider-group"><label>Horiz Col. 2 (X2): <span id="val_x2">356</span>px</label><input type="range" id="input_x2" min="200" max="600" value="356"></div>
-            <div class="slider-group"><label>Vert Col. 2 (Y2): <span id="val_y2">105</span>px</label><input type="range" id="input_y2" min="0" max="400" value="105"></div>
-            <div class="slider-group"><label>Largura Letras (spX): <span id="val_spX">33</span>px</label><input type="range" id="input_spX" min="5" max="100" value="33"></div>
-            <div class="slider-group"><label>Altura Linhas (spY): <span id="val_spY">51</span>px</label><input type="range" id="input_spY" min="5" max="150" value="51"></div>
-
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
 
             <div style="text-align: left; margin-bottom: 15px;">
@@ -220,23 +302,23 @@ let bancoNotasLocais = JSON.parse(localStorage.getItem('corrigePro_notas_alunos'
 let streamVideoGlobal = null;
 let imagemBaseWarpedCanvas = document.createElement('canvas');
 
-// Variáveis de controle do Loop e Timer
+// Controle de Loop, Timer e Captura Automática
 let jaDigitalizado = false;
 let isBuscandoGabarito = false;
 let contagemIntervalo = null;
 let loopCapturaTimeout = null;
+let tentativasCount = 0;
+const MAX_TENTATIVAS = 10;
 
-// ================= 2. CARREGAMENTO DO JSON DE ALUNOS =================
+// ================= 2. CARREGAMENTO DE DADOS =================
 async function carregarDadosJSON() {
     try {
         const resposta = await fetch('js/alunos.json'); 
-        if (!resposta.ok) {
-            throw new Error(`Erro ao carregar alunos.json`);
-        }
+        if (!resposta.ok) throw new Error("Erro ao carregar alunos.json");
         DADOS_ALUNOS = await resposta.json();
         inicializarSelects();
     } catch (erro) {
-        console.warn("Erro ao carregar o JSON de alunos. Carregando dados de teste...", erro);
+        console.warn("Carregando dados locais de teste...", erro);
         DADOS_ALUNOS = {
             "Ensino Fundamental": {
                 "801": ["AGATHA LAVINIA", "ARTHUR FERREIRA", "BEATRIZ SOUZA"],
@@ -272,7 +354,7 @@ function getCookie(name) {
 }
 
 function carregarCalibracaoCookie() {
-    const cookie = getCookie('corrigePro_calib_v2'); // Atualizado o nome do cookie
+    const cookie = getCookie('corrigePro_calib_v2');
     return cookie || { x1: 100, y1: 104, x2: 356, y2: 105, spX: 33, spY: 51, numOpcoes: 5, gabarito: defaultGabarito, numQuestoes: 10, numColunas: 2, valorProva: 10.0 };
 }
 
@@ -285,7 +367,6 @@ window.salvarCalibracaoCookie = function() {
     const valorProva = parseFloat(document.getElementById('input_valorProva').value) || 10.0;
     
     const config = { numOpcoes, numQuestoes, numColunas, valorProva, gabarito: [] };
-    
     sliders.forEach(s => config[s] = parseInt(document.getElementById(`input_${s}`).value));
     
     for (let i = 0; i < numQuestoes; i++) {
@@ -295,7 +376,7 @@ window.salvarCalibracaoCookie = function() {
     
     setCookie('corrigePro_calib_v2', config, 365);
     configCalib = config;
-    alert("✅ Calibragem, Grade e Gabarito salvos com sucesso nos Cookies!");
+    alert("✅ Calibragem e Gabarito salvos com sucesso nos Cookies!");
 };
 
 function renderizarGridGabarito() {
@@ -343,9 +424,10 @@ function desenharPreviewAjuste() {
     
     const qPorColuna = Math.ceil(numQuestoes / numColunas);
 
-    const displayCol2 = (numColunas === 2) ? 'block' : 'none';
-    document.getElementById('input_x2').parentElement.style.display = displayCol2;
-    document.getElementById('input_y2').parentElement.style.display = displayCol2;
+    // Oculta/Exibe os controles da Coluna 2
+    const displayCol2 = (numColunas === 2) ? 'flex' : 'none';
+    document.getElementById('group_x2').style.display = displayCol2;
+    document.getElementById('group_y2').style.display = displayCol2;
 
     ctx.strokeStyle = "#ff0000";
     ctx.lineWidth = 2;
@@ -366,7 +448,7 @@ function desenharPreviewAjuste() {
     }
 }
 
-// ================= 4. NAVEGAÇÃO E DROPDOWNS =================
+// ================= 4. NAVEGAÇÃO E SELEÇÃO =================
 window.trocarAba = function(idAba, event) {
     document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -413,7 +495,7 @@ window.carregarAlunos = function() {
     const lista = DADOS_ALUNOS[etapa]?.[turma] || [];
     
     if (lista.length === 0) {
-        tbody.innerHTML = '<tr><td colspan=\"3\" style=\"text-align:center;\">Nenhum aluno encontrado nesta turma.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum aluno encontrado nesta turma.</td></tr>';
         return;
     }
 
@@ -426,17 +508,17 @@ window.carregarAlunos = function() {
             <tr>
                 <td><strong>${aluno}</strong></td>
                 <td style="text-align:center;">
-                    <button class=\"btn-cam\" onclick=\"abrirModalScan('${aluno}', '${turma}')\">📷</button>
+                    <button class="btn-cam" onclick="abrirModalScan('${aluno}', '${turma}')">📷</button>
                 </td>
                 <td style="text-align:center;">
-                    <span class=\"nota-badge ${temNotaClass}\">${notaSalva}</span>
+                    <span class="nota-badge ${temNotaClass}">${notaSalva}</span>
                 </td>
             </tr>
         `;
     });
 };
 
-// ================= 5. CÂMERA E PROCESSAMENTO OMR =================
+// ================= 5. VISÃO COMPUTACIONAL E CÂMERA =================
 function iniciarCamera(elementId) {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } })
@@ -445,7 +527,7 @@ function iniciarCamera(elementId) {
                 const videoEl = document.getElementById(elementId);
                 if (videoEl) videoEl.srcObject = stream;
             })
-            .catch(err => console.log("Acesso à câmera negado ou indisponível:", err));
+            .catch(err => console.log("Acesso à câmera indisponível:", err));
     }
 }
 
@@ -454,7 +536,6 @@ window.abrirModalScan = function(aluno, turma) {
     jaDigitalizado = false;
     isBuscandoGabarito = false;
 
-    // Reseta timers antigos se houver
     if (contagemIntervalo) clearInterval(contagemIntervalo);
     if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
 
@@ -473,7 +554,6 @@ window.abrirModalScan = function(aluno, turma) {
 
 window.fecharModalCamera = function() {
     document.getElementById('modalCamera').style.display = 'none';
-    
     isBuscandoGabarito = false;
     if (contagemIntervalo) clearInterval(contagemIntervalo);
     if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
@@ -539,15 +619,35 @@ function processarPerspectivaCompleta(src) {
     }
 }
 
-// ================= LÓGICA DO TIMER E AUTO-CAPTURA =================
+// ================= 6. FUNÇÕES DE TIMER E AUTO-CAPTURA (A CADA 0.5s) =================
+window.acionarCaptura = function() {
+    if (jaDigitalizado) {
+        fecharModalCamera();
+        return;
+    }
 
-// Variável para controlar a contagem limite
-let tentativasCount = 0;
-const MAX_TENTATIVAS = 10;
+    if (isBuscandoGabarito) {
+        isBuscandoGabarito = false;
+        if (contagemIntervalo) clearInterval(contagemIntervalo);
+        if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
+        
+        const btn = document.getElementById('btnEscanearAluno');
+        btn.style.background = "var(--success)";
+        btn.innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
+        return;
+    }
+
+    if (!window.cvReady || !alunoAtualParaCaptura) {
+        alert("⏳ O motor OpenCV ainda está carregando. Aguarde um segundo...");
+        return;
+    }
+
+    iniciarContagemRegressiva();
+};
 
 function iniciarContagemRegressiva() {
     isBuscandoGabarito = true;
-    tentativasCount = 0; // Reseta o contador para cada novo clique
+    tentativasCount = 0;
     
     const btnEsc = document.getElementById('btnEscanearAluno');
     let contador = 3; 
@@ -567,13 +667,11 @@ function iniciarContagemRegressiva() {
 }
 
 function tentarCapturaEmLoop() {
-    // Cancela se a busca foi interrompida ou já concluiu
     if (!isBuscandoGabarito || jaDigitalizado) return;
 
     const video = document.getElementById('webcamScan');
     const btnEsc = document.getElementById('btnEscanearAluno');
 
-    // Incrementa a tentativa e atualiza o texto do botão
     tentativasCount++;
     btnEsc.innerText = `🔍 TENTATIVA ${tentativasCount}/${MAX_TENTATIVAS}...`;
 
@@ -586,7 +684,6 @@ function tentarCapturaEmLoop() {
     let res = processarPerspectivaCompleta(src);
     src.delete();
 
-    // 1. SUCESSO: Achou os 4 cantos do gabarito
     if (res) {
         isBuscandoGabarito = false;
         processarCorrecaoFinal(res.warped);
@@ -594,14 +691,12 @@ function tentarCapturaEmLoop() {
         return;
     }
 
-    // 2. FALHA TEMPORÁRIA: Tenta novamente em 0.5s se não atingiu o limite de 10x
     if (tentativasCount < MAX_TENTATIVAS) {
         loopCapturaTimeout = setTimeout(tentarCapturaEmLoop, 500); // 0,5 segundos
     } else {
-        // 3. FALHA DEFINITIVA: Excedeu 10 tentativas sem reconhecer os 4 cantos
         isBuscandoGabarito = false;
         btnEsc.innerText = "❌ NÃO RECONHECIDO. TENTAR NOVAMENTE";
-        btnEsc.style.background = "#dc3545"; // Vermelho de aviso
+        btnEsc.style.background = "var(--danger)";
     }
 }
 
@@ -613,7 +708,6 @@ function processarCorrecaoFinal(warped) {
     cv.GaussianBlur(warpedGray, warpedBlur, new cv.Size(3, 3), 0);
     cv.threshold(warpedBlur, warpedThresh, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
 
-    // VARIÁVEIS DINÂMICAS PARA A CORREÇÃO
     let stringGabarito = configCalib.gabarito;
     let numOpcoes = configCalib.numOpcoes || 5;
     let numQuestoes = configCalib.numQuestoes || 10;
@@ -661,7 +755,7 @@ function processarCorrecaoFinal(warped) {
 
         if (maior > LIMIAR_MINIMO_TINTA) {
             if (segundaMaior > LIMIAR_MINIMO_TINTA && segundaMaior > (maior * 0.60)) {
-                respostaAluno = "*"; // Dupla Marcação
+                respostaAluno = "*";
             } else {
                 let outras = valoresAlternativas.filter((_, idx) => idx !== idxMarcado);
                 let mediaOutras = outras.reduce((a, b) => a + b, 0) / (outras.length || 1);
@@ -688,7 +782,6 @@ function processarCorrecaoFinal(warped) {
         });
     }
 
-    // --- CÁLCULO DA NOTA DINÂMICO ---
     let notaFinal = (acertos / numQuestoes) * valorProva;
     
     const chaveNota = `${alunoAtualParaCaptura.turma}_${alunoAtualParaCaptura.nome}`;
@@ -708,7 +801,6 @@ function processarCorrecaoFinal(warped) {
     btnEsc.style.background = "#007bff";
     jaDigitalizado = true;
 
-    // Bipe de sucesso
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = audioCtx.createOscillator();
@@ -720,7 +812,7 @@ function processarCorrecaoFinal(warped) {
     warped.delete(); warpedGray.delete(); warpedBlur.delete(); warpedThresh.delete();
 }
 
-// ================= EXPORTAÇÃO E GERENCIAMENTO =================
+// ================= 7. EXPORTAR E EVENTOS =================
 function atualizarListaTurmasAlteradas() {
     const ul = document.getElementById('listaTurmasAlteradas');
     if (!ul) return;
@@ -728,8 +820,7 @@ function atualizarListaTurmasAlteradas() {
 
     const turmasModificadas = new Set();
     Object.keys(bancoNotasLocais).forEach(chave => {
-        const turma = chave.split('_')[0];
-        turmasModificadas.add(turma);
+        turmasModificadas.add(chave.split('_')[0]);
     });
 
     if (turmasModificadas.size === 0) {
@@ -744,34 +835,25 @@ function atualizarListaTurmasAlteradas() {
 }
 
 window.exportarCSV = function() {
-    const turmasModificadas = new Set();
-    Object.keys(bancoNotasLocais).forEach(chave => {
-        const turma = chave.split('_')[0];
-        turmasModificadas.add(turma);
-    });
-
-    if (turmasModificadas.size === 0) {
-        alert("Nenhuma alteração foi realizada para exportar.");
-        return;
-    }
-
     let csvContent = "data:text/csv;charset=utf-8,Etapa;Turma;Nome do Aluno;Nota\n";
+    let possuiDados = false;
 
     Object.keys(DADOS_ALUNOS).forEach(etapa => {
         Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
-            if (turmasModificadas.has(turma)) {
-                DADOS_ALUNOS[etapa][turma].forEach(aluno => {
-                    const chave = `${turma}_${aluno}`;
-                    const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "";
-                    csvContent += `"${etapa}";"${turma}";"${aluno}";"${nota}"\n`;
-                });
-            }
+            DADOS_ALUNOS[etapa][turma].forEach(aluno => {
+                const chave = `${turma}_${aluno}`;
+                if (bancoNotasLocais[chave] !== undefined) {
+                    possuiDados = true;
+                    csvContent += `"${etapa}";"${turma}";"${aluno}";"${bancoNotasLocais[chave].toFixed(1)}"\n`;
+                }
+            });
         });
     });
 
-    const encodedUri = encodeURI(csvContent);
+    if (!possuiDados) return alert("Nenhuma nota salva para exportar.");
+
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", encodeURI(csvContent));
     link.setAttribute("download", `notas_corrigidas_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
@@ -779,19 +861,14 @@ window.exportarCSV = function() {
 };
 
 window.limparTodasNotas = function() {
-    const confirmacao = confirm("⚠️ Tem certeza que deseja apagar TODAS as notas salvas até agora?\n\nEsta ação não poderá ser desfeita.");
-    if (!confirmacao) return;
-
+    if (!confirm("⚠️ Tem certeza que deseja apagar TODAS as notas salvas?")) return;
     localStorage.removeItem('corrigePro_notas_alunos');
     bancoNotasLocais = {};
-    
     carregarAlunos();
     atualizarListaTurmasAlteradas();
-
-    alert("🗑️ Todas as notas foram apagadas com sucesso!");
+    alert("🗑️ Todas as notas foram apagadas!");
 };
 
-// ================= EVENT LISTENERS GERAIS =================
 document.addEventListener('DOMContentLoaded', () => {
     carregarDadosJSON();
 
@@ -830,16 +907,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('btnCapturarModelo')?.addEventListener('click', () => {
-        if (!window.cvReady) {
-            alert("Aguarde o motor de visão computacional (OpenCV) terminar de carregar.");
-            return;
-        }
+        if (!window.cvReady) return alert("Aguarde o OpenCV terminar de carregar.");
 
         const video = document.getElementById('webcamCalib');
-        if (video.videoWidth === 0) {
-            alert("Aguarde a câmera carregar na tela...");
-            return;
-        }
+        if (video.videoWidth === 0) return alert("Aguarde a câmera carregar...");
 
         const canvasHidden = document.getElementById('canvasHidden');
         canvasHidden.width = video.videoWidth; canvasHidden.height = video.videoHeight;
@@ -861,40 +932,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('painelSliders').style.display = 'block';
             desenharPreviewAjuste();
         } else {
-            alert("⚠️ Os 4 cantos do gabarito não foram identificados. Tente posicionar a folha inteira no quadro.");
+            alert("⚠️ Os 4 cantos do gabarito não foram identificados.");
         }
     });
-
-    // EVENTO DO BOTÃO DA CÂMERA DO ALUNO (TIMER)
-    // ================= CONTROLE DIRETO DO BOTÃO DE CAPTURA =================
-window.acionarCaptura = function() {
-    // 1. Se já leu a prova e o botão diz "Concluído", apenas fecha o modal.
-    if (jaDigitalizado) {
-        fecharModalCamera();
-        return;
-    }
-
-    // 2. Se o timer ou o loop já estão rodando, o usuário quer CANCELAR.
-    if (isBuscandoGabarito) {
-        isBuscandoGabarito = false;
-        if (contagemIntervalo) clearInterval(contagemIntervalo);
-        if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
-        
-        const btn = document.getElementById('btnEscanearAluno');
-        btn.style.background = "var(--success)";
-        btn.innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
-        return;
-    }
-
-    // 3. Verifica se o sistema de visão já carregou
-    if (!window.cvReady || !alunoAtualParaCaptura) {
-        alert("⏳ O motor OpenCV ainda está carregando. Aguarde 1 segundo e tente novamente.");
-        return;
-    }
-
-    // DISPARA O TIMER (Mesmo que o vídeo esteja terminando de carregar, o timer dá tempo para isso)
-    iniciarContagemRegressiva();
-};
 });
 </script>
 
