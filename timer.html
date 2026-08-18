@@ -184,7 +184,7 @@
         <video id="webcamScan" autoplay playsinline></video>
         <canvas id="canvasScanResult" style="display:none;"></canvas>
         
-        <button class="btn-action" id="btnEscanearAluno">📸 INICIAR CAPTURA AUTOMÁTICA</button>
+        <button class="btn-action" id="btnEscanearAluno" onclick="acionarCaptura()">📸 INICIAR CAPTURA AUTOMÁTICA</button>
     </div>
 </div>
 
@@ -855,38 +855,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // EVENTO DO BOTÃO DA CÂMERA DO ALUNO (TIMER)
-    document.getElementById('btnEscanearAluno')?.addEventListener('click', () => {
-        // Se já leu e o botão tá "Concluído", fecha.
-        if (jaDigitalizado) {
-            fecharModalCamera();
-            return;
-        }
+    // ================= CONTROLE DIRETO DO BOTÃO DE CAPTURA =================
+window.acionarCaptura = function() {
+    // 1. Se já leu a prova e o botão diz "Concluído", apenas fecha o modal.
+    if (jaDigitalizado) {
+        fecharModalCamera();
+        return;
+    }
 
-        // Se clicou no meio da busca, ele cancela
-        if (isBuscandoGabarito) {
-            isBuscandoGabarito = false;
-            if (contagemIntervalo) clearInterval(contagemIntervalo);
-            if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
-            const btn = document.getElementById('btnEscanearAluno');
-            btn.style.background = "var(--success)";
-            btn.innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
-            return;
-        }
+    // 2. Se o timer ou o loop já estão rodando, o usuário quer CANCELAR.
+    if (isBuscandoGabarito) {
+        isBuscandoGabarito = false;
+        if (contagemIntervalo) clearInterval(contagemIntervalo);
+        if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
+        
+        const btn = document.getElementById('btnEscanearAluno');
+        btn.style.background = "var(--success)";
+        btn.innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
+        return;
+    }
 
-        if (!window.cvReady || !alunoAtualParaCaptura) {
-            alert("O motor OpenCV ainda não está pronto. Aguarde o aviso no topo da tela.");
-            return;
-        }
+    // 3. Verifica se o sistema de visão já carregou
+    if (!window.cvReady || !alunoAtualParaCaptura) {
+        alert("⏳ O motor OpenCV ainda está carregando. Aguarde 1 segundo e tente novamente.");
+        return;
+    }
 
-        const video = document.getElementById('webcamScan');
-        if (video.videoWidth === 0) {
-            alert("Aguarde a câmera ligar completamente.");
-            return;
-        }
-
-        // DISPARA O TIMER E O LOOP
-        iniciarContagemRegressiva();
-    });
+    // DISPARA O TIMER (Mesmo que o vídeo esteja terminando de carregar, o timer dá tempo para isso)
+    iniciarContagemRegressiva();
+};
 });
 </script>
 
