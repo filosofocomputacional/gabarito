@@ -541,10 +541,16 @@ function processarPerspectivaCompleta(src) {
 
 // ================= LÓGICA DO TIMER E AUTO-CAPTURA =================
 
+// Variável para controlar a contagem limite
+let tentativasCount = 0;
+const MAX_TENTATIVAS = 10;
+
 function iniciarContagemRegressiva() {
     isBuscandoGabarito = true;
+    tentativasCount = 0; // Reseta o contador para cada novo clique
+    
     const btnEsc = document.getElementById('btnEscanearAluno');
-    let contador = 3; // 3 Segundos
+    let contador = 3; 
     
     btnEsc.style.background = "var(--warning)";
     btnEsc.innerText = `⏳ APONTE A CÂMERA... (${contador})`;
@@ -555,43 +561,48 @@ function iniciarContagemRegressiva() {
             btnEsc.innerText = `⏳ APONTE A CÂMERA... (${contador})`;
         } else {
             clearInterval(contagemIntervalo);
-            btnEsc.innerText = "🔍 PROCURANDO GABARITO...";
             tentarCapturaEmLoop();
         }
     }, 1000);
 }
 
 function tentarCapturaEmLoop() {
-    // Se o modal foi fechado ou já digitalizou, aborta o loop.
+    // Cancela se a busca foi interrompida ou já concluiu
     if (!isBuscandoGabarito || jaDigitalizado) return;
 
     const video = document.getElementById('webcamScan');
     const btnEsc = document.getElementById('btnEscanearAluno');
 
-    if (video.videoWidth === 0) {
-        loopCapturaTimeout = setTimeout(tentarCapturaEmLoop, 500);
-        return;
-    }
+    // Incrementa a tentativa e atualiza o texto do botão
+    tentativasCount++;
+    btnEsc.innerText = `🔍 TENTATIVA ${tentativasCount}/${MAX_TENTATIVAS}...`;
 
     const canvasHidden = document.getElementById('canvasHidden');
-    canvasHidden.width = video.videoWidth; canvasHidden.height = video.videoHeight;
+    canvasHidden.width = video.videoWidth; 
+    canvasHidden.height = video.videoHeight;
     canvasHidden.getContext('2d').drawImage(video, 0, 0);
 
     let src = cv.imread(canvasHidden);
     let res = processarPerspectivaCompleta(src);
     src.delete();
 
-    // Se NÃO achou os 4 cantos, entra em loop infinito a cada meio segundo.
-    if (!res) {
-        btnEsc.innerText = "🔄 AJUSTE A FOLHA... TENTANDO NOVAMENTE";
-        loopCapturaTimeout = setTimeout(tentarCapturaEmLoop, 600); // Tenta de novo rápido
+    // 1. SUCESSO: Achou os 4 cantos do gabarito
+    if (res) {
+        isBuscandoGabarito = false;
+        processarCorrecaoFinal(res.warped);
+        res.srcComPontos.delete();
         return;
     }
 
-    // Se ACHOU OS 4 CANTOS, para o loop e faz a correção
-    isBuscandoGabarito = false;
-    processarCorrecaoFinal(res.warped);
-    res.srcComPontos.delete();
+    // 2. FALHA TEMPORÁRIA: Tenta novamente em 0.5s se não atingiu o limite de 10x
+    if (tentativasCount < MAX_TENTATIVAS) {
+        loopCapturaTimeout = setTimeout(tentarCapturaEmLoop, 500); // 0,5 segundos
+    } else {
+        // 3. FALHA DEFINITIVA: Excedeu 10 tentativas sem reconhecer os 4 cantos
+        isBuscandoGabarito = false;
+        btnEsc.innerText = "❌ NÃO RECONHECIDO. TENTAR NOVAMENTE";
+        btnEsc.style.background = "#dc3545"; // Vermelho de aviso
+    }
 }
 
 function processarCorrecaoFinal(warped) {
