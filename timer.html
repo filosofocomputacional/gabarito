@@ -482,7 +482,7 @@ window.fecharModalCamera = function() {
     carregarAlunos();
 };
 
-ffunction processarPerspectivaCompleta(src) {
+function processarPerspectivaCompleta(src) {
     let gray = new cv.Mat(), blurred = new cv.Mat(), thresh = new cv.Mat(), morphed = new cv.Mat();
     let kernel = null, contours = new cv.MatVector(), hierarchy = new cv.Mat();
 
