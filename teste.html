@@ -40,12 +40,11 @@
         
         /* Modal da Câmera */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); }
-        .modal-content { background-color: white; margin: 5% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 600px; position: relative; text-align: center; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 650px; position: relative; text-align: center; }
         .btn-close-modal { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; border: none; background: none; }
         
-        .video-container { position: relative; display: inline-block; margin-top: 15px; }
-        video, canvas { max-width: 100%; border: 2px solid #333; border-radius: 4px; }
-        #canvasOverlay { position: absolute; top: 0; left: 0; z-index: 10; }
+        .video-container { position: relative; display: inline-block; margin-top: 15px; max-width: 100%; }
+        canvas { max-width: 100%; border: 2px solid #333; border-radius: 4px; height: auto; }
         
         #statusCv { text-align: center; font-weight: bold; padding: 10px; background: #fff3cd; color: #856404; margin-bottom: 15px; border-radius: 4px; }
     </style>
@@ -133,13 +132,12 @@
         <h3 id="nomeAlunoModal">Lendo Prova...</h3>
         
         <div class="video-container">
-            <video id="webcamScan" width="600" height="450" autoplay playsinline style="display:none;"></video>
-            <!-- Canvas onde o OpenCV desenhará os frames da câmera com os overlays -->
+            <!-- Vídeo transparente rolando em segundo plano (evita bloqueio do navegador) -->
+            <video id="webcamScan" autoplay playsinline style="position: absolute; opacity: 0; pointer-events: none; width: 600px; height: 450px;"></video>
+            
+            <!-- Canvas onde o OpenCV desenhará os frames visíveis -->
             <canvas id="canvasOverlay" width="600" height="450"></canvas>
         </div>
-        
-        <!-- Canvas oculto para fazer o crop/warp -->
-        <canvas id="canvasHidden" width="600" height="450" style="display: none;"></canvas>
         
         <div id="resultadoFinal" style="margin-top: 15px; font-size: 18px; font-weight: bold; display: none;"></div>
         <button class="btn-action btn-danger" id="btnTentarNovamente" style="display:none;" onclick="reiniciarCaptura()">🔄 Tentar Novamente</button>
@@ -179,312 +177,374 @@
 
     // --- INICIALIZAÇÃO ---
     function onOpenCvReady() {
-        document.getElementById('statusCv').style.display = 'none';
         cvReady = true;
-        carregarConfigDoStorage();
-        renderizarGabarito();
+        document.getElementById('statusCv').innerHTML = "✅ Sistema pronto para capturar!";
+        document.getElementById('statusCv').style.background = "#d4edda";
+        document.getElementById('statusCv').style.color = "#155724";
+        carregarConfig();
     }
 
     function trocarAba(abaId, btn) {
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById(abaId).classList.add('active');
         btn.classList.add('active');
+        if (abaId === 'abaCalibragem') renderizarGabarito();
     }
 
-    // --- LÓGICA DE INTERFACE (CALIBRAGEM) ---
-    function mudarQtdQuestoes(delta) {
-        let novaQtd = calib.totalQuestoes + delta;
-        if (novaQtd >= 1 && novaQtd <= 40) {
-            calib.totalQuestoes = novaQtd;
+    // --- CONFIGURAÇÕES ---
+    function carregarConfig() {
+        let salvo = localStorage.getItem("corrigePro_config");
+        if (salvo) {
+            let s = JSON.parse(salvo);
+            Object.assign(calib, s);
+            document.getElementById('inputValorProva').value = calib.valorProva;
+            document.getElementById('selectColunas').value = calib.numColunas;
             document.getElementById('txtQtdQuestoes').innerText = calib.totalQuestoes;
-            renderizarGabarito();
-            salvarConfig();
+            document.getElementById('x_inicial').value = calib.x_inicial;
+            document.getElementById('dist_colunas').value = calib.dist_colunas;
+            document.getElementById('y_topo').value = calib.y_topo;
+            document.getElementById('y_fim').value = calib.y_fim;
+            document.getElementById('spX').value = calib.spX;
+            atualizarTextosSliders();
+        } else {
+            for (let i=0; i<calib.totalQuestoes; i++) calib.respostas.push("A");
         }
-    }
-
-    function renderizarGabarito() {
-        let container = document.getElementById('containerGabarito');
-        container.innerHTML = '';
-        const letras = ['A', 'B', 'C', 'D', 'E'];
-        
-        for (let i = 0; i < calib.totalQuestoes; i++) {
-            let respAtual = calib.respostas[i] || 'A';
-            let html = `<div class="questao-item">
-                <label>Q${String(i+1).padStart(2, '0')}:</label>
-                <select id="gab_q${i}" onchange="salvarConfig()">`;
-            letras.forEach(l => {
-                html += `<option value="${l}" ${respAtual === l ? 'selected' : ''}>${l}</option>`;
-            });
-            html += `</select></div>`;
-            container.insertAdjacentHTML('beforeend', html);
-        }
-    }
-
-    function atualizarSlider(el) {
-        document.getElementById(`val_${el.id}`).innerText = el.value;
-        salvarConfig();
+        renderizarGabarito();
     }
 
     function salvarConfig() {
-        calib.valorProva = parseFloat(document.getElementById('inputValorProva').value) || 10.0;
+        calib.valorProva = parseFloat(document.getElementById('inputValorProva').value);
         calib.numColunas = parseInt(document.getElementById('selectColunas').value);
         calib.x_inicial = parseInt(document.getElementById('x_inicial').value);
         calib.dist_colunas = parseInt(document.getElementById('dist_colunas').value);
         calib.y_topo = parseInt(document.getElementById('y_topo').value);
         calib.y_fim = parseInt(document.getElementById('y_fim').value);
         calib.spX = parseInt(document.getElementById('spX').value);
-        
+
+        let selects = document.querySelectorAll('.resp-select');
         calib.respostas = [];
-        for (let i = 0; i < calib.totalQuestoes; i++) {
-            let select = document.getElementById(`gab_q${i}`);
-            if(select) calib.respostas.push(select.value);
+        selects.forEach(s => calib.respostas.push(s.value));
+
+        localStorage.setItem("corrigePro_config", JSON.stringify(calib));
+        alert("Configurações Salvas!");
+    }
+
+    function mudarQtdQuestoes(val) {
+        let nova = calib.totalQuestoes + val;
+        if (nova >= 1 && nova <= 100) {
+            calib.totalQuestoes = nova;
+            document.getElementById('txtQtdQuestoes').innerText = nova;
+            
+            if (nova > calib.respostas.length) {
+                let falta = nova - calib.respostas.length;
+                for(let i=0; i<falta; i++) calib.respostas.push("A");
+            } else if (nova < calib.respostas.length) {
+                calib.respostas = calib.respostas.slice(0, nova);
+            }
+            renderizarGabarito();
         }
+    }
+
+    function atualizarSlider(el) {
+        document.getElementById(`val_${el.id}`).innerText = el.value;
+    }
+
+    function atualizarTextosSliders() {
+        ['x_inicial','dist_colunas','y_topo','y_fim','spX'].forEach(id => {
+            document.getElementById(`val_${id}`).innerText = calib[id];
+        });
+    }
+
+    function renderizarGabarito() {
+        let c = document.getElementById('containerGabarito');
+        c.innerHTML = "";
+        let opcoes = ["A","B","C","D","E"];
         
-        localStorage.setItem('corrigepro_calib', JSON.stringify(calib));
-    }
-
-    function carregarConfigDoStorage() {
-        let salvo = localStorage.getItem('corrigepro_calib');
-        if (salvo) {
-            let data = JSON.parse(salvo);
-            calib = { ...calib, ...data };
+        for (let i = 0; i < calib.totalQuestoes; i++) {
+            let d = document.createElement("div");
+            d.className = "questao-item";
             
-            document.getElementById('inputValorProva').value = calib.valorProva;
-            document.getElementById('selectColunas').value = calib.numColunas;
-            document.getElementById('txtQtdQuestoes').innerText = calib.totalQuestoes;
-            
-            ['x_inicial', 'dist_colunas', 'y_topo', 'y_fim', 'spX'].forEach(id => {
-                document.getElementById(id).value = calib[id];
-                document.getElementById(`val_${id}`).innerText = calib[id];
+            let html = `<span>Q${i+1}</span> <select class="resp-select" style="padding: 2px;">`;
+            opcoes.forEach(op => {
+                let sel = (calib.respostas[i] === op) ? "selected" : "";
+                html += `<option value="${op}" ${sel}>${op}</option>`;
             });
+            html += `</select>`;
+            
+            d.innerHTML = html;
+            c.appendChild(d);
         }
     }
 
-    // --- LÓGICA DE CÂMERA E OPENCV ---
+    // --- CÂMERA E PROCESSAMENTO (OPENCV) ---
     function abrirCamera(nomeAluno) {
-        if (!cvReady) return alert("Aguarde o OpenCV carregar.");
-        document.getElementById('nomeAlunoModal').innerText = `Escanear: ${nomeAluno}`;
+        if (!cvReady) { alert("Aguarde o OpenCV carregar."); return; }
+        
+        document.getElementById('nomeAlunoModal').innerText = `Lendo Prova de: ${nomeAluno}`;
         document.getElementById('modalCamera').style.display = 'block';
         document.getElementById('resultadoFinal').style.display = 'none';
         document.getElementById('btnTentarNovamente').style.display = 'none';
         
-        reiniciarCaptura();
-
-        navigator.mediaDevices.getUserMedia({ video: { width: 600, height: 450, facingMode: "environment" }, audio: false })
-            .then(stream => {
+        travaCaptura = false;
+        contadorEstavel = 0;
+        
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
+            .then(function(stream) {
                 scanStream = stream;
                 video.srcObject = stream;
-                video.play();
                 video.onloadeddata = () => {
+                    // Força dimensões de reprodução
+                    video.width = 600;
+                    video.height = 450;
                     streaming = true;
                     processVideo();
                 };
-            }).catch(err => alert("Erro ao acessar câmera: " + err));
+            })
+            .catch(function(err) {
+                console.error("Erro na câmera: " + err);
+                alert("Erro ao acessar a câmera. Verifique as permissões.");
+                fecharModal();
+            });
     }
 
     function fecharModal() {
         document.getElementById('modalCamera').style.display = 'none';
+        pararCamera();
+    }
+
+    function pararCamera() {
         streaming = false;
-        if (scanStream) scanStream.getTracks().forEach(track => track.stop());
-        cancelAnimationFrame(loopFrameId);
+        if (scanStream) {
+            scanStream.getTracks().forEach(t => t.stop());
+            scanStream = null;
+        }
+        if (loopFrameId) cancelAnimationFrame(loopFrameId);
     }
 
     function reiniciarCaptura() {
-        travaCaptura = false;
-        contadorEstavel = 0;
         document.getElementById('resultadoFinal').style.display = 'none';
         document.getElementById('btnTentarNovamente').style.display = 'none';
-        if(imgWarped) { imgWarped.delete(); imgWarped = null; }
+        travaCaptura = false;
+        contadorEstavel = 0;
+        processVideo(); // Volta pro loop contínuo
     }
 
-    // Loop de renderização em tempo real (Tradução do def atualizar_frame do Python)
     function processVideo() {
-        if (!streaming) return;
-
-        let src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
-        let dst = new cv.Mat(video.height, video.width, cv.CV_8UC4);
-        let gray = new cv.Mat();
-        let blur = new cv.Mat();
-        let thresh = new cv.Mat();
-        let contours = new cv.MatVector();
-        let hierarchy = new cv.Mat();
+        if (!streaming || travaCaptura) return;
 
         try {
-            ctxOverlay.drawImage(video, 0, 0, video.width, video.height);
-            let imageData = ctxOverlay.getImageData(0, 0, video.width, video.height);
-            src.data.set(imageData.data);
-            src.copyTo(dst);
+            // Desenha vídeo no tamanho exato para que os Mat tenham tamanhos padronizados e válidos
+            ctxOverlay.drawImage(video, 0, 0, 600, 450);
+            let imageData = ctxOverlay.getImageData(0, 0, 600, 450);
+            
+            let src = cv.matFromImageData(imageData);
+            let gray = new cv.Mat();
+            cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+            cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
+            cv.Canny(gray, gray, 50, 150);
 
-            if (!travaCaptura) {
-                // Processamento de imagem
-                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
-                cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
-                cv.adaptiveThreshold(blur, thresh, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 51, 11);
-                
-                cv.findContours(thresh, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+            let contours = new cv.MatVector();
+            let hierarchy = new cv.Mat();
+            cv.findContours(gray, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
-                let anchors = [];
-                for (let i = 0; i < contours.size(); i++) {
-                    let cnt = contours.get(i);
+            let maiorContorno = null;
+            let maiorArea = 0;
+
+            // Busca o maior polígono com 4 pontas
+            for (let i = 0; i < contours.size(); i++) {
+                let cnt = contours.get(i);
+                let area = cv.contourArea(cnt);
+                if (area > 20000) { // Tamanho mínimo de um papel na tela
                     let peri = cv.arcLength(cnt, true);
                     let approx = new cv.Mat();
-                    cv.approxPolyDP(cnt, approx, 0.04 * peri, true);
+                    cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
                     
-                    if (approx.rows === 4) {
-                        let rect = cv.boundingRect(approx);
-                        let area = rect.width * rect.height;
-                        let ratio = rect.width / rect.height;
-                        
-                        // Filtros de tamanho e proporção (igual ao Python)
-                        if (area > 300 && area < 30000 && ratio > 0.7 && ratio < 1.3) {
-                            let M = cv.moments(cnt, false);
-                            if (M.m00 !== 0) {
-                                let cx = Math.round(M.m10 / M.m00);
-                                let cy = Math.round(M.m01 / M.m00);
-                                anchors.push({x: cx, y: cy});
-                            }
-                        }
+                    if (approx.rows === 4 && area > maiorArea) {
+                        maiorArea = area;
+                        if (maiorContorno) maiorContorno.delete();
+                        maiorContorno = approx.clone();
                     }
                     approx.delete();
                 }
-
-                // Desenhar Status e Lógica de Estabilização
-                let statusText = "Alinhe os 4 cantos da folha...";
-                let statusColor = [255, 0, 0, 255]; // Vermelho
-
-                if (anchors.length === 4) {
-                    for(let p of anchors) {
-                        cv.circle(dst, new cv.Point(p.x, p.y), 8, [0, 255, 0, 255], -1);
-                    }
-                    
-                    contadorEstavel++;
-                    let pct = Math.min(Math.round((contadorEstavel / LIMIAR_ESTAVEL) * 100), 100);
-                    statusText = `Estabilizando... ${pct}%`;
-                    statusColor = [255, 255, 0, 255]; // Amarelo
-
-                    if (contadorEstavel >= LIMIAR_ESTAVEL) {
-                        executarCaptura(src, anchors);
-                        travaCaptura = true;
-                    }
-                } else {
-                    contadorEstavel = 0; // Reseta se perdeu a folha
-                }
-
-                cv.putText(dst, statusText, new cv.Point(10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.6, statusColor, 2);
-                cv.putText(dst, `Questoes: ${calib.totalQuestoes} | Colunas: ${calib.numColunas}`, new cv.Point(10, 60), cv.FONT_HERSHEY_SIMPLEX, 0.5, [255,255,255,255], 1);
-                
-                cv.imshow('canvasOverlay', dst);
+                cnt.delete();
             }
 
-        } catch(e) {
-            console.error(e);
-        }
+            // Exibição em tempo real na tela (Canvas)
+            if (maiorContorno) {
+                contadorEstavel++;
+                
+                // Desenha borda verde e cantos
+                for (let i = 0; i < 4; i++) {
+                    let pt1 = new cv.Point(maiorContorno.intPtr(i, 0)[0], maiorContorno.intPtr(i, 0)[1]);
+                    let pt2 = new cv.Point(maiorContorno.intPtr((i+1)%4, 0)[0], maiorContorno.intPtr((i+1)%4, 0)[1]);
+                    cv.line(src, pt1, pt2, new cv.Scalar(0, 255, 0, 255), 3);
+                    cv.circle(src, pt1, 8, new cv.Scalar(255, 0, 0, 255), -1);
+                }
 
-        // Limpeza de memória do OpenCV
-        src.delete(); dst.delete(); gray.delete(); blur.delete(); thresh.delete(); contours.delete(); hierarchy.delete();
+                // Barra de progresso visual de captura (Estabilização)
+                let pct = (contadorEstavel / LIMIAR_ESTAVEL) * 100;
+                ctxOverlay.putImageData(new ImageData(new Uint8ClampedArray(src.data), src.cols, src.rows), 0, 0);
+                
+                ctxOverlay.fillStyle = "rgba(0,0,0,0.5)";
+                ctxOverlay.fillRect(10, 10, 580, 40);
+                ctxOverlay.fillStyle = "#28a745";
+                ctxOverlay.fillRect(10, 10, (580 * (pct/100)), 40);
+                
+                ctxOverlay.fillStyle = "white";
+                ctxOverlay.font = "20px Arial";
+                ctxOverlay.fillText(`Estabilizando: ${Math.floor(pct)}%`, 220, 38);
 
-        if (!travaCaptura) {
-            loopFrameId = requestAnimationFrame(processVideo);
+                if (contadorEstavel >= LIMIAR_ESTAVEL) {
+                    travaCaptura = true;
+                    // --- GATILHO: FOTO TIRADA! ---
+                    cortarECorrigir(imageData, maiorContorno);
+                }
+                maiorContorno.delete();
+
+            } else {
+                contadorEstavel = 0; // Perdeu o papel, zera contador
+                ctxOverlay.putImageData(new ImageData(new Uint8ClampedArray(src.data), src.cols, src.rows), 0, 0);
+                
+                ctxOverlay.fillStyle = "rgba(255,0,0,0.6)";
+                ctxOverlay.fillRect(0, 0, 600, 30);
+                ctxOverlay.fillStyle = "white";
+                ctxOverlay.font = "16px Arial";
+                ctxOverlay.fillText("Aponte para o gabarito. Mantenha visível os 4 cantos.", 100, 20);
+            }
+
+            src.delete(); gray.delete(); contours.delete(); hierarchy.delete();
+            
+            if (!travaCaptura) {
+                loopFrameId = requestAnimationFrame(processVideo);
+            }
+
+        } catch (err) {
+            console.error(err);
+            if (!travaCaptura) loopFrameId = requestAnimationFrame(processVideo);
         }
     }
 
-    // --- CORREÇÃO OMR (Tradução do processar_correcao do Python) ---
-    function executarCaptura(srcMat, anchors) {
-        // Ordenação dos 4 pontos
-        anchors.sort((a, b) => a.y - b.y);
-        let top = anchors.slice(0, 2).sort((a, b) => a.x - b.x);
-        let bot = anchors.slice(2, 4).sort((a, b) => a.x - b.x);
-        
-        let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [top[0].x, top[0].y, top[1].x, top[1].y, bot[0].x, bot[0].y, bot[1].x, bot[1].y]);
-        let dW = 600, dH = 450;
-        let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dW, 0, 0, dH, dW, dH]);
-        
-        let M = cv.getPerspectiveTransform(srcTri, dstTri);
-        imgWarped = new cv.Mat();
-        cv.warpPerspective(srcMat, imgWarped, M, new cv.Size(dW, dH));
-        
-        // Preparar Threshold do corte
-        let gray = new cv.Mat();
-        cv.cvtColor(imgWarped, gray, cv.COLOR_RGBA2GRAY, 0);
-        cv.GaussianBlur(gray, gray, new cv.Size(3, 3), 0, 0, cv.BORDER_DEFAULT);
-        let warpedThresh = new cv.Mat();
-        cv.threshold(gray, warpedThresh, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
-
-        // Processamento das Respostas
-        let acertos = 0;
-        let dW_limit = dW, dH_limit = dH;
-        let questoesPorColuna = Math.ceil(calib.totalQuestoes / calib.numColunas);
-        const letras = ['A', 'B', 'C', 'D', 'E'];
-
-        for (let q = 0; q < calib.totalQuestoes; q++) {
-            let colAtual = Math.floor(q / questoesPorColuna);
-            let linhaIdx = q % questoesPorColuna;
+    // --- CORTE (WARP) E CORREÇÃO ---
+    function cortarECorrigir(imagemOriginal, contorno) {
+        try {
+            let src = cv.matFromImageData(imagemOriginal);
             
-            // Compensação mágica do Python
-            let compensacaoColuna = 0;
-            if (colAtual === 1) compensacaoColuna = 30;
-            else if (colAtual === 2) compensacaoColuna = 25;
+            // Ordenar os 4 cantos (Top-Left, Top-Right, Bottom-Right, Bottom-Left)
+            let pts = [];
+            for (let i = 0; i < 4; i++) {
+                pts.push({ x: contorno.intPtr(i, 0)[0], y: contorno.intPtr(i, 0)[1] });
+            }
+            pts.sort((a, b) => a.y - b.y);
+            let top = pts.slice(0, 2).sort((a, b) => a.x - b.x);
+            let bottom = pts.slice(2, 4).sort((a, b) => a.x - b.x);
+            
+            let ptSrc = cv.matFromArray(4, 1, cv.CV_32FC2, [
+                top[0].x, top[0].y, top[1].x, top[1].y,
+                bottom[1].x, bottom[1].y, bottom[0].x, bottom[0].y
+            ]);
 
-            let xBaseColuna = calib.x_inicial + (colAtual * calib.dist_colunas) + compensacaoColuna;
-            let passoVertical = questoesPorColuna > 1 ? (calib.y_fim - calib.y_topo) / (questoesPorColuna - 1) : 0;
-            let yPonto = Math.round(calib.y_topo + (linhaIdx * passoVertical));
+            // Tamanho final fixo da imagem escaneada (Proporção A4 vertical)
+            let wA4 = 600, hA4 = 850; 
+            let ptDst = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, wA4, 0, wA4, hA4, 0, hA4]);
 
-            let valoresAlternativas = [];
-            for (let i = 0; i < 5; i++) {
-                let xPonto = Math.round(xBaseColuna + (i * calib.spX));
+            let M = cv.getPerspectiveTransform(ptSrc, ptDst);
+            imgWarped = new cv.Mat();
+            cv.warpPerspective(src, imgWarped, M, new cv.Size(wA4, hA4));
+            
+            // Filtro de Threshold para destacar o preenchimento a lápis/caneta
+            let grayWarp = new cv.Mat();
+            cv.cvtColor(imgWarped, grayWarp, cv.COLOR_RGBA2GRAY);
+            cv.adaptiveThreshold(grayWarp, grayWarp, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 11, 2);
+
+            // --- LÓGICA DE DETECÇÃO DAS BOLINHAS (CORREÇÃO) ---
+            let notaParcial = 0;
+            let totalQ = calib.totalQuestoes;
+            let ptPorQuestao = calib.valorProva / totalQ;
+            let qPorColuna = Math.ceil(totalQ / calib.numColunas);
+            
+            let spY = (qPorColuna > 1) ? (calib.y_fim - calib.y_topo) / (qPorColuna - 1) : 0;
+            let letras = ["A", "B", "C", "D", "E"];
+
+            // Desenhar grid por cima e verificar preenchimento
+            for (let i = 0; i < totalQ; i++) {
+                let col = Math.floor(i / qPorColuna);
+                let linha = i % qPorColuna;
                 
-                // Extração da Região (ROI)
-                let totalPixels = 0;
-                if (yPonto >= 12 && yPonto + 12 < dH_limit && xPonto >= 12 && xPonto + 12 < dW_limit) {
-                    let rect = new cv.Rect(xPonto - 12, yPonto - 12, 24, 24);
-                    let roi = warpedThresh.roi(rect);
-                    totalPixels = cv.countNonZero(roi);
+                let bX = calib.x_inicial + (col * calib.dist_colunas);
+                let bY = calib.y_topo + (linha * spY);
+                
+                let maxPixels = 0;
+                let altMarcada = -1;
+
+                // Checa A, B, C, D, E
+                for (let a = 0; a < 5; a++) {
+                    let rectX = Math.round(bX + (a * calib.spX) - 10);
+                    let rectY = Math.round(bY - 10);
+                    
+                    // Proteção contra leitura fora do limite da imagem
+                    if (rectX < 0 || rectY < 0 || rectX + 20 > wA4 || rectY + 20 > hA4) continue;
+                    
+                    let roi = grayWarp.roi(new cv.Rect(rectX, rectY, 20, 20));
+                    let pixelsEscuros = cv.countNonZero(roi); // Conta pixels pretos da caneta
                     roi.delete();
+
+                    // Feedback visual na tela cortada
+                    cv.circle(imgWarped, new cv.Point(rectX+10, rectY+10), 10, new cv.Scalar(0, 0, 255, 255), 1);
+
+                    if (pixelsEscuros > maxPixels) {
+                        maxPixels = pixelsEscuros;
+                        altMarcada = a;
+                    }
                 }
-                valoresAlternativas.push(totalPixels);
+
+                // Regra: se preencheu muito pouco, não marcou nada
+                if (maxPixels < 50) altMarcada = -1; 
+
+                // Verifica se acertou
+                let respCorreta = calib.respostas[i];
+                let marcou = (altMarcada >= 0) ? letras[altMarcada] : "Nenhuma";
                 
-                // Desenha mira no display
-                cv.circle(imgWarped, new cv.Point(xPonto, yPonto), 4, [0, 255, 255, 255], -1);
+                let corDesenho = new cv.Scalar(255, 0, 0, 255); // Azul = Errou
+                if (marcou === respCorreta) {
+                    notaParcial += ptPorQuestao;
+                    corDesenho = new cv.Scalar(0, 255, 0, 255); // Verde = Acertou
+                }
+                
+                // Pinta a bolinha escolhida pelo aluno para mostrar na tela
+                if (altMarcada >= 0) {
+                    cv.circle(imgWarped, new cv.Point(bX + (altMarcada * calib.spX), bY), 8, corDesenho, -1);
+                }
             }
 
-            // Identificar qual foi marcada
-            let maxVal = Math.max(...valoresAlternativas);
-            let idxMarcado = valoresAlternativas.indexOf(maxVal);
-            let respostaAluno = maxVal > 110 ? letras[idxMarcado] : "-";
+            // Mostra o resultado congelado no Canvas
+            // Redimensiona o wA4, hA4 para caber no nosso canvas 600x450 mantendo aspecto
+            let telaFinal = new cv.Mat();
+            cv.resize(imgWarped, telaFinal, new cv.Size(600, 850 * (600/600)), 0, 0, cv.INTER_AREA);
             
-            let gabaritoCorreto = calib.respostas[q];
-            if (respostaAluno === gabaritoCorreto) {
-                acertos++;
-            }
+            ctxOverlay.clearRect(0,0,600,450);
+            // Desenha com offset ou escala para caber (aqui vamos comprimir verticalmente só pra visualizar)
+            cv.resize(imgWarped, telaFinal, new cv.Size(300, 425), 0, 0, cv.INTER_AREA); 
+            ctxOverlay.putImageData(new ImageData(new Uint8ClampedArray(telaFinal.data), telaFinal.cols, telaFinal.rows), 150, 12);
+
+            let resultDiv = document.getElementById('resultadoFinal');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<span style="color: var(--success);">✔️ Correção Finalizada!</span><br>Nota Calculada: <span style="font-size: 24px; color: var(--primary);">${notaParcial.toFixed(1)}</span> / ${calib.valorProva}`;
+            document.getElementById('btnTentarNovamente').style.display = 'inline-block';
+            
+            // Atualiza na tabela (somente demonstrativo para a primeira linha)
+            document.getElementById('nota-joao').innerText = notaParcial.toFixed(1);
+            document.getElementById('nota-joao').style.color = (notaParcial >= calib.valorProva*0.6) ? 'var(--success)' : 'var(--danger)';
+
+            // Limpeza
+            ptSrc.delete(); ptDst.delete(); M.delete(); grayWarp.delete(); src.delete(); telaFinal.delete();
+            
+        } catch (e) {
+            console.error("Erro no corte (Warp):", e);
+            reiniciarCaptura(); // Falhou o corte matemático, tenta ler de novo
         }
-
-        // Cálculos Finais
-        let fator = calib.valorProva / calib.totalQuestoes;
-        let notaFinal = acertos * fator;
-        let mediaCorte = calib.valorProva * 0.6;
-        let corNota = notaFinal >= mediaCorte ? [0, 255, 0, 255] : [255, 0, 0, 255]; // Verde ou Vermelho
-
-        // Tarja superior preta
-        cv.rectangle(imgWarped, new cv.Point(0, 0), new cv.Point(600, 70), [0, 0, 0, 255], -1);
-        cv.putText(imgWarped, `Acertos: ${acertos}/${calib.totalQuestoes}`, new cv.Point(15, 25), cv.FONT_HERSHEY_SIMPLEX, 0.6, [255, 255, 255, 255], 2);
-        cv.putText(imgWarped, `Fator/Q: ${fator.toFixed(2)}`, new cv.Point(15, 55), cv.FONT_HERSHEY_SIMPLEX, 0.6, [255, 255, 255, 255], 2);
-        cv.putText(imgWarped, `NOTA: ${notaFinal.toFixed(2)}`, new cv.Point(350, 45), cv.FONT_HERSHEY_SIMPLEX, 1.0, corNota, 3);
-
-        cv.imshow('canvasOverlay', imgWarped);
-
-        // Atualiza UI
-        document.getElementById('resultadoFinal').innerHTML = `Capturado! Nota: <span style="color:${notaFinal >= mediaCorte ? 'green' : 'red'};">${notaFinal.toFixed(2)}</span>`;
-        document.getElementById('resultadoFinal').style.display = 'block';
-        document.getElementById('btnTentarNovamente').style.display = 'block';
-        
-        // Atualiza a tabela na aba principal
-        document.getElementById('nota-joao').innerText = notaFinal.toFixed(2);
-        document.getElementById('nota-joao').style.color = notaFinal >= mediaCorte ? 'green' : 'red';
-
-        // Limpeza
-        srcTri.delete(); dstTri.delete(); M.delete(); gray.delete(); warpedThresh.delete();
     }
 </script>
+
 </body>
 </html>
