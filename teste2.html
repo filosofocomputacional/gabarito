@@ -624,15 +624,7 @@ function processarCorrecaoFinal(warped) {
     let warpedThresh = new cv.Mat();
     let warpedBlur = new cv.Mat();
     cv.GaussianBlur(warpedGray, warpedBlur, new cv.Size(3, 3), 0);
-    cv.adaptiveThreshold(
-    warpedBlur, 
-    warpedThresh, 
-    255, 
-    cv.ADAPTIVE_THRESH_GAUSSIAN_C, 
-    cv.THRESH_BINARY_INV, 
-    31, // BlockSize: deve ser maior que o tamanho da bolinha (ex: 25 a 45)
-    10  // C: folga de contraste (aumente se a sombra ainda incomodar, ex: 12 ou 15)
-);
+   cv.threshold(warpedBlur, warpedThresh, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
 
     let stringGabarito = configCalib.gabarito;
     let numOpcoes = configCalib.numOpcoes || 5;
