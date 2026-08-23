@@ -14,7 +14,7 @@
             --light: #f8f9fa;
         }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #eef2f5; color: #333; }
-        
+
         /* Cabeçalho e Navegação */
         header { background: var(--dark); color: white; padding: 15px 20px; text-align: center; }
         nav { display: flex; justify-content: center; background: #212529; }
@@ -22,11 +22,11 @@
         nav button.active { color: white; border-bottom: 3px solid var(--primary); background: rgba(255,255,255,0.05); }
 
         .container { max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        
+
         /* Selects de Turmas */
         .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .form-control { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
-        
+
         /* Tabela de Alunos */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
@@ -41,14 +41,14 @@
         .modal-content { background: white; padding: 20px; border-radius: 12px; max-width: 600px; width: 90%; text-align: center; position: relative; }
         video, canvas { width: 100%; border-radius: 8px; background: #111; }
         .btn-close-modal { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
-        
+
         #notaBannerModal { display: none; font-size: 22px; font-weight: bold; color: #155724; background: #d4edda; border: 1px solid #c3e6cb; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
 
         /* Aba Calibragem */
         .slider-group { margin: 5px 0; text-align: left; }
-        .slider-group label { display: inline-block; font-size: 13px; font-weight: bold; margin-bottom: 2px; width: 150px; }
+        .slider-group label { display: inline; font-size: 13px; font-weight: bold; margin-bottom: 2px; }
         .slider-group input, .slider-group select { width: 50%; }
-        
+
         .grid-gabarito { 
             display: grid; 
             grid-template-rows: repeat(5, auto); 
@@ -64,7 +64,6 @@
         /* Botões Gerais */
         .btn-action { background: var(--success); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; transition: 0.2s; }
         .btn-action:hover { opacity: 0.9; }
-        .btn-group-export { display: flex; gap: 10px; }
 
         #statusCv { padding: 10px; background: #fff3cd; color: #856404; border-radius: 6px; text-align: center; margin-bottom: 15px; font-size: 14px; }
     </style>
@@ -84,7 +83,6 @@
 <div class="container">
     <div id="statusCv">⏳ Baixando motor de visão computacional (OpenCV.js)...</div>
 
-    <!-- ABA CORREÇÃO -->
     <div id="abaCorrecao" class="tab-content">
         <div class="filter-group">
             <div>
@@ -96,6 +94,7 @@
                 <select id="selectTurma" class="form-control" onchange="carregarAlunos()"></select>
             </div>
         </div>
+
         <button class="btn-action" style="background: var(--danger);" onclick="limparNotasDaTurmaAtual()">
             🗑️ LIMPAR APENAS ESTA TURMA
         </button>
@@ -113,10 +112,9 @@
         </table>
     </div>
 
-    <!-- ABA CALIBRAGEM -->
     <div id="abaCalibragem" class="tab-content" style="display:none;">
         <h3>🎛️ Calibragem</h3>
-        
+
         <video id="webcamCalib" autoplay playsinline></video>
         <button class="btn-action" id="btnCapturarModelo" style="background:#007bff;" disabled>📸 CAPTURAR FOTO PARA AJUSTAR</button>
 
@@ -126,11 +124,11 @@
             <h4 style="text-align:left;">⚙️ Configurações da Prova</h4>
             <div class="slider-group">
                 <label>Nº Questões:</label>
-                <input type="number" id="input_numQuestoes" min="1" max="100" value="10" class="form-control" style="width:40%" onchange="renderizarGridGabarito(); desenharPreviewAjuste();">
+                <input type="number" id="input_numQuestoes" min="1" max="100" value="10" class="form-control" style="width:40%">
             </div>
             <div class="slider-group">
                 <label>Nº Colunas:</label>
-                <select id="select_numColunas" class="form-control" style="width:40%" onchange="desenharPreviewAjuste();">
+                <select id="select_numColunas" class="form-control" style="width:40%">
                     <option value="1">1 Coluna</option>
                     <option value="2" selected>2 Colunas</option>
                 </select>
@@ -144,18 +142,18 @@
             <canvas id="canvasCalibPreview"></canvas>
 
             <h4 style="text-align:left; margin-top:20px;">🎛️ Controles de Posição dos Eixos (X, Y)</h4>
-            <div class="slider-group"><label>(X1): <span id="val_x1">100</span>px</label><input type="range" id="input_x1" min="0" max="400" value="100" oninput="desenharPreviewAjuste()"></div>
-            <div class="slider-group"><label>(Y1): <span id="val_y1">104</span>px</label><input type="range" id="input_y1" min="0" max="400" value="104" oninput="desenharPreviewAjuste()"></div>
-            <div class="slider-group"><label>(X2): <span id="val_x2">356</span>px</label><input type="range" id="input_x2" min="200" max="600" value="356" oninput="desenharPreviewAjuste()"></div>
-            <div class="slider-group"><label>(Y2): <span id="val_y2">105</span>px</label><input type="range" id="input_y2" min="0" max="400" value="105" oninput="desenharPreviewAjuste()"></div>
-            <div class="slider-group"><label>Largura(spX): <span id="val_spX">33</span>px</label><input type="range" id="input_spX" min="5" max="100" value="33" oninput="desenharPreviewAjuste()"></div>
-            <div class="slider-group"><label>Altura(spY): <span id="val_spY">51</span>px</label><input type="range" id="input_spY" min="5" max="150" value="51" oninput="desenharPreviewAjuste()"></div>
+            <div class="slider-group"><label>(X1): <span id="val_x1">100</span>px</label><input type="range" id="input_x1" min="0" max="400" value="100"></div>
+            <div class="slider-group"><label>(Y1): <span id="val_y1">104</span>px</label><input type="range" id="input_y1" min="0" max="400" value="104"></div>
+            <div class="slider-group"><label>(X2): <span id="val_x2">356</span>px</label><input type="range" id="input_x2" min="200" max="600" value="356"></div>
+            <div class="slider-group"><label>(Y2): <span id="val_y2">105</span>px</label><input type="range" id="input_y2" min="0" max="400" value="105"></div>
+            <div class="slider-group"><label>Largura(spX): <span id="val_spX">33</span>px</label><input type="range" id="input_spX" min="5" max="100" value="33"></div>
+            <div class="slider-group"><label>Altura(spY): <span id="val_spY">51</span>px</label><input type="range" id="input_spY" min="5" max="150" value="51"></div>
 
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
 
             <div style="text-align: left; margin-bottom: 15px;">
                 <label><strong>Quantidade de Opções por Questão:</strong></label>
-                <select id="selectNumOpcoes" class="form-control" style="margin-top: 5px;" onchange="renderizarGridGabarito(); desenharPreviewAjuste();">
+                <select id="selectNumOpcoes" class="form-control" style="margin-top: 5px;">
                     <option value="4">4 Opções (A, B, C, D)</option>
                     <option value="5" selected>5 Opções (A, B, C, D, E)</option>
                 </select>
@@ -168,11 +166,10 @@
         </div>
     </div>
 
-    <!-- ABA EXPORTAR -->
     <div id="abaExportar" class="tab-content" style="display:none;">
         <h3>📊 Resumo das Turmas Alteradas</h3>
-        <p style="text-align:left;">Abaixo estão apenas as turmas que possuem alunos com notas corrigidas no sistema:</p>
-        
+        <p>Abaixo estão apenas as turmas que possuem alunos com notas corrigidas no sistema:</p>
+
         <ul id="listaTurmasAlteradas" style="text-align: left; margin: 20px 0;"></ul>
 
         <div class="btn-group-export">
@@ -182,24 +179,20 @@
     </div>
 </div>
 
-<!-- MODAL CÂMERA -->
 <div id="modalCamera" class="modal">
     <div class="modal-content">
         <button class="btn-close-modal" onclick="fecharModalCamera()">&times;</button>
         <h3 id="nomeAlunoModal">Lendo Prova...</h3>
-        
+
         <div id="notaBannerModal"></div>
         <video id="webcamScan" autoplay playsinline></video>
         <canvas id="canvasScanResult" style="display:none;"></canvas>
-        
-        <button class="btn-action" id="btnEscanearAluno" onclick="acionarCaptura()">📸 INICIAR CAPTURA AUTOMÁTICA</button>
+
+        <button class="btn-action" id="btnEscanearAluno">📸 INICIAR CAPTURA AUTOMÁTICA</button>
     </div>
 </div>
 
 <canvas id="canvasHidden" style="display:none;"></canvas>
-
-<!-- OpenCV.js SDK -->
-<script async src="https://docs.opencv.org/4.5.4/opencv.js"></script>
 
 <script>
 // ================= 1. INICIALIZAÇÃO E ESCOPO GLOBAL =================
@@ -231,7 +224,7 @@ let bancoNotasLocais = JSON.parse(localStorage.getItem('corrigePro_notas_alunos'
 let streamVideoGlobal = null;
 let imagemBaseWarpedCanvas = document.createElement('canvas');
 
-// Controle de Timer e Captura Automática
+// Controle de Timer e Captura Automática (0,5s / 10 tentativas)
 let jaDigitalizado = false;
 let isBuscandoGabarito = false;
 let contagemIntervalo = null;
@@ -249,14 +242,11 @@ async function carregarDadosJSON() {
         DADOS_ALUNOS = await resposta.json();
         inicializarSelects();
     } catch (erro) {
-        console.warn("Erro ou arquivo alunos.json ausente. Carregando mock local para testes.", erro);
-        DADOS_ALUNOS = {
-            "Ensino Fundamental": {
-                "6A": ["Ana Silva", "Bruno Souza", "Carlos Lima"],
-                "6B": ["Daniela Rocha", "Eduardo Pereira"]
-            }
-        };
-        inicializarSelects();
+        console.error("Erro ao carregar o JSON de alunos:", erro);
+        const tbody = document.getElementById('listaAlunosBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">⚠️ Não foi possível carregar o arquivo alunos.json (Para testes, insira um JSON na mesma pasta)</td></tr>';
+        }
     }
 }
 
@@ -296,16 +286,16 @@ window.salvarCalibracaoCookie = function() {
     const numQuestoes = parseInt(document.getElementById('input_numQuestoes').value) || 10;
     const numColunas = parseInt(document.getElementById('select_numColunas').value) || 2;
     const valorProva = parseFloat(document.getElementById('input_valorProva').value) || 10.0;
-    
+
     const config = { numOpcoes, numQuestoes, numColunas, valorProva, gabarito: [] };
-    
+
     sliders.forEach(s => config[s] = parseInt(document.getElementById(`input_${s}`).value));
-    
+
     for (let i = 0; i < numQuestoes; i++) {
         const el = document.getElementById(`qc_${i}`);
         config.gabarito.push(el ? el.value : "A");
     }
-    
+
     setCookie('corrigePro_calib_v1', config, 365);
     configCalib = config;
     alert("✅ Calibragem e Gabarito salvos com sucesso nos Cookies!");
@@ -334,12 +324,6 @@ function renderizarGridGabarito() {
 }
 
 function desenharPreviewAjuste() {
-    sliders.forEach(s => {
-        const elSpan = document.getElementById(`val_${s}`);
-        const elInput = document.getElementById(`input_${s}`);
-        if (elSpan && elInput) elSpan.innerText = elInput.value;
-    });
-
     if (!imagemBaseWarpedCanvas.width) return;
 
     const canvas = document.getElementById('canvasCalibPreview');
@@ -355,11 +339,11 @@ function desenharPreviewAjuste() {
     const v_y2 = parseInt(document.getElementById('input_y2').value);
     const v_spX = parseInt(document.getElementById('input_spX').value);
     const v_spY = parseInt(document.getElementById('input_spY').value);
-    
+
     const numOpcoes = parseInt(document.getElementById('selectNumOpcoes').value) || 5;
     const numQuestoes = parseInt(document.getElementById('input_numQuestoes')?.value) || configCalib.numQuestoes || 10;
     const numColunas = parseInt(document.getElementById('select_numColunas')?.value) || configCalib.numColunas || 2;
-    
+
     const qPorColuna = Math.ceil(numQuestoes / numColunas);
 
     const displayCol2 = (numColunas === 2) ? 'block' : 'none';
@@ -389,21 +373,18 @@ function desenharPreviewAjuste() {
 window.trocarAba = function(idAba, event) {
     document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    
+
     document.getElementById(idAba).style.display = 'block';
     if (event && event.target) event.target.classList.add('active');
 
-    if (idAba === 'abaCalibragem') {
-        iniciarCamera('webcamCalib');
-        renderizarGridGabarito();
-    }
+    if (idAba === 'abaCalibragem') iniciarCamera('webcamCalib');
     if (idAba === 'abaExportar') atualizarListaTurmasAlteradas();
 };
 
 function inicializarSelects() {
     const selectEtapa = document.getElementById('selectEtapa');
     if (!selectEtapa) return;
-    
+
     selectEtapa.innerHTML = "";
     Object.keys(DADOS_ALUNOS).forEach(etapa => {
         selectEtapa.innerHTML += `<option value="${etapa}">${etapa}</option>`;
@@ -433,7 +414,7 @@ window.carregarAlunos = function() {
 
     tbody.innerHTML = "";
     const lista = DADOS_ALUNOS[etapa]?.[turma] || [];
-    
+
     if (lista.length === 0) {
         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum aluno encontrado nesta turma.</td></tr>';
         return;
@@ -479,11 +460,11 @@ window.abrirModalScan = function(aluno, turma) {
     if (contagemIntervalo) clearInterval(contagemIntervalo);
     if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
 
-    document.getElementById('nomeAlunoModal').innerText = `Prova de: ${aluno}`;
+    document.getElementById('nomeAlunoModal').innerText = `Provas de: ${aluno}`;
     document.getElementById('webcamScan').style.display = 'block';
     document.getElementById('canvasScanResult').style.display = 'none';
     document.getElementById('notaBannerModal').style.display = 'none';
-    
+
     const btnEsc = document.getElementById('btnEscanearAluno');
     btnEsc.innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
     btnEsc.style.background = "var(--success)";
@@ -514,7 +495,7 @@ function processarPerspectivaCompleta(src) {
         cv.morphologyEx(thresh, morphed, cv.MORPH_CLOSE, kernel);
 
         cv.findContours(morphed, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-        
+
         let anchors = [];
         for (let i = 0; i < contours.size(); i++) {
             let cnt = contours.get(i);
@@ -559,7 +540,7 @@ function processarPerspectivaCompleta(src) {
     }
 }
 
-// ================= 6. CONTROLE DE TIMERS E LOOP DE CAPTURA =================
+// ================= 6. AUTO-CAPTURA A CADA 0,5 SEGUNDOS =================
 window.acionarCaptura = function() {
     if (jaDigitalizado) {
         fecharModalCamera();
@@ -570,7 +551,7 @@ window.acionarCaptura = function() {
         isBuscandoGabarito = false;
         if (contagemIntervalo) clearInterval(contagemIntervalo);
         if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
-        
+
         const btn = document.getElementById('btnEscanearAluno');
         btn.style.background = "var(--success)";
         btn.innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
@@ -588,10 +569,10 @@ window.acionarCaptura = function() {
 function iniciarContagemRegressiva() {
     isBuscandoGabarito = true;
     tentativasCount = 0;
-    
+
     const btnEsc = document.getElementById('btnEscanearAluno');
-    let contador = 1; 
-    
+    let contador = 3; 
+
     btnEsc.style.background = "var(--warning)";
     btnEsc.innerText = `⏳ APONTE A CÂMERA... (${contador})`;
 
@@ -603,7 +584,7 @@ function iniciarContagemRegressiva() {
             clearInterval(contagemIntervalo);
             tentarCapturaEmLoop();
         }
-    }, 500);
+    }, 1000);
 }
 
 function tentarCapturaEmLoop() {
@@ -632,7 +613,7 @@ function tentarCapturaEmLoop() {
     }
 
     if (tentativasCount < MAX_TENTATIVAS) {
-        loopCapturaTimeout = setTimeout(tentarCapturaEmLoop, 200);
+        loopCapturaTimeout = setTimeout(tentarCapturaEmLoop, 500);
     } else {
         isBuscandoGabarito = false;
         btnEsc.innerText = "❌ NÃO RECONHECIDO. TENTAR NOVAMENTE";
@@ -646,16 +627,14 @@ function processarCorrecaoFinal(warped) {
     let warpedThresh = new cv.Mat();
     let warpedBlur = new cv.Mat();
     cv.GaussianBlur(warpedGray, warpedBlur, new cv.Size(3, 3), 0);
-    
-    // Adaptive Threshold para lidar melhor com sombras do celular
-    cv.threshold(warpedBlur, warpedThresh, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
+   cv.threshold(warpedBlur, warpedThresh, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
 
     let stringGabarito = configCalib.gabarito;
     let numOpcoes = configCalib.numOpcoes || 5;
     let numQuestoes = configCalib.numQuestoes || 10;
     let numColunas = configCalib.numColunas || 2;
     let valorProva = configCalib.valorProva || 10.0;
-    
+
     let qPorColuna = Math.ceil(numQuestoes / numColunas);
     let acertos = 0;
     let respostasLidas = [];
@@ -724,10 +703,8 @@ function processarCorrecaoFinal(warped) {
         });
     }
 
-    warpedGray.delete(); warpedThresh.delete(); warpedBlur.delete();
-
     let notaFinal = (acertos / numQuestoes) * valorProva;
-    
+
     const chaveNota = `${alunoAtualParaCaptura.turma}_${alunoAtualParaCaptura.nome}`;
     bancoNotasLocais[chaveNota] = notaFinal;
     localStorage.setItem('corrigePro_notas_alunos', JSON.stringify(bancoNotasLocais));
@@ -752,85 +729,180 @@ function processarCorrecaoFinal(warped) {
     } catch(e) {}
 
     if (streamVideoGlobal) streamVideoGlobal.getTracks().forEach(track => track.stop());
+
+    warped.delete(); warpedGray.delete(); warpedBlur.delete(); warpedThresh.delete();
 }
 
-// ================= 7. FUNÇÕES DE LIMPEZA E EXPORTAÇÃO =================
-window.limparNotasDaTurmaAtual = function() {
-    const turma = document.getElementById('selectTurma').value;
-    if (!turma) return;
-
-    if (confirm(`⚠️ Tem certeza que deseja apagar todas as notas da turma ${turma}?`)) {
-        Object.keys(bancoNotasLocais).forEach(chave => {
-            if (chave.startsWith(`${turma}_`)) {
-                delete bancoNotasLocais[chave];
-            }
-        });
-        localStorage.setItem('corrigePro_notas_alunos', JSON.stringify(bancoNotasLocais));
-        carregarAlunos();
-        alert(`Notas da turma ${turma} foram apagadas.`);
-    }
-};
-
-window.limparTodasNotas = function() {
-    if (confirm("⚠️ ATENÇÃO: Tem certeza que deseja apagar TODAS as notas salvas no sistema?")) {
-        bancoNotasLocais = {};
-        localStorage.removeItem('corrigePro_notas_alunos');
-        carregarAlunos();
-        atualizarListaTurmasAlteradas();
-        alert("Todas as notas foram apagadas com sucesso!");
-    }
-};
-
+// ================= 7. EXPORTAÇÃO E GERENCIAMENTO =================
 function atualizarListaTurmasAlteradas() {
     const ul = document.getElementById('listaTurmasAlteradas');
     if (!ul) return;
     ul.innerHTML = "";
 
-    const turmasSet = new Set();
+    const turmasModificadas = new Set();
     Object.keys(bancoNotasLocais).forEach(chave => {
-        const partes = chave.split('_');
-        if (partes.length >= 2) turmasSet.add(partes[0]);
+        const turma = chave.split('_')[0];
+        turmasModificadas.add(turma);
     });
 
-    if (turmasSet.size === 0) {
-        ul.innerHTML = "<li><em>Nenhuma turma com notas registradas.</em></li>";
+    if (turmasModificadas.size === 0) {
+        ul.innerHTML = "<li><em>Nenhuma turma possui notas lançadas ainda.</em></li>";
         return;
     }
 
-    turmasSet.forEach(turma => {
-        ul.innerHTML += `<li>Turma: <strong>${turma}</strong></li>`;
+    turmasModificadas.forEach(turma => {
+        let totalAlunosComNota = Object.keys(bancoNotasLocais).filter(k => k.startsWith(turma + "_")).length;
+        ul.innerHTML += `<li><strong>Turma ${turma}:</strong> ${totalAlunosComNota} prova(s) corrigida(s)</li>`;
     });
 }
 
 window.exportarCSV = function() {
-    let csvContent = "data:text/csv;charset=utf-8,Turma;Aluno;Nota\n";
-    let cont = 0;
-
+    const turmasModificadas = new Set();
     Object.keys(bancoNotasLocais).forEach(chave => {
-        const partes = chave.split('_');
-        const turma = partes[0];
-        const nome = partes.slice(1).join('_');
-        const nota = bancoNotasLocais[chave].toFixed(1);
-        csvContent += `${turma};${nome};${nota}\n`;
-        cont++;
+        const turma = chave.split('_')[0];
+        turmasModificadas.add(turma);
     });
 
-    if (cont === 0) {
-        alert("Não há notas registradas para exportar.");
+    if (turmasModificadas.size === 0) {
+        alert("Nenhuma alteração foi realizada para exportar.");
         return;
     }
+
+    let csvContent = "data:text/csv;charset=utf-8,Etapa;Turma;Nome do Aluno;Nota\n";
+
+    Object.keys(DADOS_ALUNOS).forEach(etapa => {
+        Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
+            if (turmasModificadas.has(turma)) {
+                DADOS_ALUNOS[etapa][turma].forEach(aluno => {
+                    const chave = `${turma}_${aluno}`;
+                    const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "";
+                    csvContent += `"${etapa}";"${turma}";"${aluno}";"${nota}"\n`;
+                });
+            }
+        });
+    });
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "notas_corrige_pro.csv");
+    link.setAttribute("download", `notas_corrigidas_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 };
 
-// Execução ao carregar a página
-carregarDadosJSON();
+window.limparTodasNotas = function() {
+    const confirmacao = confirm("⚠️ Tem certeza que deseja apagar TODAS as notas salvas até agora?\n\nEsta ação não poderá ser desfeita.");
+    if (!confirmacao) return;
+
+    localStorage.removeItem('corrigePro_notas_alunos');
+    bancoNotasLocais = {};
+
+    carregarAlunos();
+    atualizarListaTurmasAlteradas();
+
+    alert("🗑️ Todas as notas foram apagadas com sucesso!");
+};
+
+// ================= 8. EVENT LISTENERS APÓS CARREGAR A TELA =================
+document.addEventListener('DOMContentLoaded', () => {
+    carregarDadosJSON();
+
+    const inputNumQuestoes = document.getElementById('input_numQuestoes');
+    const selectNumColunas = document.getElementById('select_numColunas');
+    const inputValorProva = document.getElementById('input_valorProva');
+
+    if (inputNumQuestoes) inputNumQuestoes.value = configCalib.numQuestoes || 10;
+    if (selectNumColunas) selectNumColunas.value = configCalib.numColunas || 2;
+    if (inputValorProva) inputValorProva.value = configCalib.valorProva || 10.0;
+
+    const selectNumOpcoes = document.getElementById('selectNumOpcoes');
+    if (selectNumOpcoes && configCalib.numOpcoes) {
+        selectNumOpcoes.value = configCalib.numOpcoes;
+    }
+
+    renderizarGridGabarito();
+
+    [inputNumQuestoes, selectNumColunas, selectNumOpcoes].forEach(el => {
+        el?.addEventListener('change', () => {
+            renderizarGridGabarito();
+            desenharPreviewAjuste();
+        });
+    });
+
+    sliders.forEach(s => {
+        const el = document.getElementById(`input_${s}`);
+        if (el) {
+            if (configCalib[s] !== undefined) el.value = configCalib[s];
+            const valEl = document.getElementById(`val_${s}`);
+            if (valEl) valEl.innerText = el.value;
+
+            el.addEventListener('input', (e) => {
+                if (valEl) valEl.innerText = e.target.value;
+                desenharPreviewAjuste();
+            });
+        }
+    });
+
+    document.getElementById('btnCapturarModelo')?.addEventListener('click', () => {
+        if (!window.cvReady) {
+            alert("Aguarde o motor de visão computacional (OpenCV) terminar de carregar.");
+            return;
+        }
+
+        const video = document.getElementById('webcamCalib');
+        if (video.videoWidth === 0) {
+            alert("Aguarde a câmera carregar na tela...");
+            return;
+        }
+
+        const canvasHidden = document.getElementById('canvasHidden');
+        canvasHidden.width = video.videoWidth; canvasHidden.height = video.videoHeight;
+        canvasHidden.getContext('2d').drawImage(video, 0, 0);
+
+        let src = cv.imread(canvasHidden);
+        let res = processarPerspectivaCompleta(src);
+        src.delete();
+
+        if (res) {
+            const canvasOrig = document.getElementById('canvasFotoOriginalAjuste');
+            if (canvasOrig) cv.imshow(canvasOrig, res.srcComPontos);
+            res.srcComPontos.delete();
+
+            imagemBaseWarpedCanvas.width = 600; imagemBaseWarpedCanvas.height = 450;
+            cv.imshow(imagemBaseWarpedCanvas, res.warped);
+            res.warped.delete();
+
+            document.getElementById('painelSliders').style.display = 'block';
+            desenharPreviewAjuste();
+        } else {
+            alert("⚠️ Os 4 cantos do gabarito não foram identificados. Tente posicionar a folha inteira no quadro.");
+        }
+    });
+    function limparNotasDaTurmaAtual() {
+    const turma = document.getElementById('selectTurma').value;
+    if (!turma) return;
+
+    if (confirm(`⚠️ Deseja apagar APENAS as notas da Turma ${turma}?`)) {
+        // Filtra e remove apenas as chaves da turma atual
+        Object.keys(bancoNotasLocais).forEach(chave => {
+            if (chave.startsWith(`${turma}_`)) {
+                delete bancoNotasLocais[chave];
+            }
+        });
+
+        // Atualiza o WebStorage e a tela
+        localStorage.setItem('corrigePro_notas_alunos', JSON.stringify(bancoNotasLocais));
+        carregarAlunos();
+        alert(`Notas da Turma ${turma} foram apagadas!`);
+    }
+}
+
+    // BOTÃO COM A LÓGICA DE CAPTURA AUTOMÁTICA EM LOOP
+    document.getElementById('btnEscanearAluno')?.addEventListener('click', acionarCaptura);
+});
 </script>
+
+<script async src="https://docs.opencv.org/4.9.0/opencv.js"></script>
 </body>
 </html>
