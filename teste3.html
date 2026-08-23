@@ -422,6 +422,80 @@ function desenharPreviewAjuste() {
     }
 }
 
+// ================= CAPTURA DO MODELO PARA CALIBRAGEM =================
+window.capturarModeloCalibragem = function() {
+    const video = document.getElementById('webcamCalib');
+    const btn = document.getElementById('btnCapturarModelo');
+    const canvasOriginal = document.getElementById('canvasFotoOriginalAjuste');
+
+    if (!video || !canvasOriginal) {
+        alert('❌ Elementos da câmera/calibragem não encontrados.');
+        return;
+    }
+
+    if (!window.cvReady) {
+        alert('⏳ O OpenCV ainda está carregando. Aguarde até aparecer "Motor de visão computacional pronto!".');
+        return;
+    }
+
+    if (!video.videoWidth || !video.videoHeight) {
+        alert('📷 A câmera ainda não forneceu uma imagem. Aguarde um instante e tente novamente.');
+        iniciarCamera('webcamCalib');
+        return;
+    }
+
+    try {
+        // Captura um frame exatamente como o processo de correção faz.
+        const frame = document.createElement('canvas');
+        frame.width = video.videoWidth;
+        frame.height = video.videoHeight;
+        const fctx = frame.getContext('2d', { willReadFrequently: true });
+        fctx.drawImage(video, 0, 0, frame.width, frame.height);
+
+        const src = cv.imread(frame);
+        const res = processarPerspectivaCompleta(src);
+        src.delete();
+
+        if (!res) {
+            alert('❌ Não consegui encontrar os 4 cantos do gabarito. Aproxime a folha, retire sombras/reflexos e tente novamente.');
+            return;
+        }
+
+        // 1) Mostra a foto original no primeiro quadro.
+        canvasOriginal.width = res.srcComPontos.cols;
+        canvasOriginal.height = res.srcComPontos.rows;
+        cv.imshow(canvasOriginal, res.srcComPontos);
+
+        // 2) Guarda a imagem retificada para o quadro de alinhamento.
+        atualizarImagemBaseWarpedCanvas(res.warped);
+
+        // 3) Exibe o painel de ajustes e desenha as miras imediatamente.
+        const painel = document.getElementById('painelSliders');
+        if (painel) painel.style.display = 'block';
+
+        desenharPreviewAjuste();
+
+        if (btn) {
+            btn.innerText = '✅ FOTO CAPTURADA — CAPTURAR NOVAMENTE';
+            btn.style.background = 'var(--success)';
+        }
+
+        // Libera memória OpenCV.
+        res.srcComPontos.delete();
+        res.warped.delete();
+
+    } catch (erro) {
+        console.error('Erro na captura de calibragem:', erro);
+        alert('❌ Erro ao processar a foto para calibragem. Veja o console do navegador para detalhes.');
+    }
+};
+
+// O botão estava sem handler na versão anterior. Ligamos explicitamente o clique.
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('btnCapturarModelo');
+    if (btn) btn.addEventListener('click', window.capturarModeloCalibragem);
+});
+
 // ================= 4. NAVEGAÇÃO E DROPDOWNS =================
 window.trocarAba = function(idAba, event) {
     document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
