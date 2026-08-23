@@ -372,9 +372,19 @@ function desenharPreviewAjuste() {
     const canvas = document.getElementById('canvasCalibPreview');
     if (!canvas) return;
 
-    canvas.width = 600; canvas.height = 450;
+    // O warp agora preserva a proporção da folha. O canvas de preview
+    // acompanha essa proporção para não deformar a imagem.
+    const baseW = imagemBaseWarpedCanvas.width;
+    const baseH = imagemBaseWarpedCanvas.height;
+    const maxPreviewW = 600;
+    const maxPreviewH = 450;
+    const escalaPreview = Math.min(maxPreviewW / baseW, maxPreviewH / baseH, 1);
+
+    canvas.width = Math.max(1, Math.round(baseW * escalaPreview));
+    canvas.height = Math.max(1, Math.round(baseH * escalaPreview));
+
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(imagemBaseWarpedCanvas, 0, 0);
+    ctx.drawImage(imagemBaseWarpedCanvas, 0, 0, canvas.width, canvas.height);
 
     const v_x1 = parseInt(document.getElementById('input_x1').value);
     const v_y1 = parseInt(document.getElementById('input_y1').value);
@@ -612,9 +622,40 @@ function processarPerspectivaCompleta(src) {
         let tr = anchors[diff.indexOf(Math.min(...diff))], bl = anchors[diff.indexOf(Math.max(...diff))];
 
         let srcComPontos = src.clone();
-        let dW = 600, dH = 450;
-        let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [tl.x, tl.y, tr.x, tr.y, bl.x, bl.y, br.x, br.y]);
-        let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dW, 0, 0, dH, dW, dH]);
+
+        // Calcula o tamanho do documento corrigido a partir das distâncias
+        // reais entre os quatro cantos. Isso evita forçar qualquer gabarito
+        // para 600x450 (4:3), o que podia deixar a folha "torta/esticada".
+        const distancia = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+        const larguraTopo = distancia(tl, tr);
+        const larguraBase = distancia(bl, br);
+        const alturaEsq = distancia(tl, bl);
+        const alturaDir = distancia(tr, br);
+
+        let dW = Math.max(400, Math.round(Math.max(larguraTopo, larguraBase)));
+        let dH = Math.max(400, Math.round(Math.max(alturaEsq, alturaDir)));
+
+        // Mantém proporção aproximada da folha em vez de impor 600x450.
+        // Limita o tamanho para não consumir memória excessiva.
+        const escalaMax = 1000 / Math.max(dW, dH);
+        if (escalaMax < 1) {
+            dW = Math.round(dW * escalaMax);
+            dH = Math.round(dH * escalaMax);
+        }
+
+        let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+            tl.x, tl.y,
+            tr.x, tr.y,
+            bl.x, bl.y,
+            br.x, br.y
+        ]);
+        let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+            0, 0,
+            dW - 1, 0,
+            0, dH - 1,
+            dW - 1, dH - 1
+        ]);
         let M_warp = cv.getPerspectiveTransform(srcTri, dstTri);
 
         let warped = new cv.Mat();
@@ -758,7 +799,7 @@ function processarCorrecaoFinal(warped) {
             coords.push({ x: xPonto, y: yPonto });
 
             let totalPixels = 0;
-            if (yPonto >= 12 && yPonto < 450 - 12 && xPonto >= 12 && xPonto < 600 - 12) {
+            if (yPonto >= 12 && yPonto < warpedThresh.rows - 12 && xPonto >= 12 && xPonto < warpedThresh.cols - 12) {
                 let roi = warpedThresh.roi(new cv.Rect(xPonto - 12, yPonto - 12, 24, 24));
                 totalPixels = cv.countNonZero(roi);
                 roi.delete();
