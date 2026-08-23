@@ -648,7 +648,7 @@ function processarCorrecaoFinal(warped) {
     cv.GaussianBlur(warpedGray, warpedBlur, new cv.Size(3, 3), 0);
     
     // Adaptive Threshold para lidar melhor com sombras do celular
-    cv.adaptiveThreshold(warpedBlur, warpedThresh, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 31, 10);
+    cv.threshold(warpedBlur, warpedThresh, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
 
     let stringGabarito = configCalib.gabarito;
     let numOpcoes = configCalib.numOpcoes || 5;
