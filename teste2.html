@@ -94,7 +94,9 @@
                 <select id="selectTurma" class="form-control" onchange="carregarAlunos()"></select>
             </div>
         </div>
-
+        <button class="btn-action" style="background: var(--danger);" onclick="limparNotasDaTurmaAtual()">
+            🗑️ LIMPAR APENAS ESTA TURMA
+        </button>
         <table>
             <thead>
                 <tr>
@@ -876,6 +878,24 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("⚠️ Os 4 cantos do gabarito não foram identificados. Tente posicionar a folha inteira no quadro.");
         }
     });
+    function limparNotasDaTurmaAtual() {
+    const turma = document.getElementById('selectTurma').value;
+    if (!turma) return;
+
+    if (confirm(`⚠️ Deseja apagar APENAS as notas da Turma ${turma}?`)) {
+        // Filtra e remove apenas as chaves da turma atual
+        Object.keys(bancoNotasLocais).forEach(chave => {
+            if (chave.startsWith(`${turma}_`)) {
+                delete bancoNotasLocais[chave];
+            }
+        });
+
+        // Atualiza o WebStorage e a tela
+        localStorage.setItem('corrigePro_notas_alunos', JSON.stringify(bancoNotasLocais));
+        carregarAlunos();
+        alert(`Notas da Turma ${turma} foram apagadas!`);
+    }
+}
 
     // BOTÃO COM A LÓGICA DE CAPTURA AUTOMÁTICA EM LOOP
     document.getElementById('btnEscanearAluno')?.addEventListener('click', acionarCaptura);
