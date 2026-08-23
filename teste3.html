@@ -333,6 +333,33 @@ function renderizarGridGabarito() {
     }
 }
 
+
+function atualizarImagemBaseWarpedCanvas(warped) {
+    const canvas = document.getElementById('canvasCalibPreview');
+    if (!canvas || !warped || warped.empty()) return false;
+
+    // Mantém uma cópia independente do Mat, para que o preview não dependa
+    // do ciclo de vida do Mat temporário usado pelo OpenCV.
+    const copia = warped.clone();
+
+    try {
+        imagemBaseWarpedCanvas.width = copia.cols;
+        imagemBaseWarpedCanvas.height = copia.rows;
+        cv.imshow(imagemBaseWarpedCanvas, copia);
+
+        // Garante que o painel de ajustes fique visível.
+        const painel = document.getElementById('painelSliders');
+        if (painel) painel.style.display = 'block';
+
+        return true;
+    } catch (e) {
+        console.error("Erro ao atualizar imagem base da calibragem:", e);
+        return false;
+    } finally {
+        copia.delete();
+    }
+}
+
 function desenharPreviewAjuste() {
     sliders.forEach(s => {
         const elSpan = document.getElementById(`val_${s}`);
