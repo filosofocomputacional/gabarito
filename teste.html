@@ -43,9 +43,9 @@
         #notaBannerModal { display: none; font-size: 22px; font-weight: bold; color: #155724; background: #d4edda; border: 1px solid #c3e6cb; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
 
         /* Aba Calibragem */
-        .slider-group { margin: 12px 0; text-align: left; }
-        .slider-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 3px; }
-        .slider-group input, .slider-group select { width: 100%; }
+        .slider-group { margin: 5px 0; text-align: left; }
+        .slider-group label { display: inline; font-size: 13px; font-weight: bold; margin-bottom: 2px; }
+        .slider-group input, .slider-group select { width: 50%; }
         
         .grid-gabarito { 
             display: grid; 
@@ -108,8 +108,8 @@
     </div>
 
     <div id="abaCalibragem" class="tab-content" style="display:none;">
-        <h3>🎛️ Calibragem do Modelo Mestre</h3>
-        <p style="font-size: 13px; color: #666;">Tire a foto de um gabarito modelo para alinhar os eixos e definir as respostas corretas. Os ajustes ficarão gravados nos Cookies.</p>
+        <h3>🎛️ Calibragem</h3>
+        
         
         <video id="webcamCalib" autoplay playsinline></video>
         <button class="btn-action" id="btnCapturarModelo" style="background:#007bff;" disabled>📸 CAPTURAR FOTO PARA AJUSTAR</button>
@@ -117,39 +117,35 @@
         <div id="painelSliders" style="display:none; margin-top:20px;">
             <div class="preview-title">🟢 1. Cantos Mapeados (Foto Original):</div>
             <canvas id="canvasFotoOriginalAjuste"></canvas>
-
-            <div class="preview-title" style="margin-top:20px;">🎯 2. Alinhamento dos Eixos (Imagem Desentortada):</div>
-            <p style="font-size: 12px; color: #666; text-align: left; margin-top:0;">Mova os sliders abaixo para posicionar as miras sobre as bolinhas do gabarito.</p>
-            <canvas id="canvasCalibPreview"></canvas>
-
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
-            <h4 style="text-align:left;">⚙️ Configurações da Prova</h4>
-            
+                        <h4 style="text-align:left;">⚙️ Configurações da Prova</h4>
             <div class="slider-group">
-                <label>Número de Questões:</label>
-                <input type="number" id="input_numQuestoes" min="1" max="100" value="10" class="form-control" style="width:100%">
+                <label>Nº Questões:</label>
+                <input type="number" id="input_numQuestoes" min="1" max="100" value="10" class="form-control" style="width:40%">
             </div>
             <div class="slider-group">
-                <label>Número de Colunas:</label>
-                <select id="select_numColunas" class="form-control" style="width:100%">
+                <label>Nº Colunas:</label>
+                <select id="select_numColunas" class="form-control" style="width:40%">
                     <option value="1">1 Coluna</option>
                     <option value="2" selected>2 Colunas</option>
                 </select>
             </div>
             <div class="slider-group">
-                <label>Valor da Prova (Nota Máxima):</label>
-                <input type="number" id="input_valorProva" min="0" step="0.1" value="10.0" class="form-control" style="width:100%">
+                <label>Valor da Prova:</label>
+                <input type="number" id="input_valorProva" min="0" step="0.1" value="10.0" class="form-control" style="width:40%">
             </div>
-            
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+            <div class="preview-title" style="margin-top:20px;">🎯 2. Alinhamento dos Eixos (Imagem Desentortada):</div>
+            <p style="font-size: 12px; color: #666; text-align: left; margin-top:0;">Mova os sliders abaixo para posicionar as miras sobre as bolinhas do gabarito.</p>
+            <canvas id="canvasCalibPreview"></canvas>
+
+      
 
             <h4 style="text-align:left; margin-top:20px;">🎛️ Controles de Posição dos Eixos (X, Y)</h4>
-            <div class="slider-group"><label>Horiz (X1): <span id="val_x1">100</span>px</label><input type="range" id="input_x1" min="0" max="400" value="100"></div>
-            <div class="slider-group"><label>Vert (Y1): <span id="val_y1">104</span>px</label><input type="range" id="input_y1" min="0" max="400" value="104"></div>
-            <div class="slider-group"><label>Horiz Col. 2 (X2): <span id="val_x2">356</span>px</label><input type="range" id="input_x2" min="200" max="600" value="356"></div>
-            <div class="slider-group"><label>Vert Col. 2 (Y2): <span id="val_y2">105</span>px</label><input type="range" id="input_y2" min="0" max="400" value="105"></div>
-            <div class="slider-group"><label>Largura Letras (spX): <span id="val_spX">33</span>px</label><input type="range" id="input_spX" min="5" max="100" value="33"></div>
-            <div class="slider-group"><label>Altura Linhas (spY): <span id="val_spY">51</span>px</label><input type="range" id="input_spY" min="5" max="150" value="51"></div>
+            <div class="slider-group"><label>(X1): <span id="val_x1">100</span>px</label><input type="range" id="input_x1" min="0" max="400" value="100"></div>
+            <div class="slider-group"><label>(Y1): <span id="val_y1">104</span>px</label><input type="range" id="input_y1" min="0" max="400" value="104"></div>
+            <div class="slider-group"><label>(X2): <span id="val_x2">356</span>px</label><input type="range" id="input_x2" min="200" max="600" value="356"></div>
+            <div class="slider-group"><label>(Y2): <span id="val_y2">105</span>px</label><input type="range" id="input_y2" min="0" max="400" value="105"></div>
+            <div class="slider-group"><label>Largura(spX): <span id="val_spX">33</span>px</label><input type="range" id="input_spX" min="5" max="100" value="33"></div>
+            <div class="slider-group"><label>Altura(spY): <span id="val_spY">51</span>px</label><input type="range" id="input_spY" min="5" max="150" value="51"></div>
 
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
 
