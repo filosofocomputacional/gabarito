@@ -173,6 +173,10 @@
             <button class="btn-action" onclick="exportarCSV()">📥 BAIXAR NOTAS EM CSV</button>
             <button class="btn-action" style="background: var(--danger);" onclick="limparTodasNotas()">🗑️ LIMPAR TODAS AS NOTAS</button>
         </div>
+        <div class="email-export-box" style="margin-top: 15px;">
+            <input type="email" id="inputEmailExport" placeholder="Digite seu e-mail..." style="padding: 8px; width: 250px;">
+            <button onclick="enviarPorEmail()" style="padding: 8px 15px; background-color: #0d6efd; color: white; border: none; cursor: pointer;">📧 Enviar por E-mail</button>
+        </div>
     </div>
 </div>
 
@@ -953,6 +957,44 @@ document.addEventListener('DOMContentLoaded', () => {
     // BOTÃO COM A LÓGICA DE CAPTURA AUTOMÁTICA EM LOOP
     document.getElementById('btnEscanearAluno')?.addEventListener('click', acionarCaptura);
 });
+    window.enviarPorEmail = function() {
+    const emailInput = document.getElementById('inputEmailExport')?.value.trim();
+    if (!emailInput) {
+        alert("Por favor, informe um endereço de e-mail válido.");
+        return;
+    }
+
+    const turmasModificadas = new Set();
+    Object.keys(bancoNotasLocais).forEach(chave => {
+        const turma = chave.split('_')[0];
+        turmasModificadas.add(turma);
+    });
+
+    if (turmasModificadas.size === 0) {
+        alert("Nenhuma alteração foi realizada para enviar.");
+        return;
+    }
+
+    let csvContent = "Etapa;Turma;Nome do Aluno;Nota\n";
+
+    Object.keys(DADOS_ALUNOS).forEach(etapa => {
+        Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
+            if (turmasModificadas.has(turma)) {
+                DADOS_ALUNOS[etapa][turma].forEach(aluno => {
+                    const chave = `${turma}_${aluno}`;
+                    const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "";
+                    csvContent += `${etapa};${turma};${aluno};${nota}\n`;
+                });
+            }
+        });
+    });
+
+    const assunto = encodeURIComponent("Relatório de Notas - CorrigePro");
+    const corpo = encodeURIComponent("Segue abaixo a lista de notas em formato CSV:\n\n" + csvContent);
+    
+    // Abre o aplicativo/cliente de e-mail padrão do usuário já preenchido
+    window.location.href = `mailto:${emailInput}?subject=${assunto}&body=${corpo}`;
+};
 </script>
 
 <script async src="https://docs.opencv.org/4.9.0/opencv.js"></script>
