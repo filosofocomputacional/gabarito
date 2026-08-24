@@ -830,8 +830,7 @@ function atualizarListaTurmasAlteradas() {
 window.exportarCSV = function() {
     const turmasModificadas = new Set();
     Object.keys(bancoNotasLocais).forEach(chave => {
-        const turma = chave.split('_')[0];
-        turmasModificadas.add(turma);
+        turmasModificadas.add(chave.split('_')[0]);
     });
 
     if (turmasModificadas.size === 0) {
@@ -839,15 +838,26 @@ window.exportarCSV = function() {
         return;
     }
 
-    let csvContent = "data:text/csv;charset=utf-8,Etapa;Turma;Nome do Aluno;Nota\n";
+    let csvContent = "data:text/csv;charset=utf-8,Etapa;Turma;Nome do Aluno;Nota;Opções Marcadas\n";
 
     Object.keys(DADOS_ALUNOS).forEach(etapa => {
         Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
             if (turmasModificadas.has(turma)) {
                 DADOS_ALUNOS[etapa][turma].forEach(aluno => {
                     const chave = `${turma}_${aluno}`;
-                    const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "";
-                    csvContent += `"${etapa}";"${turma}";"${aluno}";"${nota}"\n`;
+                    const reg = bancoNotasLocais[chave];
+                    
+                    let nota = "---";
+                    let respStr = "---";
+
+                    if (reg !== undefined) {
+                        nota = (typeof reg === 'object' ? reg.nota : reg).toFixed(1);
+                        if (typeof reg === 'object' && Array.isArray(reg.respostas)) {
+                            respStr = reg.respostas.join(' - ');
+                        }
+                    }
+
+                    csvContent += `"${etapa}";"${turma}";"${aluno}";"${nota}";"${respStr}"\n`;
                 });
             }
         });
@@ -856,12 +866,11 @@ window.exportarCSV = function() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `notas_corrigidas_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute("download", `gabarito_respostas_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 };
-
 window.limparTodasNotas = function() {
     const confirmacao = confirm("⚠️ Tem certeza que deseja apagar TODAS as notas salvas até agora?\n\nEsta ação não poderá ser desfeita.");
     if (!confirmacao) return;
