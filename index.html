@@ -3,8 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Correr...</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>CorrigePro - Gestão de Correção</title>
+    <style>
+        :root {
+            --primary: #007bff;
+            --success: #28a745;
+            --warning: #ff9800;
+            --danger: #dc3545;
+            --dark: #343a40;
+            --light: #f8f9fa;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #eef2f5; color: #333; }
+        
+        /* Cabeçalho e Navegação */
+        header { background: var(--dark); color: white; padding: 15px 20px; text-align: center; }
+        nav { display: flex; justify-content: center; background: #212529; }
+        nav button { background: none; border: none; color: #aaa; padding: 14px 20px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        nav button.active { color: white; border-bottom: 3px solid var(--primary); background: rgba(255,255,255,0.05); }
+
+        .container { max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        
+        /* Selects de Turmas */
+        .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
+        
+        /* Tabela de Alunos */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
+        th { background: var(--light); font-weight: 600; }
+        .btn-cam { background: #eef9ff; border: 1px solid #b6e0fe; color: var(--primary); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        .btn-cam:hover { background: var(--primary); color: white; }
+        .nota-badge { font-weight: bold; padding: 4px 10px; border-radius: 12px; background: #e2e3e5; color: #383d41; }
+        .nota-badge.tem-nota { background: #d4edda; color: #155724; }
+
+        /* Modal da Câmera e Resultado */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 12px; max-width: 600px; width: 90%; text-align: center; position: relative; }
+        video, canvas { width: 100%; border-radius: 8px; background: #111; }
+        .btn-close-modal { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
+        
+        #notaBannerModal { display: none; font-size: 22px; font-weight: bold; color: #155724; background: #d4edda; border: 1px solid #c3e6cb; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+
+        /* Aba Calibragem */
+        .slider-group { margin: 5px 0; text-align: left; }
+        .slider-group label { display: inline; font-size: 13px; font-weight: bold; margin-bottom: 2px; }
+        .slider-group input, .slider-group select { width: 50%; }
+        
+        .grid-gabarito { 
+            display: grid; 
+            grid-template-rows: repeat(5, auto); 
+            grid-auto-flow: column; 
+            gap: 10px 20px; 
+            margin: 15px 0; 
+            text-align: left; 
+        }
+        .grid-gabarito div { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 6px 12px; border-radius: 6px; border: 1px solid #e9ecef; }
+        .grid-gabarito select { padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; }
+        .preview-title { font-size: 14px; font-weight: bold; color: #495057; margin-top: 15px; margin-bottom: 5px; text-align: left; }
+
+        /* Botões Gerais */
+        .btn-action { background: var(--success); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; transition: 0.2s; }
+        .btn-action:hover { opacity: 0.9; }
+
+        #statusCv { padding: 10px; background: #fff3cd; color: #856404; border-radius: 6px; text-align: center; margin-bottom: 15px; font-size: 14px; }
+    </style>
 </head>
 <body>
 
@@ -21,7 +83,6 @@
 <div class="container">
     <div id="statusCv">⏳ Baixando motor de visão computacional (OpenCV.js)...</div>
 
-    <!-- ================= ABA 1: CORREÇÃO ================= -->
     <div id="abaCorrecao" class="tab-content">
         <div class="filter-group">
             <div>
@@ -48,10 +109,8 @@
         </table>
     </div>
 
-    <!-- ================= ABA 2: CALIBRAGEM ================= -->
     <div id="abaCalibragem" class="tab-content" style="display:none;">
-        <h3>🎛️ Calibragem do Modelo Mestre</h3>
-        <p style="font-size: 13px; color: #666;">Tire a foto de um gabarito modelo para alinhar os eixos e definir as respostas corretas. Os ajustes ficarão gravados nos Cookies.</p>
+        <h3>🎛️ Calibragem</h3>
         
         <video id="webcamCalib" autoplay playsinline></video>
         <button class="btn-action" id="btnCapturarModelo" style="background:#007bff;" disabled>📸 CAPTURAR FOTO PARA AJUSTAR</button>
@@ -59,18 +118,33 @@
         <div id="painelSliders" style="display:none; margin-top:20px;">
             <div class="preview-title">🟢 1. Cantos Mapeados (Foto Original):</div>
             <canvas id="canvasFotoOriginalAjuste"></canvas>
-
+            <h4 style="text-align:left;">⚙️ Configurações da Prova</h4>
+            <div class="slider-group">
+                <label>Nº Questões:</label>
+                <input type="number" id="input_numQuestoes" min="1" max="100" value="10" class="form-control" style="width:40%">
+            </div>
+            <div class="slider-group">
+                <label>Nº Colunas:</label>
+                <select id="select_numColunas" class="form-control" style="width:40%">
+                    <option value="1">1 Coluna</option>
+                    <option value="2" selected>2 Colunas</option>
+                </select>
+            </div>
+            <div class="slider-group">
+                <label>Valor da Prova:</label>
+                <input type="number" id="input_valorProva" min="0" step="0.1" value="10.0" class="form-control" style="width:40%">
+            </div>
             <div class="preview-title" style="margin-top:20px;">🎯 2. Alinhamento dos Eixos (Imagem Desentortada):</div>
             <p style="font-size: 12px; color: #666; text-align: left; margin-top:0;">Mova os sliders abaixo para posicionar as miras sobre as bolinhas do gabarito.</p>
             <canvas id="canvasCalibPreview"></canvas>
 
             <h4 style="text-align:left; margin-top:20px;">🎛️ Controles de Posição dos Eixos (X, Y)</h4>
-            <div class="slider-group"><label>Q01-05 Horiz (X1): <span id="val_x1">100</span>px</label><input type="range" id="input_x1" min="0" max="400" value="100"></div>
-            <div class="slider-group"><label>Q01-05 Vert (Y1): <span id="val_y1">104</span>px</label><input type="range" id="input_y1" min="0" max="400" value="104"></div>
-            <div class="slider-group"><label>Q06-10 Horiz (X2): <span id="val_x2">356</span>px</label><input type="range" id="input_x2" min="200" max="600" value="356"></div>
-            <div class="slider-group"><label>Q06-10 Vert (Y2): <span id="val_y2">105</span>px</label><input type="range" id="input_y2" min="0" max="400" value="105"></div>
-            <div class="slider-group"><label>Largura Letras (spX): <span id="val_spX">33</span>px</label><input type="range" id="input_spX" min="5" max="100" value="33"></div>
-            <div class="slider-group"><label>Altura Linhas (spY): <span id="val_spY">51</span>px</label><input type="range" id="input_spY" min="5" max="150" value="51"></div>
+            <div class="slider-group"><label>(X1): <span id="val_x1">100</span>px</label><input type="range" id="input_x1" min="0" max="400" value="100"></div>
+            <div class="slider-group"><label>(Y1): <span id="val_y1">104</span>px</label><input type="range" id="input_y1" min="0" max="400" value="104"></div>
+            <div class="slider-group"><label>(X2): <span id="val_x2">356</span>px</label><input type="range" id="input_x2" min="200" max="600" value="356"></div>
+            <div class="slider-group"><label>(Y2): <span id="val_y2">105</span>px</label><input type="range" id="input_y2" min="0" max="400" value="105"></div>
+            <div class="slider-group"><label>Largura(spX): <span id="val_spX">33</span>px</label><input type="range" id="input_spX" min="5" max="100" value="33"></div>
+            <div class="slider-group"><label>Altura(spY): <span id="val_spY">51</span>px</label><input type="range" id="input_spY" min="5" max="150" value="51"></div>
 
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
 
@@ -89,7 +163,6 @@
         </div>
     </div>
 
-    <!-- ================= ABA 3: EXPORTAÇÃO E GERENCIAMENTO ================= -->
     <div id="abaExportar" class="tab-content" style="display:none;">
         <h3>📊 Resumo das Turmas Alteradas</h3>
         <p>Abaixo estão apenas as turmas que possuem alunos com notas corrigidas no sistema:</p>
@@ -98,12 +171,11 @@
 
         <div class="btn-group-export">
             <button class="btn-action" onclick="exportarCSV()">📥 BAIXAR NOTAS EM CSV</button>
-            <button class="btn-action btn-danger" onclick="limparTodasNotas()">🗑️ LIMPAR TODAS AS NOTAS</button>
+            <button class="btn-action" style="background: var(--danger);" onclick="limparTodasNotas()">🗑️ LIMPAR TODAS AS NOTAS</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL DA CÂMERA DE ESCANEAMENTO -->
 <div id="modalCamera" class="modal">
     <div class="modal-content">
         <button class="btn-close-modal" onclick="fecharModalCamera()">&times;</button>
@@ -113,14 +185,703 @@
         <video id="webcamScan" autoplay playsinline></video>
         <canvas id="canvasScanResult" style="display:none;"></canvas>
         
-        <button class="btn-action" id="btnEscanearAluno">📸 ESCANEAR E SALVAR NOTA</button>
+        <button class="btn-action" id="btnEscanearAluno">📸 INICIAR CAPTURA AUTOMÁTICA</button>
     </div>
 </div>
 
 <canvas id="canvasHidden" style="display:none;"></canvas>
 
-<!-- Scripts em ordem estrita de dependência -->
-<script src="js/script.js"></script>
+<script>
+// ================= 1. INICIALIZAÇÃO E ESCOPO GLOBAL =================
+window.cvReady = false;
+
+window.Module = {
+    onRuntimeInitialized: function() {
+        window.cvReady = true;
+        console.log("OpenCV.js Carregado com sucesso!");
+        const statusEl = document.getElementById('statusCv');
+        if (statusEl) {
+            statusEl.innerText = "✅ Motor de visão computacional pronto!";
+            statusEl.style.background = "#d4edda";
+            statusEl.style.color = "#155724";
+            setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+        }
+        const btnCap = document.getElementById('btnCapturarModelo');
+        if (btnCap) btnCap.disabled = false;
+    }
+};
+
+const LETRAS_TODAS = ["A", "B", "C", "D", "E"];
+const defaultGabarito = ['B','D','C','B','C','D','C','B','A','B'];
+const sliders = ['x1', 'y1', 'x2', 'y2', 'spX', 'spY'];
+
+let DADOS_ALUNOS = {};
+let alunoAtualParaCaptura = null;
+let bancoNotasLocais = JSON.parse(localStorage.getItem('corrigePro_notas_alunos')) || {};
+let streamVideoGlobal = null;
+let imagemBaseWarpedCanvas = document.createElement('canvas');
+
+// Controle de Timer e Captura Automática (0,5s / 10 tentativas)
+let jaDigitalizado = false;
+let isBuscandoGabarito = false;
+let contagemIntervalo = null;
+let loopCapturaTimeout = null;
+let tentativasCount = 0;
+const MAX_TENTATIVAS = 10;
+
+// ================= 2. CARREGAMENTO DO JSON DE ALUNOS =================
+async function carregarDadosJSON() {
+    try {
+        const resposta = await fetch('js/alunos.json');
+        if (!resposta.ok) {
+            throw new Error(`Erro ao carregar alunos.json: ${resposta.status}`);
+        }
+        DADOS_ALUNOS = await resposta.json();
+        inicializarSelects();
+    } catch (erro) {
+        console.error("Erro ao carregar o JSON de alunos:", erro);
+        const tbody = document.getElementById('listaAlunosBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">⚠️ Não foi possível carregar o arquivo alunos.json (Para testes, insira um JSON na mesma pasta)</td></tr>';
+        }
+    }
+}
+
+// ================= 3. COOKIES E CALIBRAGEM =================
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        let date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (JSON.stringify(value) || "") + expires + "; path=/";
+}
+
+function getCookie(name) {
+    let nameEQ = name + "=";
+    let ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) {
+            try { return JSON.parse(c.substring(nameEQ.length, c.length)); } catch(e){}
+        }
+    }
+    return null;
+}
+
+function carregarCalibracaoCookie() {
+    const cookie = getCookie('corrigePro_calib_v1');
+    return cookie || { x1: 100, y1: 104, x2: 356, y2: 105, spX: 33, spY: 51, numOpcoes: 5, gabarito: defaultGabarito, numQuestoes: 10, numColunas: 2, valorProva: 10.0 };
+}
+
+let configCalib = carregarCalibracaoCookie();
+
+window.salvarCalibracaoCookie = function() {
+    const numOpcoes = parseInt(document.getElementById('selectNumOpcoes').value) || 5;
+    const numQuestoes = parseInt(document.getElementById('input_numQuestoes').value) || 10;
+    const numColunas = parseInt(document.getElementById('select_numColunas').value) || 2;
+    const valorProva = parseFloat(document.getElementById('input_valorProva').value) || 10.0;
+    
+    const config = { numOpcoes, numQuestoes, numColunas, valorProva, gabarito: [] };
+    
+    sliders.forEach(s => config[s] = parseInt(document.getElementById(`input_${s}`).value));
+    
+    for (let i = 0; i < numQuestoes; i++) {
+        const el = document.getElementById(`qc_${i}`);
+        config.gabarito.push(el ? el.value : "A");
+    }
+    
+    setCookie('corrigePro_calib_v1', config, 365);
+    configCalib = config;
+    alert("✅ Calibragem e Gabarito salvos com sucesso nos Cookies!");
+};
+
+function renderizarGridGabarito() {
+    const container = document.getElementById('containerGabaritoCalib');
+    if (!container) return;
+
+    const numOpcoes = parseInt(document.getElementById('selectNumOpcoes').value) || 5;
+    const numQuestoes = parseInt(document.getElementById('input_numQuestoes')?.value) || configCalib.numQuestoes || 10;
+    const letrasAtivas = LETRAS_TODAS.slice(0, numOpcoes);
+
+    container.innerHTML = "";
+    for (let i = 0; i < numQuestoes; i++) {
+        let gabVal = configCalib.gabarito?.[i] || "A";
+        if (!letrasAtivas.includes(gabVal)) gabVal = "A";
+
+        container.innerHTML += `<div>
+            <label>Q${(i+1).toString().padStart(2, '0')}: </label>
+            <select id="qc_${i}" onchange="desenharPreviewAjuste()">
+                ${letrasAtivas.map(l => `<option value="${l}" ${l === gabVal ? 'selected' : ''}>${l}</option>`).join('')}
+            </select>
+        </div>`;
+    }
+}
+
+function desenharPreviewAjuste() {
+    if (!imagemBaseWarpedCanvas.width) return;
+
+    const canvas = document.getElementById('canvasCalibPreview');
+    if (!canvas) return;
+
+    canvas.width = 600; canvas.height = 450;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(imagemBaseWarpedCanvas, 0, 0);
+
+    const v_x1 = parseInt(document.getElementById('input_x1').value);
+    const v_y1 = parseInt(document.getElementById('input_y1').value);
+    const v_x2 = parseInt(document.getElementById('input_x2').value);
+    const v_y2 = parseInt(document.getElementById('input_y2').value);
+    const v_spX = parseInt(document.getElementById('input_spX').value);
+    const v_spY = parseInt(document.getElementById('input_spY').value);
+    
+    const numOpcoes = parseInt(document.getElementById('selectNumOpcoes').value) || 5;
+    const numQuestoes = parseInt(document.getElementById('input_numQuestoes')?.value) || configCalib.numQuestoes || 10;
+    const numColunas = parseInt(document.getElementById('select_numColunas')?.value) || configCalib.numColunas || 2;
+    
+    const qPorColuna = Math.ceil(numQuestoes / numColunas);
+
+    const displayCol2 = (numColunas === 2) ? 'block' : 'none';
+    document.getElementById('input_x2').parentElement.style.display = displayCol2;
+    document.getElementById('input_y2').parentElement.style.display = displayCol2;
+
+    ctx.strokeStyle = "#ff0000";
+    ctx.lineWidth = 2;
+
+    for (let q = 0; q < numQuestoes; q++) {
+        let isCol2 = (numColunas === 2) && (q >= qPorColuna);
+        let colBaseX = isCol2 ? v_x2 : v_x1;
+        let colBaseY = isCol2 ? v_y2 : v_y1;
+        let linhaIdx = isCol2 ? (q - qPorColuna) : q;
+        let yPonto = colBaseY + (linhaIdx * v_spY);
+
+        for (let i = 0; i < numOpcoes; i++) {
+            let xPonto = colBaseX + (i * v_spX);
+            ctx.beginPath();
+            ctx.arc(xPonto, yPonto, 10, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+    }
+}
+
+// ================= 4. NAVEGAÇÃO E DROPDOWNS =================
+window.trocarAba = function(idAba, event) {
+    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    
+    document.getElementById(idAba).style.display = 'block';
+    if (event && event.target) event.target.classList.add('active');
+
+    if (idAba === 'abaCalibragem') iniciarCamera('webcamCalib');
+    if (idAba === 'abaExportar') atualizarListaTurmasAlteradas();
+};
+
+function inicializarSelects() {
+    const selectEtapa = document.getElementById('selectEtapa');
+    if (!selectEtapa) return;
+    
+    selectEtapa.innerHTML = "";
+    Object.keys(DADOS_ALUNOS).forEach(etapa => {
+        selectEtapa.innerHTML += `<option value="${etapa}">${etapa}</option>`;
+    });
+    carregarTurmas();
+}
+
+window.carregarTurmas = function() {
+    const etapa = document.getElementById('selectEtapa').value;
+    const selectTurma = document.getElementById('selectTurma');
+    if (!selectTurma) return;
+
+    selectTurma.innerHTML = "";
+    if (DADOS_ALUNOS[etapa]) {
+        Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
+            selectTurma.innerHTML += `<option value="${turma}">Turma ${turma}</option>`;
+        });
+    }
+    carregarAlunos();
+};
+
+window.carregarAlunos = function() {
+    const etapa = document.getElementById('selectEtapa').value;
+    const turma = document.getElementById('selectTurma').value;
+    const tbody = document.getElementById('listaAlunosBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+    const lista = DADOS_ALUNOS[etapa]?.[turma] || [];
+    
+    if (lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum aluno encontrado nesta turma.</td></tr>';
+        return;
+    }
+
+    lista.forEach(aluno => {
+        const chaveNota = `${turma}_${aluno}`;
+        const notaSalva = bancoNotasLocais[chaveNota] !== undefined ? bancoNotasLocais[chaveNota].toFixed(1) : "---";
+        const temNotaClass = bancoNotasLocais[chaveNota] !== undefined ? "tem-nota" : "";
+
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>${aluno}</strong></td>
+                <td style="text-align:center;">
+                    <button class="btn-cam" onclick="abrirModalScan('${aluno}', '${turma}')">📷</button>
+                </td>
+                <td style="text-align:center;">
+                    <span class="nota-badge ${temNotaClass}">${notaSalva}</span>
+                </td>
+            </tr>
+        `;
+    });
+};
+
+// ================= 5. CÂMERA E VISÃO COMPUTACIONAL =================
+function iniciarCamera(elementId) {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } })
+            .then(stream => {
+                streamVideoGlobal = stream;
+                const videoEl = document.getElementById(elementId);
+                if (videoEl) videoEl.srcObject = stream;
+            })
+            .catch(err => console.log("Acesso à câmera negado ou indisponível:", err));
+    }
+}
+
+window.abrirModalScan = function(aluno, turma) {
+    alunoAtualParaCaptura = { nome: aluno, turma: turma };
+    jaDigitalizado = false;
+    isBuscandoGabarito = false;
+
+    if (contagemIntervalo) clearInterval(contagemIntervalo);
+    if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
+
+    document.getElementById('nomeAlunoModal').innerText = `Provas de: ${aluno}`;
+    document.getElementById('webcamScan').style.display = 'block';
+    document.getElementById('canvasScanResult').style.display = 'none';
+    document.getElementById('notaBannerModal').style.display = 'none';
+    
+    const btnEsc = document.getElementById('btnEscanearAluno');
+    btnEsc.innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
+    btnEsc.style.background = "var(--success)";
+
+    document.getElementById('modalCamera').style.display = 'flex';
+    iniciarCamera('webcamScan');
+};
+
+window.fecharModalCamera = function() {
+    document.getElementById('modalCamera').style.display = 'none';
+    isBuscandoGabarito = false;
+    if (contagemIntervalo) clearInterval(contagemIntervalo);
+    if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
+
+    if (streamVideoGlobal) streamVideoGlobal.getTracks().forEach(track => track.stop());
+    carregarAlunos();
+};
+
+function processarPerspectivaCompleta(src) {
+    let gray = new cv.Mat(), blurred = new cv.Mat(), thresh = new cv.Mat(), morphed = new cv.Mat();
+    let kernel = null, contours = new cv.MatVector(), hierarchy = new cv.Mat();
+
+    try {
+        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
+        cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
+        cv.adaptiveThreshold(blurred, thresh, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 15, 7);
+        kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
+        cv.morphologyEx(thresh, morphed, cv.MORPH_CLOSE, kernel);
+
+        cv.findContours(morphed, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+        
+        let anchors = [];
+        for (let i = 0; i < contours.size(); i++) {
+            let cnt = contours.get(i);
+            let peri = cv.arcLength(cnt, true);
+            let approx = new cv.Mat();
+            cv.approxPolyDP(cnt, approx, 0.04 * peri, true);
+
+            if (approx.rows === 4) {
+                let rect = cv.boundingRect(approx);
+                let area = rect.width * rect.height;
+                let ar = rect.width / rect.height;
+                if (area > 300 && area < 60000 && ar > 0.7 && ar < 1.3) {
+                    let M = cv.moments(cnt);
+                    if (M.m00 !== 0) anchors.push({ x: Math.round(M.m10 / M.m00), y: Math.round(M.m01 / M.m00) });
+                }
+            }
+            approx.delete(); cnt.delete();
+        }
+
+        if (anchors.length !== 4) return null;
+
+        let sum = anchors.map(p => p.x + p.y);
+        let diff = anchors.map(p => p.y - p.x);
+        let tl = anchors[sum.indexOf(Math.min(...sum))], br = anchors[sum.indexOf(Math.max(...sum))];
+        let tr = anchors[diff.indexOf(Math.min(...diff))], bl = anchors[diff.indexOf(Math.max(...diff))];
+
+        let srcComPontos = src.clone();
+        let dW = 600, dH = 450;
+        let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [tl.x, tl.y, tr.x, tr.y, bl.x, bl.y, br.x, br.y]);
+        let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dW, 0, 0, dH, dW, dH]);
+        let M_warp = cv.getPerspectiveTransform(srcTri, dstTri);
+
+        let warped = new cv.Mat();
+        cv.warpPerspective(src, warped, M_warp, new cv.Size(dW, dH));
+
+        srcTri.delete(); dstTri.delete(); M_warp.delete();
+        return { warped, srcComPontos };
+    } finally {
+        gray.delete(); blurred.delete(); thresh.delete(); morphed.delete();
+        if (kernel) kernel.delete();
+        contours.delete(); hierarchy.delete();
+    }
+}
+
+// ================= 6. AUTO-CAPTURA A CADA 0,5 SEGUNDOS =================
+window.acionarCaptura = function() {
+    if (jaDigitalizado) {
+        fecharModalCamera();
+        return;
+    }
+
+    if (isBuscandoGabarito) {
+        isBuscandoGabarito = false;
+        if (contagemIntervalo) clearInterval(contagemIntervalo);
+        if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
+        
+        const btn = document.getElementById('btnEscanearAluno');
+        btn.style.background = "var(--success)";
+        btn.innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
+        return;
+    }
+
+    if (!window.cvReady || !alunoAtualParaCaptura) {
+        alert("⏳ O motor OpenCV ainda está carregando. Aguarde um segundo...");
+        return;
+    }
+
+    iniciarContagemRegressiva();
+};
+
+function iniciarContagemRegressiva() {
+    isBuscandoGabarito = true;
+    tentativasCount = 0;
+    
+    const btnEsc = document.getElementById('btnEscanearAluno');
+    let contador = 3; 
+    
+    btnEsc.style.background = "var(--warning)";
+    btnEsc.innerText = `⏳ APONTE A CÂMERA... (${contador})`;
+
+    contagemIntervalo = setInterval(() => {
+        contador--;
+        if (contador > 0) {
+            btnEsc.innerText = `⏳ APONTE A CÂMERA... (${contador})`;
+        } else {
+            clearInterval(contagemIntervalo);
+            tentarCapturaEmLoop();
+        }
+    }, 1000);
+}
+
+function tentarCapturaEmLoop() {
+    if (!isBuscandoGabarito || jaDigitalizado) return;
+
+    const video = document.getElementById('webcamScan');
+    const btnEsc = document.getElementById('btnEscanearAluno');
+
+    tentativasCount++;
+    btnEsc.innerText = `🔍 TENTATIVA ${tentativasCount}/${MAX_TENTATIVAS}...`;
+
+    const canvasHidden = document.getElementById('canvasHidden');
+    canvasHidden.width = video.videoWidth; 
+    canvasHidden.height = video.videoHeight;
+    canvasHidden.getContext('2d').drawImage(video, 0, 0);
+
+    let src = cv.imread(canvasHidden);
+    let res = processarPerspectivaCompleta(src);
+    src.delete();
+
+    if (res) {
+        isBuscandoGabarito = false;
+        processarCorrecaoFinal(res.warped);
+        res.srcComPontos.delete();
+        return;
+    }
+
+    if (tentativasCount < MAX_TENTATIVAS) {
+        loopCapturaTimeout = setTimeout(tentarCapturaEmLoop, 500);
+    } else {
+        isBuscandoGabarito = false;
+        btnEsc.innerText = "❌ NÃO RECONHECIDO. TENTAR NOVAMENTE";
+        btnEsc.style.background = "var(--danger)";
+    }
+}
+
+function processarCorrecaoFinal(warped) {
+    let warpedGray = new cv.Mat();
+    cv.cvtColor(warped, warpedGray, cv.COLOR_RGBA2GRAY);
+    let warpedThresh = new cv.Mat();
+    let warpedBlur = new cv.Mat();
+    cv.GaussianBlur(warpedGray, warpedBlur, new cv.Size(3, 3), 0);
+    cv.threshold(warpedBlur, warpedThresh, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
+
+    let stringGabarito = configCalib.gabarito;
+    let numOpcoes = configCalib.numOpcoes || 5;
+    let numQuestoes = configCalib.numQuestoes || 10;
+    let numColunas = configCalib.numColunas || 2;
+    let valorProva = configCalib.valorProva || 10.0;
+    
+    let qPorColuna = Math.ceil(numQuestoes / numColunas);
+    let acertos = 0;
+    let respostasLidas = [];
+
+    const LIMIAR_MINIMO_TINTA = 120;
+    let greenColor = new cv.Scalar(0, 255, 0, 255);
+    let redColor = new cv.Scalar(255, 0, 0, 255);
+    let grayColor = new cv.Scalar(200, 200, 200, 255);
+
+    for (let q = 0; q < numQuestoes; q++) {
+        let isCol2 = (numColunas === 2) && (q >= qPorColuna);
+        let colBaseX = isCol2 ? configCalib.x2 : configCalib.x1;
+        let colBaseY = isCol2 ? configCalib.y2 : configCalib.y1;
+        let linhaIdx = isCol2 ? (q - qPorColuna) : q;
+        let yPonto = colBaseY + (linhaIdx * configCalib.spY);
+
+        let valoresAlternativas = [];
+        let coords = [];
+
+        for (let i = 0; i < numOpcoes; i++) {
+            let xPonto = colBaseX + (i * configCalib.spX);
+            coords.push({ x: xPonto, y: yPonto });
+
+            let totalPixels = 0;
+            if (yPonto >= 12 && yPonto < 450 - 12 && xPonto >= 12 && xPonto < 600 - 12) {
+                let roi = warpedThresh.roi(new cv.Rect(xPonto - 12, yPonto - 12, 24, 24));
+                totalPixels = cv.countNonZero(roi);
+                roi.delete();
+            }
+            valoresAlternativas.push(totalPixels);
+        }
+
+        let ordenados = [...valoresAlternativas].sort((a, b) => b - a);
+        let maior = ordenados[0];
+        let segundaMaior = ordenados[1];
+
+        let idxMarcado = valoresAlternativas.indexOf(maior);
+        let respostaAluno = "-";
+
+        if (maior > LIMIAR_MINIMO_TINTA) {
+            if (segundaMaior > LIMIAR_MINIMO_TINTA && segundaMaior > (maior * 0.60)) {
+                respostaAluno = "*";
+            } else {
+                let outras = valoresAlternativas.filter((_, idx) => idx !== idxMarcado);
+                let mediaOutras = outras.reduce((a, b) => a + b, 0) / (outras.length || 1);
+                if (maior > (mediaOutras * 1.8)) {
+                    respostaAluno = LETRAS_TODAS[idxMarcado];
+                }
+            }
+        }
+
+        respostasLidas.push(respostaAluno);
+        let acertou = (respostaAluno === stringGabarito[q]);
+        if (acertou) acertos++;
+
+        coords.forEach((c, idx) => {
+            let center = new cv.Point(c.x, c.y);
+            if (idx === idxMarcado && respostaAluno !== "-") {
+                let color = acertou ? greenColor : redColor;
+                cv.circle(warped, center, 8, color, -1);
+            } else if (respostaAluno === "*" && valoresAlternativas[idx] > LIMIAR_MINIMO_TINTA) {
+                cv.circle(warped, center, 8, redColor, -1);
+            } else {
+                cv.circle(warped, center, 3, grayColor, -1);
+            }
+        });
+    }
+
+    let notaFinal = (acertos / numQuestoes) * valorProva;
+    
+    const chaveNota = `${alunoAtualParaCaptura.turma}_${alunoAtualParaCaptura.nome}`;
+    bancoNotasLocais[chaveNota] = notaFinal;
+    localStorage.setItem('corrigePro_notas_alunos', JSON.stringify(bancoNotasLocais));
+
+    cv.imshow('canvasScanResult', warped);
+    document.getElementById('webcamScan').style.display = 'none';
+    document.getElementById('canvasScanResult').style.display = 'block';
+
+    const banner = document.getElementById('notaBannerModal');
+    banner.innerText = `NOTA: ${notaFinal.toFixed(1)} / ${valorProva.toFixed(1)} (${acertos} acertos)`;
+    banner.style.display = 'block';
+
+    const btnEsc = document.getElementById('btnEscanearAluno');
+    btnEsc.innerText = "✅ CONCLUÍDO (FECHAR)";
+    btnEsc.style.background = "#007bff";
+    jaDigitalizado = true;
+
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        osc.connect(audioCtx.destination); osc.frequency.value = 800; osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+    } catch(e) {}
+
+    if (streamVideoGlobal) streamVideoGlobal.getTracks().forEach(track => track.stop());
+
+    warped.delete(); warpedGray.delete(); warpedBlur.delete(); warpedThresh.delete();
+}
+
+// ================= 7. EXPORTAÇÃO E GERENCIAMENTO =================
+function atualizarListaTurmasAlteradas() {
+    const ul = document.getElementById('listaTurmasAlteradas');
+    if (!ul) return;
+    ul.innerHTML = "";
+
+    const turmasModificadas = new Set();
+    Object.keys(bancoNotasLocais).forEach(chave => {
+        const turma = chave.split('_')[0];
+        turmasModificadas.add(turma);
+    });
+
+    if (turmasModificadas.size === 0) {
+        ul.innerHTML = "<li><em>Nenhuma turma possui notas lançadas ainda.</em></li>";
+        return;
+    }
+
+    turmasModificadas.forEach(turma => {
+        let totalAlunosComNota = Object.keys(bancoNotasLocais).filter(k => k.startsWith(turma + "_")).length;
+        ul.innerHTML += `<li><strong>Turma ${turma}:</strong> ${totalAlunosComNota} prova(s) corrigida(s)</li>`;
+    });
+}
+
+window.exportarCSV = function() {
+    const turmasModificadas = new Set();
+    Object.keys(bancoNotasLocais).forEach(chave => {
+        const turma = chave.split('_')[0];
+        turmasModificadas.add(turma);
+    });
+
+    if (turmasModificadas.size === 0) {
+        alert("Nenhuma alteração foi realizada para exportar.");
+        return;
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,Etapa;Turma;Nome do Aluno;Nota\n";
+
+    Object.keys(DADOS_ALUNOS).forEach(etapa => {
+        Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
+            if (turmasModificadas.has(turma)) {
+                DADOS_ALUNOS[etapa][turma].forEach(aluno => {
+                    const chave = `${turma}_${aluno}`;
+                    const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "";
+                    csvContent += `"${etapa}";"${turma}";"${aluno}";"${nota}"\n`;
+                });
+            }
+        });
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `notas_corrigidas_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+
+window.limparTodasNotas = function() {
+    const confirmacao = confirm("⚠️ Tem certeza que deseja apagar TODAS as notas salvas até agora?\n\nEsta ação não poderá ser desfeita.");
+    if (!confirmacao) return;
+
+    localStorage.removeItem('corrigePro_notas_alunos');
+    bancoNotasLocais = {};
+    
+    carregarAlunos();
+    atualizarListaTurmasAlteradas();
+
+    alert("🗑️ Todas as notas foram apagadas com sucesso!");
+};
+
+// ================= 8. EVENT LISTENERS APÓS CARREGAR A TELA =================
+document.addEventListener('DOMContentLoaded', () => {
+    carregarDadosJSON();
+
+    const inputNumQuestoes = document.getElementById('input_numQuestoes');
+    const selectNumColunas = document.getElementById('select_numColunas');
+    const inputValorProva = document.getElementById('input_valorProva');
+
+    if (inputNumQuestoes) inputNumQuestoes.value = configCalib.numQuestoes || 10;
+    if (selectNumColunas) selectNumColunas.value = configCalib.numColunas || 2;
+    if (inputValorProva) inputValorProva.value = configCalib.valorProva || 10.0;
+
+    const selectNumOpcoes = document.getElementById('selectNumOpcoes');
+    if (selectNumOpcoes && configCalib.numOpcoes) {
+        selectNumOpcoes.value = configCalib.numOpcoes;
+    }
+
+    renderizarGridGabarito();
+
+    [inputNumQuestoes, selectNumColunas, selectNumOpcoes].forEach(el => {
+        el?.addEventListener('change', () => {
+            renderizarGridGabarito();
+            desenharPreviewAjuste();
+        });
+    });
+
+    sliders.forEach(s => {
+        const el = document.getElementById(`input_${s}`);
+        if (el) {
+            if (configCalib[s] !== undefined) el.value = configCalib[s];
+            const valEl = document.getElementById(`val_${s}`);
+            if (valEl) valEl.innerText = el.value;
+            
+            el.addEventListener('input', (e) => {
+                if (valEl) valEl.innerText = e.target.value;
+                desenharPreviewAjuste();
+            });
+        }
+    });
+
+    document.getElementById('btnCapturarModelo')?.addEventListener('click', () => {
+        if (!window.cvReady) {
+            alert("Aguarde o motor de visão computacional (OpenCV) terminar de carregar.");
+            return;
+        }
+
+        const video = document.getElementById('webcamCalib');
+        if (video.videoWidth === 0) {
+            alert("Aguarde a câmera carregar na tela...");
+            return;
+        }
+
+        const canvasHidden = document.getElementById('canvasHidden');
+        canvasHidden.width = video.videoWidth; canvasHidden.height = video.videoHeight;
+        canvasHidden.getContext('2d').drawImage(video, 0, 0);
+
+        let src = cv.imread(canvasHidden);
+        let res = processarPerspectivaCompleta(src);
+        src.delete();
+
+        if (res) {
+            const canvasOrig = document.getElementById('canvasFotoOriginalAjuste');
+            if (canvasOrig) cv.imshow(canvasOrig, res.srcComPontos);
+            res.srcComPontos.delete();
+
+            imagemBaseWarpedCanvas.width = 600; imagemBaseWarpedCanvas.height = 450;
+            cv.imshow(imagemBaseWarpedCanvas, res.warped);
+            res.warped.delete();
+
+            document.getElementById('painelSliders').style.display = 'block';
+            desenharPreviewAjuste();
+        } else {
+            alert("⚠️ Os 4 cantos do gabarito não foram identificados. Tente posicionar a folha inteira no quadro.");
+        }
+    });
+
+    // BOTÃO COM A LÓGICA DE CAPTURA AUTOMÁTICA EM LOOP
+    document.getElementById('btnEscanearAluno')?.addEventListener('click', acionarCaptura);
+});
+</script>
+
 <script async src="https://docs.opencv.org/4.9.0/opencv.js"></script>
 </body>
 </html>
