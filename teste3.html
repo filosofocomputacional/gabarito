@@ -15,7 +15,6 @@
         }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #eef2f5; color: #333; }
         
-        /* Cabeçalho e Navegação */
         header { background: var(--dark); color: white; padding: 15px 20px; text-align: center; }
         nav { display: flex; justify-content: center; background: #212529; }
         nav button { background: none; border: none; color: #aaa; padding: 14px 20px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; }
@@ -23,11 +22,9 @@
 
         .container { max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
         
-        /* Selects de Turmas */
         .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .form-control { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
         
-        /* Tabela de Alunos */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
         th { background: var(--light); font-weight: 600; }
@@ -36,7 +33,6 @@
         .nota-badge { font-weight: bold; padding: 4px 10px; border-radius: 12px; background: #e2e3e5; color: #383d41; }
         .nota-badge.tem-nota { background: #d4edda; color: #155724; }
 
-        /* Modal da Câmera e Resultado */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 12px; max-width: 600px; width: 90%; text-align: center; position: relative; }
         video, canvas { width: 100%; border-radius: 8px; background: #111; }
@@ -44,10 +40,8 @@
         
         #notaBannerModal { display: none; font-size: 22px; font-weight: bold; color: #155724; background: #d4edda; border: 1px solid #c3e6cb; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
 
-        /* Botão de Flash */
         .btn-flash { background: #6c757d; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.2s; }
 
-        /* Aba Calibragem */
         .slider-group { margin: 5px 0; text-align: left; }
         .slider-group label { display: inline; font-size: 13px; font-weight: bold; margin-bottom: 2px; }
         .slider-group input, .slider-group select { width: 50%; }
@@ -64,7 +58,6 @@
         .grid-gabarito select { padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; }
         .preview-title { font-size: 14px; font-weight: bold; color: #495057; margin-top: 15px; margin-bottom: 5px; text-align: left; }
 
-        /* Botões Gerais */
         .btn-action { background: var(--success); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.2s; }
         .btn-action:hover { opacity: 0.9; }
 
@@ -115,7 +108,7 @@
     <div id="abaCalibragem" class="tab-content" style="display:none;">
         <h3>🎛️ Calibragem</h3>
         
-        <video id="webcamCalib" autoplay playsinline></video>
+        <video id="webcamCalib" autoplay playsinline muted></video>
         <button class="btn-action" id="btnCapturarModelo" style="background:#007bff; margin-top:15px;" disabled>📸 CAPTURAR FOTO PARA AJUSTAR</button>
 
         <div id="painelSliders" style="display:none; margin-top:20px;">
@@ -185,7 +178,7 @@
         <h3 id="nomeAlunoModal">Lendo Prova...</h3>
         
         <div id="notaBannerModal"></div>
-        <video id="webcamScan" autoplay playsinline></video>
+        <video id="webcamScan" autoplay playsinline muted></video>
         <canvas id="canvasScanResult" style="display:none;"></canvas>
         
         <button id="btnFlash" class="btn-flash" onclick="toggleFlash()">⚡ Alternar Lanterna (Desligada)</button>
@@ -196,10 +189,10 @@
 <canvas id="canvasHidden" style="display:none;"></canvas>
 
 <script>
-// ================= 1. INICIALIZAÇÃO E ESCOPO GLOBAL =================
+// ================= 1. INICIALIZAÇÃO DO OPENCV (COMPATÍVEL COM FIREFOX) =================
 window.cvReady = false;
 
-window.Module = {
+var Module = {
     onRuntimeInitialized: function() {
         window.cvReady = true;
         console.log("OpenCV.js Carregado com sucesso!");
@@ -226,7 +219,6 @@ let streamVideoGlobal = null;
 let imagemBaseWarpedCanvas = document.createElement('canvas');
 let flashAtivo = false;
 
-// Controle de Timer e Captura Automática (0,5s / 10 tentativas)
 let jaDigitalizado = false;
 let isBuscandoGabarito = false;
 let contagemIntervalo = null;
@@ -238,17 +230,18 @@ const MAX_TENTATIVAS = 10;
 async function carregarDadosJSON() {
     try {
         const resposta = await fetch('js/alunos.json');
-        if (!resposta.ok) {
-            throw new Error(`Erro ao carregar alunos.json: ${resposta.status}`);
-        }
+        if (!resposta.ok) throw new Error(`Status HTTP: ${resposta.status}`);
         DADOS_ALUNOS = await resposta.json();
         inicializarSelects();
     } catch (erro) {
-        console.error("Erro ao carregar o JSON de alunos:", erro);
-        const tbody = document.getElementById('listaAlunosBody');
-        if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">⚠️ Não foi possível carregar o arquivo alunos.json (Para testes, insira um JSON na mesma pasta)</td></tr>';
-        }
+        console.warn("JSON local não encontrado, usando dados mock para testes:", erro);
+        DADOS_ALUNOS = {
+            "Ensino Médio": {
+                "101": ["Ana Silva", "Bruno Souza", "Carlos Lima"],
+                "102": ["Daniela Alves", "Eduardo Pereira"]
+            }
+        };
+        inicializarSelects();
     }
 }
 
@@ -267,8 +260,7 @@ function getCookie(name) {
     let nameEQ = name + "=";
     let ca = document.cookie.split(';');
     for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        let c = ca[i].trim();
         if (c.indexOf(nameEQ) == 0) {
             try { return JSON.parse(c.substring(nameEQ.length, c.length)); } catch(e){}
         }
@@ -300,7 +292,7 @@ window.salvarCalibracaoCookie = function() {
     
     setCookie('corrigePro_calib_v1', config, 365);
     configCalib = config;
-    alert("✅ Calibragem e Gabarito salvos com sucesso nos Cookies!");
+    alert("✅ Calibragem salva nos Cookies!");
 };
 
 function renderizarGridGabarito() {
@@ -441,17 +433,51 @@ window.carregarAlunos = function() {
     });
 };
 
-// ================= 5. CÂMERA E VISÃO COMPUTACIONAL =================
+// ================= 5. CÂMERA E LANTERNA (CORRIGIDO PARA FIREFOX) =================
 function iniciarCamera(elementId) {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } })
-            .then(stream => {
-                streamVideoGlobal = stream;
-                const videoEl = document.getElementById(elementId);
-                if (videoEl) videoEl.srcObject = stream;
-            })
-            .catch(err => console.log("Acesso à câmera negado ou indisponível:", err));
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("Seu navegador não possui suporte para acesso à câmera.");
+        return;
     }
+
+    // Parar streams anteriores se existirem
+    if (streamVideoGlobal) {
+        streamVideoGlobal.getTracks().forEach(t => t.stop());
+    }
+
+    // Constraints resilientes para o Firefox
+    const constraints = {
+        video: {
+            facingMode: { ideal: "environment" },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+        }
+    };
+
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+            streamVideoGlobal = stream;
+            const videoEl = document.getElementById(elementId);
+            if (videoEl) {
+                videoEl.srcObject = stream;
+                // Chamada .play() explícita exigida pelo Firefox
+                videoEl.play().catch(e => console.log("Aviso play Firefox:", e));
+            }
+        })
+        .catch(err => {
+            console.warn("Falha nas configurações ideais, tentando genérica para o Firefox:", err);
+            // Fallback para Firefox Desktop/Dispositivos sem camera traseira identificada
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    streamVideoGlobal = stream;
+                    const videoEl = document.getElementById(elementId);
+                    if (videoEl) {
+                        videoEl.srcObject = stream;
+                        videoEl.play().catch(e => {});
+                    }
+                })
+                .catch(e => alert("Não foi possível acessar a câmera: " + e.message));
+        });
 }
 
 async function toggleFlash() {
@@ -460,11 +486,11 @@ async function toggleFlash() {
     const track = streamVideoGlobal.getVideoTracks()[0];
     if (!track) return;
 
-    const capabilities = track.getCapabilities ? track.getCapabilities() : {};
-
-    if (!capabilities.torch) {
-        alert("⚠️ O flash/lanterna não é suportado neste navegador ou dispositivo.");
-        return;
+    // Tratamento seguro: Firefox NÃO tem o método track.getCapabilities()
+    let supportsTorch = false;
+    if (typeof track.getCapabilities === 'function') {
+        const capabilities = track.getCapabilities();
+        supportsTorch = !!capabilities.torch;
     }
 
     try {
@@ -472,7 +498,7 @@ async function toggleFlash() {
         await track.applyConstraints({
             advanced: [{ torch: flashAtivo }]
         });
-
+        
         const btnFlash = document.getElementById('btnFlash');
         if (btnFlash) {
             btnFlash.style.background = flashAtivo ? "#ffc107" : "#6c757d";
@@ -480,8 +506,9 @@ async function toggleFlash() {
             btnFlash.innerText = flashAtivo ? "⚡ Lanterna LIGADA" : "⚡ Alternar Lanterna (Desligada)";
         }
     } catch (err) {
-        console.error("Erro ao ativar o flash:", err);
-        alert("Não foi possível acionar a lanterna.");
+        console.warn("Lanterna não suportada neste dispositivo/navegador:", err);
+        flashAtivo = false;
+        alert("⚠️ O Firefox ou o dispositivo atual não suportam acionamento de lanterna via WebRTC.");
     }
 }
 
@@ -522,7 +549,9 @@ window.fecharModalCamera = function() {
     if (contagemIntervalo) clearInterval(contagemIntervalo);
     if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
 
-    if (streamVideoGlobal) streamVideoGlobal.getTracks().forEach(track => track.stop());
+    if (streamVideoGlobal) {
+        streamVideoGlobal.getTracks().forEach(track => track.stop());
+    }
     carregarAlunos();
 };
 
@@ -602,7 +631,7 @@ window.acionarCaptura = function() {
     }
 
     if (!window.cvReady || !alunoAtualParaCaptura) {
-        alert("⏳ O motor OpenCV ainda está carregando. Aguarde um segundo...");
+        alert("⏳ O motor OpenCV ainda está carregando. Aguarde um instante...");
         return;
     }
 
@@ -635,6 +664,11 @@ function tentarCapturaEmLoop() {
 
     const video = document.getElementById('webcamScan');
     const btnEsc = document.getElementById('btnEscanearAluno');
+
+    if (!video.videoWidth || video.videoWidth === 0) {
+        loopCapturaTimeout = setTimeout(tentarCapturaEmLoop, 500);
+        return;
+    }
 
     tentativasCount++;
     btnEsc.innerText = `🔍 TENTATIVA ${tentativasCount}/${MAX_TENTATIVAS}...`;
@@ -766,9 +800,12 @@ function processarCorrecaoFinal(warped) {
     jaDigitalizado = true;
 
     try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        osc.connect(audioCtx.destination); osc.frequency.value = 800; osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+            const audioCtx = new AudioCtx();
+            const osc = audioCtx.createOscillator();
+            osc.connect(audioCtx.destination); osc.frequency.value = 800; osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+        }
     } catch(e) {}
 
     if (streamVideoGlobal) streamVideoGlobal.getTracks().forEach(track => track.stop());
@@ -835,7 +872,7 @@ window.exportarCSV = function() {
 };
 
 window.limparTodasNotas = function() {
-    const confirmacao = confirm("⚠️ Tem certeza que deseja apagar TODAS as notas salvas até agora?\n\nEsta ação não poderá ser desfeita.");
+    const confirmacao = confirm("⚠️ Tem certeza que deseja apagar TODAS as notas salvas?");
     if (!confirmacao) return;
 
     localStorage.removeItem('corrigePro_notas_alunos');
@@ -847,7 +884,7 @@ window.limparTodasNotas = function() {
     alert("🗑️ Todas as notas foram apagadas com sucesso!");
 };
 
-// ================= 8. EVENT LISTENERS APÓS CARREGAR A TELA =================
+// ================= 8. INICIALIZAÇÃO =================
 document.addEventListener('DOMContentLoaded', () => {
     carregarDadosJSON();
 
@@ -889,12 +926,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btnCapturarModelo')?.addEventListener('click', () => {
         if (!window.cvReady) {
-            alert("Aguarde o motor de visão computacional (OpenCV) terminar de carregar.");
+            alert("Aguarde o motor OpenCV terminar de carregar.");
             return;
         }
 
         const video = document.getElementById('webcamCalib');
-        if (video.videoWidth === 0) {
+        if (!video.videoWidth || video.videoWidth === 0) {
             alert("Aguarde a câmera carregar na tela...");
             return;
         }
@@ -919,11 +956,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('painelSliders').style.display = 'block';
             desenharPreviewAjuste();
         } else {
-            alert("⚠️ Os 4 cantos do gabarito não foram identificados. Tente posicionar a folha inteira no quadro.");
+            alert("⚠️ Os 4 cantos do gabarito não foram identificados. Enquadre a folha inteira.");
         }
     });
 
-    // BOTÃO COM A LÓGICA DE CAPTURA AUTOMÁTICA EM LOOP
     document.getElementById('btnEscanearAluno')?.addEventListener('click', acionarCaptura);
 });
 </script>
