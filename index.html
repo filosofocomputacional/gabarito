@@ -990,7 +990,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 DADOS_ALUNOS[etapa][turma].forEach(aluno => {
                     const chave = `${turma}_${aluno}`;
                     const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "---";
-                    textoEmail += `${aluno};${nota}\n`;
+                    textoEmail += `${aluno}   ${nota}\n`;
                 });
 
                 textoEmail += `\n`; // Quebra de linha entre turmas
