@@ -827,6 +827,63 @@ function atualizarListaTurmasAlteradas() {
     });
 }
 
+window.enviarPorEmail = function() {
+    const emailInput = document.getElementById('inputEmailExport')?.value.trim();
+    if (!emailInput) {
+        alert("Por favor, informe um endereço de e-mail válido.");
+        return;
+    }
+
+    const turmasModificadas = new Set();
+    Object.keys(bancoNotasLocais).forEach(chave => {
+        turmasModificadas.add(chave.split('_')[0]);
+    });
+
+    if (turmasModificadas.size === 0) {
+        alert("Nenhuma alteração foi realizada para enviar.");
+        return;
+    }
+
+    let textoEmail = "RELATÓRIO DE NOTAS E OPÇÕES MARCADAS\n\n";
+
+    Object.keys(DADOS_ALUNOS).forEach(etapa => {
+        Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
+            if (turmasModificadas.has(turma)) {
+                textoEmail += `===============================\n`;
+                textoEmail += `TURMA: ${turma} (${etapa})\n`;
+                textoEmail += `===============================\n`;
+                textoEmail += `Nome do Aluno;Nota;Opções Marcadas\n`;
+
+                DADOS_ALUNOS[etapa][turma].forEach(aluno => {
+                    const chave = `${turma}_${aluno}`;
+                    const reg = bancoNotasLocais[chave];
+
+                    let nota = "---";
+                    let respStr = "Não registrado (Rescanear)";
+
+                    if (reg !== undefined && reg !== null) {
+                        if (typeof reg === 'object' && Array.isArray(reg.respostas)) {
+                            nota = Number(reg.nota).toFixed(1);
+                            respStr = reg.respostas.map((r, i) => `Q${i+1}:${r}`).join(' | ');
+                        } else if (typeof reg === 'number') {
+                            nota = Number(reg).toFixed(1);
+                        }
+                    }
+
+                    textoEmail += `${aluno};${nota};${respStr}\n`;
+                });
+
+                textoEmail += `\n`;
+            }
+        });
+    });
+
+    const assunto = encodeURIComponent("Relatório de Notas e Respostas - CorrigePro");
+    const corpo = encodeURIComponent(textoEmail);
+    
+    window.location.href = `mailto:${emailInput}?subject=${assunto}&body=${corpo}`;
+};
+
 window.exportarCSV = function() {
     const turmasModificadas = new Set();
     Object.keys(bancoNotasLocais).forEach(chave => {
@@ -848,12 +905,14 @@ window.exportarCSV = function() {
                     const reg = bancoNotasLocais[chave];
                     
                     let nota = "---";
-                    let respStr = "---";
+                    let respStr = "Sem dados";
 
-                    if (reg !== undefined) {
-                        nota = (typeof reg === 'object' ? reg.nota : reg).toFixed(1);
+                    if (reg !== undefined && reg !== null) {
                         if (typeof reg === 'object' && Array.isArray(reg.respostas)) {
+                            nota = Number(reg.nota).toFixed(1);
                             respStr = reg.respostas.join(' - ');
+                        } else if (typeof reg === 'number') {
+                            nota = Number(reg).toFixed(1);
                         }
                     }
 
@@ -966,62 +1025,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // BOTÃO COM A LÓGICA DE CAPTURA AUTOMÁTICA EM LOOP
     document.getElementById('btnEscanearAluno')?.addEventListener('click', acionarCaptura);
 });
-   window.enviarPorEmail = function() {
-    const emailInput = document.getElementById('inputEmailExport')?.value.trim();
-    if (!emailInput) {
-        alert("Por favor, informe um endereço de e-mail válido.");
-        return;
-    }
-
-    const turmasModificadas = new Set();
-    Object.keys(bancoNotasLocais).forEach(chave => {
-        turmasModificadas.add(chave.split('_')[0]);
-    });
-
-    if (turmasModificadas.size === 0) {
-        alert("Nenhuma alteração foi realizada para enviar.");
-        return;
-    }
-
-    let textoEmail = "RELATÓRIO DE NOTAS E RESPOSTAS\n\n";
-
-    Object.keys(DADOS_ALUNOS).forEach(etapa => {
-        Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
-            if (turmasModificadas.has(turma)) {
-                // Cabeçalho da Turma com exatamente 3 colunas
-                textoEmail += `===============================\n`;
-                textoEmail += `TURMA: ${turma} (${etapa})\n`;
-                textoEmail += `===============================\n`;
-                textoEmail += `Nome do Aluno;Nota;Opções Marcadas\n`;
-
-                DADOS_ALUNOS[etapa][turma].forEach(aluno => {
-                    const chave = `${turma}_${aluno}`;
-                    const reg = bancoNotasLocais[chave];
-
-                    let nota = "---";
-                    let respStr = "---";
-
-                    if (reg !== undefined) {
-                        nota = (typeof reg === 'object' ? reg.nota : reg).toFixed(1);
-                        if (typeof reg === 'object' && Array.isArray(reg.respostas)) {
-                            // Concatena as respostas em uma única coluna separada por traços
-                            respStr = reg.respostas.join(' - ');
-                        }
-                    }
-
-                    textoEmail += `${aluno};${nota};${respStr}\n`;
-                });
-
-                textoEmail += `\n`;
-            }
-        });
-    });
-
-    const assunto = encodeURIComponent("Relatório de Notas e Respostas - CorrigePro");
-    const corpo = encodeURIComponent(textoEmail);
-    
-    window.location.href = `mailto:${emailInput}?subject=${assunto}&body=${corpo}`;
-};
+  
 </script>
 
 <script async src="https://docs.opencv.org/4.9.0/opencv.js"></script>
