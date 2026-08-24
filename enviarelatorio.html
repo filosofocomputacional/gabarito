@@ -966,8 +966,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const turmasModificadas = new Set();
     Object.keys(bancoNotasLocais).forEach(chave => {
-        const turma = chave.split('_')[0];
-        turmasModificadas.add(turma);
+        turmasModificadas.add(chave.split('_')[0]);
     });
 
     if (turmasModificadas.size === 0) {
@@ -975,30 +974,41 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    let textoEmail = "RELATÓRIO DE NOTAS\n\n";
+    let textoEmail = "RELATÓRIO DE NOTAS E RESPOSTAS\n\n";
 
     Object.keys(DADOS_ALUNOS).forEach(etapa => {
         Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
             if (turmasModificadas.has(turma)) {
-                // Cabeçalho da Turma
+                // Cabeçalho da Turma com exatamente 3 colunas
                 textoEmail += `===============================\n`;
                 textoEmail += `TURMA: ${turma} (${etapa})\n`;
                 textoEmail += `===============================\n`;
-                textoEmail += `Nome do Aluno;Nota\n`;
+                textoEmail += `Nome do Aluno;Nota;Opções Marcadas\n`;
 
-                // Alunos e Notas
                 DADOS_ALUNOS[etapa][turma].forEach(aluno => {
                     const chave = `${turma}_${aluno}`;
-                    const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "---";
-                    textoEmail += `${aluno};${nota}\n`;
+                    const reg = bancoNotasLocais[chave];
+
+                    let nota = "---";
+                    let respStr = "---";
+
+                    if (reg !== undefined) {
+                        nota = (typeof reg === 'object' ? reg.nota : reg).toFixed(1);
+                        if (typeof reg === 'object' && Array.isArray(reg.respostas)) {
+                            // Concatena as respostas em uma única coluna separada por traços
+                            respStr = reg.respostas.join(' - ');
+                        }
+                    }
+
+                    textoEmail += `${aluno};${nota};${respStr}\n`;
                 });
 
-                textoEmail += `\n`; // Quebra de linha entre turmas
+                textoEmail += `\n`;
             }
         });
     });
 
-    const assunto = encodeURIComponent("Relatório de Notas por Turma - CorrigePro");
+    const assunto = encodeURIComponent("Relatório de Notas e Respostas - CorrigePro");
     const corpo = encodeURIComponent(textoEmail);
     
     window.location.href = `mailto:${emailInput}?subject=${assunto}&body=${corpo}`;
