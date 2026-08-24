@@ -957,7 +957,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // BOTÃO COM A LÓGICA DE CAPTURA AUTOMÁTICA EM LOOP
     document.getElementById('btnEscanearAluno')?.addEventListener('click', acionarCaptura);
 });
-    window.enviarPorEmail = function() {
+   window.enviarPorEmail = function() {
     const emailInput = document.getElementById('inputEmailExport')?.value.trim();
     if (!emailInput) {
         alert("Por favor, informe um endereço de e-mail válido.");
@@ -975,24 +975,32 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    let csvContent = "Etapa;Turma;Nome do Aluno;Nota\n";
+    let textoEmail = "RELATÓRIO DE NOTAS\n\n";
 
     Object.keys(DADOS_ALUNOS).forEach(etapa => {
         Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
             if (turmasModificadas.has(turma)) {
+                // Cabeçalho da Turma
+                textoEmail += `===============================\n`;
+                textoEmail += `TURMA: ${turma} (${etapa})\n`;
+                textoEmail += `===============================\n`;
+                textoEmail += `Nome do Aluno;Nota\n`;
+
+                // Alunos e Notas
                 DADOS_ALUNOS[etapa][turma].forEach(aluno => {
                     const chave = `${turma}_${aluno}`;
-                    const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "";
-                    csvContent += `${etapa};${turma};${aluno};${nota}\n`;
+                    const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "---";
+                    textoEmail += `${aluno};${nota}\n`;
                 });
+
+                textoEmail += `\n`; // Quebra de linha entre turmas
             }
         });
     });
 
-    const assunto = encodeURIComponent("Relatório de Notas - CorrigePro");
-    const corpo = encodeURIComponent("Segue abaixo a lista de notas em formato CSV:\n\n" + csvContent);
+    const assunto = encodeURIComponent("Relatório de Notas por Turma - CorrigePro");
+    const corpo = encodeURIComponent(textoEmail);
     
-    // Abre o aplicativo/cliente de e-mail padrão do usuário já preenchido
     window.location.href = `mailto:${emailInput}?subject=${assunto}&body=${corpo}`;
 };
 </script>
