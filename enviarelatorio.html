@@ -14,7 +14,7 @@
             --light: #f8f9fa;
         }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #eef2f5; color: #333; }
-        
+
         /* Cabeçalho e Navegação */
         header { background: var(--dark); color: white; padding: 15px 20px; text-align: center; }
         nav { display: flex; justify-content: center; background: #212529; }
@@ -22,11 +22,11 @@
         nav button.active { color: white; border-bottom: 3px solid var(--primary); background: rgba(255,255,255,0.05); }
 
         .container { max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        
+
         /* Selects de Turmas */
         .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .form-control { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
-        
+
         /* Tabela de Alunos */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
@@ -41,14 +41,14 @@
         .modal-content { background: white; padding: 20px; border-radius: 12px; max-width: 600px; width: 90%; text-align: center; position: relative; }
         video, canvas { width: 100%; border-radius: 8px; background: #111; }
         .btn-close-modal { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
-        
+
         #notaBannerModal { display: none; font-size: 22px; font-weight: bold; color: #155724; background: #d4edda; border: 1px solid #c3e6cb; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
 
         /* Aba Calibragem */
         .slider-group { margin: 5px 0; text-align: left; }
         .slider-group label { display: inline; font-size: 13px; font-weight: bold; margin-bottom: 2px; }
         .slider-group input, .slider-group select { width: 50%; }
-        
+
         .grid-gabarito { 
             display: grid; 
             grid-template-rows: repeat(5, auto); 
@@ -111,7 +111,7 @@
 
     <div id="abaCalibragem" class="tab-content" style="display:none;">
         <h3>🎛️ Calibragem</h3>
-        
+
         <video id="webcamCalib" autoplay playsinline></video>
         <button class="btn-action" id="btnCapturarModelo" style="background:#007bff;" disabled>📸 CAPTURAR FOTO PARA AJUSTAR</button>
 
@@ -166,7 +166,7 @@
     <div id="abaExportar" class="tab-content" style="display:none;">
         <h3>📊 Resumo das Turmas Alteradas</h3>
         <p>Abaixo estão apenas as turmas que possuem alunos com notas corrigidas no sistema:</p>
-        
+
         <ul id="listaTurmasAlteradas" style="text-align: left; margin: 20px 0;"></ul>
 
         <div class="btn-group-export">
@@ -184,11 +184,11 @@
     <div class="modal-content">
         <button class="btn-close-modal" onclick="fecharModalCamera()">&times;</button>
         <h3 id="nomeAlunoModal">Lendo Prova...</h3>
-        
+
         <div id="notaBannerModal"></div>
         <video id="webcamScan" autoplay playsinline></video>
         <canvas id="canvasScanResult" style="display:none;"></canvas>
-        
+
         <button class="btn-action" id="btnEscanearAluno">📸 INICIAR CAPTURA AUTOMÁTICA</button>
     </div>
 </div>
@@ -315,7 +315,7 @@ window.salvarCalibracaoCookie = function() {
     const numQuestoes = parseInt(document.getElementById('input_numQuestoes').value) || 10;
     const numColunas = parseInt(document.getElementById('select_numColunas').value) || 2;
     const valorProva = parseFloat(document.getElementById('input_valorProva').value) || 10.0;
-    
+
     // Converte os valores dos sliders (pixels da tela de 600x450) em proporções (0.0 a 1.0)
     const x1 = parseInt(document.getElementById('input_x1').value) / BASE_W;
     const y1 = parseInt(document.getElementById('input_y1').value) / BASE_H;
@@ -329,12 +329,12 @@ window.salvarCalibracaoCookie = function() {
         x1, y1, x2, y2, spX, spY, 
         gabarito: [] 
     };
-    
+
     for (let i = 0; i < numQuestoes; i++) {
         const el = document.getElementById(`qc_${i}`);
         config.gabarito.push(el ? el.value : "A");
     }
-    
+
     setCookie('corrigePro_calib_v1', config, 365);
     configCalib = config;
     alert("✅ Calibragem e Gabarito salvos com sucesso nos Cookies!");
@@ -378,11 +378,11 @@ function desenharPreviewAjuste() {
     const v_y2 = parseInt(document.getElementById('input_y2').value);
     const v_spX = parseInt(document.getElementById('input_spX').value);
     const v_spY = parseInt(document.getElementById('input_spY').value);
-    
+
     const numOpcoes = parseInt(document.getElementById('selectNumOpcoes').value) || 5;
     const numQuestoes = parseInt(document.getElementById('input_numQuestoes')?.value) || configCalib.numQuestoes || 10;
     const numColunas = parseInt(document.getElementById('select_numColunas')?.value) || configCalib.numColunas || 2;
-    
+
     const qPorColuna = Math.ceil(numQuestoes / numColunas);
 
     const displayCol2 = (numColunas === 2) ? 'block' : 'none';
@@ -412,7 +412,7 @@ function desenharPreviewAjuste() {
 window.trocarAba = function(idAba, event) {
     document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    
+
     document.getElementById(idAba).style.display = 'block';
     if (event && event.target) event.target.classList.add('active');
 
@@ -423,7 +423,7 @@ window.trocarAba = function(idAba, event) {
 function inicializarSelects() {
     const selectEtapa = document.getElementById('selectEtapa');
     if (!selectEtapa) return;
-    
+
     selectEtapa.innerHTML = "";
     Object.keys(DADOS_ALUNOS).forEach(etapa => {
         selectEtapa.innerHTML += `<option value="${etapa}">${etapa}</option>`;
@@ -453,7 +453,7 @@ window.carregarAlunos = function() {
 
     tbody.innerHTML = "";
     const lista = DADOS_ALUNOS[etapa]?.[turma] || [];
-    
+
     if (lista.length === 0) {
         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum aluno encontrado nesta turma.</td></tr>';
         return;
@@ -503,7 +503,7 @@ window.abrirModalScan = function(aluno, turma) {
     document.getElementById('webcamScan').style.display = 'block';
     document.getElementById('canvasScanResult').style.display = 'none';
     document.getElementById('notaBannerModal').style.display = 'none';
-    
+
     const btnEsc = document.getElementById('btnEscanearAluno');
     btnEsc.innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
     btnEsc.style.background = "var(--success)";
@@ -534,7 +534,7 @@ function processarPerspectivaCompleta(src) {
         cv.morphologyEx(thresh, morphed, cv.MORPH_CLOSE, kernel);
 
         cv.findContours(morphed, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-        
+
         let anchors = [];
         for (let i = 0; i < contours.size(); i++) {
             let cnt = contours.get(i);
@@ -590,7 +590,7 @@ window.acionarCaptura = function() {
         isBuscandoGabarito = false;
         if (contagemIntervalo) clearInterval(contagemIntervalo);
         if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
-        
+
         const btn = document.getElementById('btnEscanearAluno');
         btn.style.background = "var(--success)";
         btn.innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
@@ -608,10 +608,10 @@ window.acionarCaptura = function() {
 function iniciarContagemRegressiva() {
     isBuscandoGabarito = true;
     tentativasCount = 0;
-    
+
     const btnEsc = document.getElementById('btnEscanearAluno');
     let contador = 1; 
-    
+
     btnEsc.style.background = "var(--warning)";
     btnEsc.innerText = `⏳ APONTE A CÂMERA... (${contador})`;
 
@@ -676,7 +676,7 @@ function processarCorrecaoFinal(warped) {
     let numQuestoes = configCalib.numQuestoes || 10;
     let numColunas = configCalib.numColunas || 2;
     let valorProva = configCalib.valorProva || 10.0;
-    
+
     let qPorColuna = Math.ceil(numQuestoes / numColunas);
     let acertos = 0;
     let respostasLidas = [];
@@ -698,14 +698,14 @@ function processarCorrecaoFinal(warped) {
 
     for (let q = 0; q < numQuestoes; q++) {
         let isCol2 = (numColunas === 2) && (q >= qPorColuna);
-        
+
         // Multiplica a proporção (0.0 a 1.0) pelas dimensões reais da imagem (dW / dH)
         let propBaseX = isCol2 ? configCalib.x2 : configCalib.x1;
         let propBaseY = isCol2 ? configCalib.y2 : configCalib.y1;
-        
+
         let colBaseX = Math.round(propBaseX * dW);
         let colBaseY = Math.round(propBaseY * dH);
-        
+
         let spX_real = configCalib.spX * dW;
         let spY_real = configCalib.spY * dH;
 
@@ -725,9 +725,9 @@ function processarCorrecaoFinal(warped) {
                 let roi = warpedThresh.roi(new cv.Rect(xPonto - halfRoi, yPonto - halfRoi, roiSize, roiSize));
                 let roiFiltrada = new cv.Mat();
                 cv.bitwise_and(roi, roi, roiFiltrada, maskCircular);
-                
+
                 totalPixels = cv.countNonZero(roiFiltrada);
-                
+
                 roi.delete();
                 roiFiltrada.delete();
             }
@@ -774,7 +774,7 @@ function processarCorrecaoFinal(warped) {
     }
 
     let notaFinal = (acertos / numQuestoes) * valorProva;
-    
+
     const chaveNota = `${alunoAtualParaCaptura.turma}_${alunoAtualParaCaptura.nome}`;
     bancoNotasLocais[chaveNota] = notaFinal;
     localStorage.setItem('corrigePro_notas_alunos', JSON.stringify(bancoNotasLocais));
@@ -827,67 +827,11 @@ function atualizarListaTurmasAlteradas() {
     });
 }
 
-window.enviarPorEmail = function() {
-    const emailInput = document.getElementById('inputEmailExport')?.value.trim();
-    if (!emailInput) {
-        alert("Por favor, informe um endereço de e-mail válido.");
-        return;
-    }
-
-    const turmasModificadas = new Set();
-    Object.keys(bancoNotasLocais).forEach(chave => {
-        turmasModificadas.add(chave.split('_')[0]);
-    });
-
-    if (turmasModificadas.size === 0) {
-        alert("Nenhuma alteração foi realizada para enviar.");
-        return;
-    }
-
-    let textoEmail = "RELATÓRIO DE NOTAS E OPÇÕES MARCADAS\n\n";
-
-    Object.keys(DADOS_ALUNOS).forEach(etapa => {
-        Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
-            if (turmasModificadas.has(turma)) {
-                textoEmail += `===============================\n`;
-                textoEmail += `TURMA: ${turma} (${etapa})\n`;
-                textoEmail += `===============================\n`;
-                textoEmail += `Nome do Aluno;Nota;Opções Marcadas\n`;
-
-                DADOS_ALUNOS[etapa][turma].forEach(aluno => {
-                    const chave = `${turma}_${aluno}`;
-                    const reg = bancoNotasLocais[chave];
-
-                    let nota = "---";
-                    let respStr = "Não registrado (Rescanear)";
-
-                    if (reg !== undefined && reg !== null) {
-                        if (typeof reg === 'object' && Array.isArray(reg.respostas)) {
-                            nota = Number(reg.nota).toFixed(1);
-                            respStr = reg.respostas.map((r, i) => `Q${i+1}:${r}`).join(' | ');
-                        } else if (typeof reg === 'number') {
-                            nota = Number(reg).toFixed(1);
-                        }
-                    }
-
-                    textoEmail += `${aluno};${nota};${respStr}\n`;
-                });
-
-                textoEmail += `\n`;
-            }
-        });
-    });
-
-    const assunto = encodeURIComponent("Relatório de Notas e Respostas - CorrigePro");
-    const corpo = encodeURIComponent(textoEmail);
-    
-    window.location.href = `mailto:${emailInput}?subject=${assunto}&body=${corpo}`;
-};
-
 window.exportarCSV = function() {
     const turmasModificadas = new Set();
     Object.keys(bancoNotasLocais).forEach(chave => {
-        turmasModificadas.add(chave.split('_')[0]);
+        const turma = chave.split('_')[0];
+        turmasModificadas.add(turma);
     });
 
     if (turmasModificadas.size === 0) {
@@ -895,28 +839,15 @@ window.exportarCSV = function() {
         return;
     }
 
-    let csvContent = "data:text/csv;charset=utf-8,Etapa;Turma;Nome do Aluno;Nota;Opções Marcadas\n";
+    let csvContent = "data:text/csv;charset=utf-8,Etapa;Turma;Nome do Aluno;Nota\n";
 
     Object.keys(DADOS_ALUNOS).forEach(etapa => {
         Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
             if (turmasModificadas.has(turma)) {
                 DADOS_ALUNOS[etapa][turma].forEach(aluno => {
                     const chave = `${turma}_${aluno}`;
-                    const reg = bancoNotasLocais[chave];
-                    
-                    let nota = "---";
-                    let respStr = "Sem dados";
-
-                    if (reg !== undefined && reg !== null) {
-                        if (typeof reg === 'object' && Array.isArray(reg.respostas)) {
-                            nota = Number(reg.nota).toFixed(1);
-                            respStr = reg.respostas.join(' - ');
-                        } else if (typeof reg === 'number') {
-                            nota = Number(reg).toFixed(1);
-                        }
-                    }
-
-                    csvContent += `"${etapa}";"${turma}";"${aluno}";"${nota}";"${respStr}"\n`;
+                    const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "";
+                    csvContent += `"${etapa}";"${turma}";"${aluno}";"${nota}"\n`;
                 });
             }
         });
@@ -925,18 +856,19 @@ window.exportarCSV = function() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `gabarito_respostas_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute("download", `notas_corrigidas_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 };
+
 window.limparTodasNotas = function() {
     const confirmacao = confirm("⚠️ Tem certeza que deseja apagar TODAS as notas salvas até agora?\n\nEsta ação não poderá ser desfeita.");
     if (!confirmacao) return;
 
     localStorage.removeItem('corrigePro_notas_alunos');
     bancoNotasLocais = {};
-    
+
     carregarAlunos();
     atualizarListaTurmasAlteradas();
 
@@ -978,7 +910,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const valEl = document.getElementById(`val_${s}`);
             if (valEl) valEl.innerText = el.value;
-            
+
             el.addEventListener('input', (e) => {
                 if (valEl) valEl.innerText = e.target.value;
                 desenharPreviewAjuste();
@@ -1025,7 +957,72 @@ document.addEventListener('DOMContentLoaded', () => {
     // BOTÃO COM A LÓGICA DE CAPTURA AUTOMÁTICA EM LOOP
     document.getElementById('btnEscanearAluno')?.addEventListener('click', acionarCaptura);
 });
-  
+   window.enviarPorEmail = function() {
+    const emailInput = document.getElementById('inputEmailExport')?.value.trim();
+    if (!emailInput) {
+        alert("Por favor, informe um endereço de e-mail válido.");
+        return;
+    }
+
+    const turmasModificadas = new Set();
+    Object.keys(bancoNotasLocais).forEach(chave => {
+        const turma = chave.split('_')[0];
+        turmasModificadas.add(turma);
+        turmasModificadas.add(chave.split('_')[0]);
+    });
+
+    if (turmasModificadas.size === 0) {
+        alert("Nenhuma alteração foi realizada para enviar.");
+        return;
+    }
+
+    let textoEmail = "RELATÓRIO DE NOTAS\n\n";
+    let textoEmail = "RELATÓRIO DE NOTAS E RESPOSTAS\n\n";
+
+    Object.keys(DADOS_ALUNOS).forEach(etapa => {
+        Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
+            if (turmasModificadas.has(turma)) {
+                // Cabeçalho da Turma
+                // Cabeçalho da Turma com exatamente 3 colunas
+                textoEmail += `===============================\n`;
+                textoEmail += `TURMA: ${turma} (${etapa})\n`;
+                textoEmail += `===============================\n`;
+                textoEmail += `Nome do Aluno;Nota\n`;
+                textoEmail += `Nome do Aluno;Nota;Opções Marcadas\n`;
+
+                // Alunos e Notas
+                DADOS_ALUNOS[etapa][turma].forEach(aluno => {
+                    const chave = `${turma}_${aluno}`;
+                    const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "---";
+                    textoEmail += `${aluno};${nota}\n`;
+                    const reg = bancoNotasLocais[chave];
+
+                    let nota = "---";
+                    let respStr = "---";
+
+                    if (reg !== undefined) {
+                        nota = (typeof reg === 'object' ? reg.nota : reg).toFixed(1);
+                        if (typeof reg === 'object' && Array.isArray(reg.respostas)) {
+                            // Concatena as respostas em uma única coluna separada por traços
+                            respStr = reg.respostas.join(' - ');
+                        }
+                    }
+
+                    textoEmail += `${aluno};${nota};${respStr}\n`;
+                });
+
+                textoEmail += `\n`; // Quebra de linha entre turmas
+                textoEmail += `\n`;
+            }
+        });
+    });
+
+    const assunto = encodeURIComponent("Relatório de Notas por Turma - CorrigePro");
+    const assunto = encodeURIComponent("Relatório de Notas e Respostas - CorrigePro");
+    const corpo = encodeURIComponent(textoEmail);
+
+    window.location.href = `mailto:${emailInput}?subject=${assunto}&body=${corpo}`;
+};
 </script>
 
 <script async src="https://docs.opencv.org/4.9.0/opencv.js"></script>
