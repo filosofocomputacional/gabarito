@@ -1,885 +1,882 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CorrigePro - Modo Único</title>
-<script async src="https://docs.opencv.org/4.8.0/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
-<style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-        font-family: 'Segoe UI', Tahoma, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        padding: 10px;
-        color: #333;
-    }
-    .container {
-        max-width: 900px;
-        margin: 0 auto;
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        overflow: hidden;
-    }
-    header {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        padding: 20px;
-        text-align: center;
-    }
-    header h1 { font-size: 1.8em; margin-bottom: 5px; }
-    header p { opacity: 0.9; font-size: 0.95em; }
-    .tabs {
-        display: flex;
-        background: #f0f0f0;
-        border-bottom: 2px solid #ddd;
-    }
-    .tab {
-        flex: 1;
-        padding: 15px;
-        text-align: center;
-        cursor: pointer;
-        font-weight: bold;
-        border: none;
-        background: none;
-        transition: all 0.3s;
-        font-size: 0.95em;
-    }
-    .tab:hover { background: #e0e0e0; }
-    .tab.active {
-        background: white;
-        color: #667eea;
-        border-bottom: 3px solid #667eea;
-    }
-    .tab-content {
-        display: none;
-        padding: 20px;
-    }
-    .tab-content.active { display: block; }
-    .section {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 15px;
-    }
-    .section h3 {
-        color: #667eea;
-        margin-bottom: 10px;
-        font-size: 1.1em;
-    }
-    .form-group {
-        margin-bottom: 12px;
-    }
-    .form-group label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-        color: #555;
-    }
-    input[type="number"], input[type="text"], select {
-        width: 100%;
-        padding: 10px;
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        font-size: 1em;
-        transition: border 0.3s;
-    }
-    input[type="number"]:focus, input[type="text"]:focus, select:focus {
-        outline: none;
-        border-color: #667eea;
-    }
-    .radio-group {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-    .radio-option {
-        flex: 1;
-        min-width: 120px;
-    }
-    .radio-option input { margin-right: 5px; }
-    .radio-option label {
-        display: inline-block;
-        padding: 8px 12px;
-        background: white;
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        cursor: pointer;
-        width: 100%;
-        text-align: center;
-    }
-    .radio-option input:checked + label {
-        background: #667eea;
-        color: white;
-        border-color: #667eea;
-    }
-    .slider-group {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-    .slider-item {
-        background: white;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-    }
-    .slider-item label {
-        font-size: 0.85em;
-        color: #666;
-        display: block;
-        margin-bottom: 5px;
-    }
-    .slider-item input[type="range"] { width: 100%; }
-    .slider-item .value {
-        text-align: center;
-        font-weight: bold;
-        color: #667eea;
-        font-size: 0.9em;
-    }
-    button {
-        padding: 12px 20px;
-        border: none;
-        border-radius: 8px;
-        font-size: 1em;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s;
-        width: 100%;
-        margin-top: 5px;
-    }
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-    }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
-    .btn-success { background: #28a745; color: white; }
-    .btn-success:hover { background: #218838; }
-    .btn-danger { background: #dc3545; color: white; }
-    .btn-danger:hover { background: #c82333; }
-    .btn-info { background: #17a2b8; color: white; }
-    .btn-info:hover { background: #138496; }
-    .btn-warning { background: #ffc107; color: #333; }
-    .btn-warning:hover { background: #e0a800; }
-    .config-manager {
-        background: #e7f3ff;
-        padding: 15px;
-        border-radius: 10px;
-        border: 2px solid #b3d9ff;
-        margin-bottom: 15px;
-    }
-    .config-manager h4 {
-        color: #0066cc;
-        margin-bottom: 10px;
-    }
-    .config-buttons {
-        display: flex;
-        gap: 8px;
-        margin-top: 10px;
-    }
-    .config-buttons button {
-        flex: 1;
-        padding: 10px;
-        font-size: 0.9em;
-    }
-    #gabaritoContainer {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 8px;
-        background: white;
-        padding: 15px;
-        border-radius: 10px;
-        border: 2px solid #ddd;
-        max-height: 400px;
-        overflow-y: auto;
-    }
-    .questao-item {
-        background: #f8f9fa;
-        padding: 8px;
-        border-radius: 6px;
-        border: 1px solid #e0e0e0;
-    }
-    .questao-item .q-label {
-        font-weight: bold;
-        color: #667eea;
-        margin-right: 5px;
-    }
-    .questao-item .opcoes {
-        display: inline-flex;
-        gap: 3px;
-    }
-    .questao-item .opcoes label {
-        padding: 3px 8px;
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 0.85em;
-    }
-    .questao-item .opcoes input:checked + label {
-        background: #28a745;
-        color: white;
-        border-color: #28a745;
-    }
-    .questao-item .opcoes input { display: none; }
-    #videoContainer {
-        position: relative;
-        width: 100%;
-        max-width: 640px;
-        margin: 0 auto;
-        background: #000;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    #video {
-        width: 100%;
-        display: block;
-    }
-    #canvas, #canvasDebug {
-        display: none;
-    }
-    .resultado {
-        background: white;
-        padding: 15px;
-        border-radius: 10px;
-        border: 2px solid #ddd;
-        margin-top: 15px;
-    }
-    .resultado h3 {
-        color: #667eea;
-        margin-bottom: 10px;
-    }
-    .nota-final {
-        font-size: 2em;
-        font-weight: bold;
-        text-align: center;
-        color: #28a745;
-        padding: 15px;
-        background: #d4edda;
-        border-radius: 10px;
-        margin-top: 10px;
-    }
-    .nota-final.erro {
-        background: #f8d7da;
-        color: #721c24;
-    }
-    .questao-resultado {
-        display: flex;
-        justify-content: space-between;
-        padding: 8px;
-        border-bottom: 1px solid #eee;
-    }
-    .questao-resultado.correta { background: #d4edda; }
-    .questao-resultado.errada { background: #f8d7da; }
-    .questao-resultado.branca { background: #fff3cd; }
-    .status-msg {
-        padding: 10px;
-        border-radius: 8px;
-        margin: 10px 0;
-        text-align: center;
-        font-weight: bold;
-    }
-    .status-msg.info { background: #d1ecf1; color: #0c5460; }
-    .status-msg.success { background: #d4edda; color: #155724; }
-    .status-msg.error { background: #f8d7da; color: #721c24; }
-    .status-msg.warning { background: #fff3cd; color: #856404; }
-    .imagem-preview {
-        max-width: 100%;
-        border-radius: 10px;
-        margin: 10px 0;
-        border: 2px solid #ddd;
-    }
-    .loading {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 3px solid rgba(255,255,255,.3);
-        border-radius: 50%;
-        border-top-color: white;
-        animation: spin 1s ease-in-out infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .info-box {
-        background: #fff3cd;
-        border-left: 4px solid #ffc107;
-        padding: 10px;
-        border-radius: 5px;
-        margin: 10px 0;
-        font-size: 0.9em;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-    }
-    table th, table td {
-        padding: 10px;
-        border: 1px solid #ddd;
-        text-align: center;
-    }
-    table th {
-        background: #667eea;
-        color: white;
-    }
-    table tr:nth-child(even) { background: #f8f9fa; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CorrigePro - Modo Único</title>
+    <style>
+        :root {
+            --primary: #007bff;
+            --success: #28a745;
+            --warning: #ff9800;
+            --danger: #dc3545;
+            --dark: #343a40;
+            --light: #f8f9fa;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #eef2f5; color: #333; }
+        
+        /* Cabeçalho e Navegação */
+        header { background: var(--dark); color: white; padding: 15px 20px; text-align: center; }
+        nav { display: flex; justify-content: center; background: #212529; }
+        nav button { background: none; border: none; color: #aaa; padding: 14px 20px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        nav button.active { color: white; border-bottom: 3px solid var(--primary); background: rgba(255,255,255,0.05); }
+
+        .container { max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        
+        /* Card do Aluno Único */
+        .student-card {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .student-name { font-size: 24px; font-weight: bold; color: var(--dark); margin-bottom: 10px; }
+        .current-score { font-size: 32px; font-weight: bold; color: var(--success); margin: 10px 0; }
+        
+        /* Modal da Câmera e Resultado */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 12px; max-width: 600px; width: 90%; text-align: center; position: relative; }
+        video, canvas { width: 100%; border-radius: 8px; background: #111; }
+        .btn-close-modal { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
+        
+        #notaBannerModal { display: none; font-size: 22px; font-weight: bold; color: #155724; background: #d4edda; border: 1px solid #c3e6cb; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+
+        /* Aba Calibragem */
+        .slider-group { margin: 5px 0; text-align: left; }
+        .slider-group label { display: inline; font-size: 13px; font-weight: bold; margin-bottom: 2px; }
+        .slider-group input, .slider-group select { width: 50%; }
+        
+        .grid-gabarito { 
+            display: grid; 
+            grid-template-rows: repeat(7, auto); 
+            grid-auto-flow: column; 
+            gap: 10px 20px; 
+            margin: 15px 0; 
+            text-align: left; 
+        }
+        .grid-gabarito div { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 6px 12px; border-radius: 6px; border: 1px solid #e9ecef; }
+        .grid-gabarito select { padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; }
+        .preview-title { font-size: 14px; font-weight: bold; color: #495057; margin-top: 15px; margin-bottom: 5px; text-align: left; }
+
+        /* Botões Gerais */
+        .btn-action { background: var(--success); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; transition: 0.2s; }
+        .btn-scan-main { background: var(--primary); width: auto; padding: 15px 40px; font-size: 18px; }
+        .btn-action:hover { opacity: 0.9; }
+
+        #statusCv { padding: 10px; background: #fff3cd; color: #856404; border-radius: 6px; text-align: center; margin-bottom: 15px; font-size: 14px; }
+    </style>
 </head>
 <body>
+
+<header>
+    <h2>🎓 CorrigePro - Modo Estudante Único</h2>
+</header>
+
+<nav>
+    <button class="tab-btn active" onclick="trocarAba('abaCorrecao', event)">📝 Correção</button>
+    <button class="tab-btn" onclick="trocarAba('abaCalibragem', event)">⚙️ Calibragem</button>
+    <button class="tab-btn" onclick="trocarAba('abaExportar', event)">📄 Exportar</button>
+</nav>
+
 <div class="container">
-    <header>
-        <h1>🎓 CorrigePro - Modo Estudante Único</h1>
-        <p>Correção automática de provas via câmera</p>
-    </header>
+    <div id="statusCv">⏳ Baixando motor de visão computacional (OpenCV.js)...</div>
 
-    <div class="tabs">
-        <button class="tab active" onclick="mudarAba('correcao', this)">📝 Correção</button>
-        <button class="tab" onclick="mudarAba('calibragem', this)">⚙️ Calibragem</button>
-        <button class="tab" onclick="mudarAba('exportar', this)">📄 Exportar</button>
-    </div>
-
-    <!-- ABA CORREÇÃO -->
-    <div id="correcao" class="tab-content active">
-        <div class="section">
-            <h3>📷 Escanear Prova</h3>
-            <div class="info-box">
-                💡 Certifique-se de configurar o gabarito na aba "Calibragem" antes de escanear.
-            </div>
-            <div id="videoContainer">
-                <video id="video" autoplay playsinline></video>
-            </div>
-            <canvas id="canvas"></canvas>
-            <canvas id="canvasDebug"></canvas>
-            <div id="statusScan" class="status-msg info" style="margin-top:10px;">
-                Aguardando OpenCV.js...
-            </div>
-            <button class="btn-primary" id="btnEscanear" onclick="escanearProva()" disabled>
+    <div id="abaCorrecao" class="tab-content">
+        <div class="student-card">
+            <div style="color: #666; font-size: 14px;">ALUNO PADRÃO</div>
+            <div class="student-name" id="nomeAlunoDisplay">Estudante Teste</div>
+            
+            <div class="current-score" id="displayNotaAtual">---</div>
+            
+            <button class="btn-action btn-scan-main" onclick="abrirModalScan()">
                 📷 ESCANEAR PROVA AGORA
             </button>
-            <button class="btn-info" onclick="iniciarCamera()" style="margin-top:8px;">
-                📸 Iniciar Câmera
-            </button>
         </div>
-
-        <div id="resultadoContainer" style="display:none;">
-            <div class="resultado">
-                <h3>📊 Resultado da Correção</h3>
-                <div id="notaFinal" class="nota-final">-</div>
-                <div id="listaQuestoes" style="margin-top:15px;"></div>
-            </div>
-        </div>
+        
+        <p style="text-align: center; color: #666; font-size: 14px;">
+            Certifique-se de configurar o gabarito na aba "Calibragem" antes de escanear.
+        </p>
     </div>
 
-    <!-- ABA CALIBRAGEM -->
-    <div id="calibragem" class="tab-content">
-        <div class="section">
-            <h3>🎛️ Calibragem da Prova</h3>
-            
-            <!-- GERENCIADOR DE CONFIGURAÇÕES -->
-            <div class="config-manager">
-                <h4>📂 Configurações Salvas (LocalStorage)</h4>
-                <select id="selectConfig">
-                    <option value="">-- Selecione uma configuração --</option>
-                </select>
-                <div class="config-buttons">
-                    <button class="btn-info" onclick="carregarConfig()">📥 Carregar</button>
-                    <button class="btn-success" onclick="salvarNovaConfig()">💾 Salvar Atual</button>
-                    <button class="btn-danger" onclick="excluirConfig()">🗑️ Excluir</button>
-                </div>
-            </div>
+    <div id="abaCalibragem" class="tab-content" style="display:none;">
+        <h3>🎛️ Calibragem</h3>
+        
+        <video id="webcamCalib" autoplay playsinline></video>
+        <button class="btn-action" id="btnCapturarModelo" style="background:#007bff;" disabled>📸 CAPTURAR FOTO PARA AJUSTAR</button>
 
-            <div class="form-group">
-                <label>👤 Nome do Aluno Padrão:</label>
-                <input type="text" id="nomeAluno" value="Estudante Teste">
-            </div>
-
-            <div class="form-group">
-                <label>🔢 Nº de Questões:</label>
-                <input type="number" id="numQuestoes" value="7" min="1" max="100">
-            </div>
-
-            <div class="form-group">
-                <label>📐 Nº de Colunas:</label>
-                <div class="radio-group">
-                    <div class="radio-option">
-                        <input type="radio" name="colunas" id="col1" value="1">
-                        <label for="col1">1 Coluna</label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" name="colunas" id="col2" value="2" checked>
-                        <label for="col2">2 Colunas</label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>💰 Valor da Prova (para cálculo da nota):</label>
-                <input type="number" id="valorProva" value="10" step="0.1" min="0.1">
-            </div>
-
-            <div class="form-group">
-                <label>🎯 Quantidade de Opções por Questão:</label>
-                <div class="radio-group">
-                    <div class="radio-option">
-                        <input type="radio" name="opcoes" id="op4" value="4" checked>
-                        <label for="op4">4 Opções (A-D)</label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" name="opcoes" id="op5" value="5">
-                        <label for="op5">5 Opções (A-E)</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h3>🎯 Alinhamento dos Eixos</h3>
-            <p style="font-size:0.9em; color:#666; margin-bottom:10px;">
-                Ajuste os sliders para posicionar as miras sobre as bolinhas do gabarito.
-            </p>
+        <div id="painelSliders" style="display:none; margin-top:20px;">
+            <div class="preview-title">🟢 1. Cantos Mapeados (Foto Original):</div>
+            <canvas id="canvasFotoOriginalAjuste"></canvas>
+            <h4 style="text-align:left;">⚙️ Configurações da Prova</h4>
             <div class="slider-group">
-                <div class="slider-item">
-                    <label>X1 (1ª coluna):</label>
-                    <input type="range" id="x1" min="0" max="800" value="100" oninput="atualizarValor('x1')">
-                    <div class="value" id="x1Val">100 px</div>
-                </div>
-                <div class="slider-item">
-                    <label>Y1 (1ª linha):</label>
-                    <input type="range" id="y1" min="0" max="800" value="104" oninput="atualizarValor('y1')">
-                    <div class="value" id="y1Val">104 px</div>
-                </div>
-                <div class="slider-item">
-                    <label>X2 (2ª coluna):</label>
-                    <input type="range" id="x2" min="0" max="800" value="356" oninput="atualizarValor('x2')">
-                    <div class="value" id="x2Val">356 px</div>
-                </div>
-                <div class="slider-item">
-                    <label>Y2 (2ª linha):</label>
-                    <input type="range" id="y2" min="0" max="800" value="105" oninput="atualizarValor('y2')">
-                    <div class="value" id="y2Val">105 px</div>
-                </div>
-                <div class="slider-item">
-                    <label>Largura (spX):</label>
-                    <input type="range" id="spX" min="10" max="200" value="33" oninput="atualizarValor('spX')">
-                    <div class="value" id="spXVal">33 px</div>
-                </div>
-                <div class="slider-item">
-                    <label>Altura (spY):</label>
-                    <input type="range" id="spY" min="10" max="200" value="51" oninput="atualizarValor('spY')">
-                    <div class="value" id="spYVal">51 px</div>
-                </div>
+                <label>Nº Questões:</label>
+                <input type="number" id="input_numQuestoes" min="1" max="100" value="7" class="form-control" style="width:40%">
             </div>
-        </div>
+            <div class="slider-group">
+                <label>Nº Colunas:</label>
+                <select id="select_numColunas" class="form-control" style="width:40%">
+                    <option value="1" selected>1 Coluna</option>
+                    <option value="2">2 Colunas</option>
+                </select>
+            </div>
+            <div class="slider-group">
+                <label>Valor da Prova:</label>
+                <input type="number" id="input_valorProva" min="0" step="0.1" value="10.0" class="form-control" style="width:40%">
+            </div>
+            <div class="preview-title" style="margin-top:20px;">🎯 2. Alinhamento dos Eixos (Imagem Desentortada):</div>
+            <p style="font-size: 12px; color: #666; text-align: left; margin-top:0;">Mova os sliders abaixo para posicionar as miras sobre as bolinhas do gabarito.</p>
+            <canvas id="canvasCalibPreview"></canvas>
 
-        <div class="section">
-            <h3>📝 Configurar Gabarito Oficial</h3>
-            <div id="gabaritoContainer"></div>
-            <button class="btn-success" onclick="salvarGabarito()" style="margin-top:10px;">
-                💾 SALVAR GABARITO E AJUSTES
-            </button>
+            <h4 style="text-align:left; margin-top:20px;">🎛️ Controles de Posição dos Eixos (X, Y)</h4>
+            <div class="slider-group"><label>(X1): <span id="val_x1">100</span>px</label><input type="range" id="input_x1" min="0" max="400" value="100"></div>
+            <div class="slider-group"><label>(Y1): <span id="val_y1">104</span>px</label><input type="range" id="input_y1" min="0" max="400" value="104"></div>
+            <div class="slider-group"><label>(X2): <span id="val_x2">356</span>px</label><input type="range" id="input_x2" min="200" max="600" value="356"></div>
+            <div class="slider-group"><label>(Y2): <span id="val_y2">105</span>px</label><input type="range" id="input_y2" min="0" max="400" value="105"></div>
+            <div class="slider-group"><label>Largura(spX): <span id="val_spX">33</span>px</label><input type="range" id="input_spX" min="5" max="100" value="33"></div>
+            <div class="slider-group"><label>Altura(spY): <span id="val_spY">51</span>px</label><input type="range" id="input_spY" min="5" max="150" value="51"></div>
+
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+
+            <div style="text-align: left; margin-bottom: 15px;">
+                <label><strong>Quantidade de Opções por Questão:</strong></label>
+                <select id="selectNumOpcoes" class="form-control" style="margin-top: 5px;">
+                    <option value="4">4 Opções (A, B, C, D)</option>
+                    <option value="5" selected>5 Opções (A, B, C, D, E)</option>
+                </select>
+            </div>
+
+            <h4 style="text-align:left; margin-top:15px;">📝 Configurar Gabarito Oficial Correto</h4>
+            <div class="grid-gabarito" id="containerGabaritoCalib"></div>
+
+            <button class="btn-action" onclick="salvarCalibracaoCookie()">💾 SALVAR AJUSTES NO COOKIE</button>
         </div>
     </div>
 
-    <!-- ABA EXPORTAR -->
-    <div id="exportar" class="tab-content">
-        <div class="section">
-            <h3>📊 Dados Salvos</h3>
-            <p>Informações armazenadas localmente:</p>
-            <table>
-                <tr><th>Aluno</th><td id="infoAluno">-</td></tr>
-                <tr><th>Última Nota</th><td id="infoNota">-</td></tr>
-                <tr><th>Data</th><td id="infoData">-</td></tr>
-            </table>
-            <button class="btn-success" onclick="baixarCSV()" style="margin-top:15px;">
-                📥 BAIXAR NOTA EM CSV
-            </button>
-            <button class="btn-danger" onclick="limparDados()" style="margin-top:8px;">
-                🗑️ LIMPAR NOTA
-            </button>
+    <div id="abaExportar" class="tab-content" style="display:none;">
+        <h3>📊 Dados Salvos</h3>
+        <p>Informações armazenadas localmente para o estudante atual:</p>
+        
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <strong>Aluno:</strong> <span id="exportNome">Estudante Teste</span><br>
+            <strong>Última Nota:</strong> <span id="exportNota">---</span>
+        </div>
+
+        <div class="btn-group-export">
+            <button class="btn-action" onclick="exportarCSV()">📥 BAIXAR NOTA EM CSV</button>
+            <button class="btn-action" style="background: var(--danger);" onclick="limparTodasNotas()">🗑️ LIMPAR NOTA</button>
+        </div>
+        <div class="email-export-box" style="margin-top: 15px;">
+            <input type="email" id="inputEmailExport" placeholder="Digite seu e-mail..." style="padding: 8px; width: 250px;">
+            <button onclick="enviarPorEmail()" style="padding: 8px 15px; background-color: #0d6efd; color: white; border: none; cursor: pointer;">📧 Enviar por E-mail</button>
         </div>
     </div>
 </div>
 
+<div id="modalCamera" class="modal">
+    <div class="modal-content">
+        <button class="btn-close-modal" onclick="fecharModalCamera()">&times;</button>
+        <h3 id="nomeAlunoModal">Lendo Prova...</h3>
+        
+        <div id="notaBannerModal"></div>
+        <video id="webcamScan" autoplay playsinline></video>
+        <canvas id="canvasScanResult" style="display:none;"></canvas>
+        
+        <button class="btn-action" id="btnEscanearAluno">📸 INICIAR CAPTURA AUTOMÁTICA</button>
+    </div>
+</div>
+
+<canvas id="canvasHidden" style="display:none;"></canvas>
+
 <script>
-// ============ VARIÁVEIS GLOBAIS ============
-let cvReady = false;
-let stream = null;
-let configAtual = {
-    nomeAluno: 'Estudante Teste',
-    numQuestoes: 7,
-    numColunas: 2,
-    valorProva: 10,
-    numOpcoes: 4,
-    x1: 100, y1: 104,
-    x2: 356, y2: 105,
-    spX: 33, spY: 51,
-    gabarito: {}
+// ================= 1. INICIALIZAÇÃO E ESCOPO GLOBAL =================
+window.cvReady = false;
+
+window.Module = {
+    onRuntimeInitialized: function() {
+        window.cvReady = true;
+        console.log("OpenCV.js Carregado com sucesso!");
+        const statusEl = document.getElementById('statusCv');
+        if (statusEl) {
+            statusEl.innerText = "✅ Motor de visão computacional pronto!";
+            statusEl.style.background = "#d4edda";
+            statusEl.style.color = "#155724";
+            setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+        }
+        const btnCap = document.getElementById('btnCapturarModelo');
+        if (btnCap) btnCap.disabled = false;
+    }
 };
-let ultimoResultado = null;
 
-// ============ OPENCV ============
-function onOpenCvReady() {
-    cv['onRuntimeInitialized'] = () => {
-        cvReady = true;
-        document.getElementById('statusScan').textContent = '✅ OpenCV.js pronto!';
-        document.getElementById('statusScan').className = 'status-msg success';
-        document.getElementById('btnEscanear').disabled = false;
+const LETRAS_TODAS = ["A", "B", "C", "D", "E"];
+const defaultGabarito = ['A','B','C','D','E','A','B'];
+const sliders = ['x1', 'y1', 'x2', 'y2', 'spX', 'spY'];
+
+// Dimensões de referência do Canvas de Ajuste
+const BASE_W = 600;
+const BASE_H = 450;
+
+// CONFIGURAÇÃO DO ALUNO ÚNICO
+const ALUNO_PADRAO = "Estudante Teste";
+let bancoNotasLocais = JSON.parse(localStorage.getItem('corrigePro_notas_alunos')) || {};
+
+let streamVideoGlobal = null;
+let imagemBaseWarpedCanvas = document.createElement('canvas');
+
+// Controle de Timer e Captura Automática
+let jaDigitalizado = false;
+let isBuscandoGabarito = false;
+let contagemIntervalo = null;
+let loopCapturaTimeout = null;
+let tentativasCount = 0;
+const MAX_TENTATIVAS = 10;
+
+// ================= 2. COOKIES E CALIBRAGEM =================
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        let date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (JSON.stringify(value) || "") + expires + "; path=/";
+}
+
+function getCookie(name) {
+    let nameEQ = name + "=";
+    let ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) {
+            try { return JSON.parse(c.substring(nameEQ.length, c.length)); } catch(e){}
+        }
+    }
+    return null;
+}
+
+function carregarCalibracaoCookie() {
+    const cookie = getCookie('corrigePro_calib_v1');
+    const padrao = { 
+        x1: 100 / BASE_W, 
+        y1: 104 / BASE_H, 
+        x2: 356 / BASE_W, 
+        y2: 105 / BASE_H, 
+        spX: 33 / BASE_W, 
+        spY: 51 / BASE_H, 
+        numOpcoes: 5, 
+        gabarito: defaultGabarito, 
+        numQuestoes: 7, 
+        numColunas: 1, 
+        valorProva: 10.0 
     };
+
+    if (!cookie) return padrao;
+
+    // Compatibilidade com cookies antigos armazenados em pixels absolutos (> 1.0)
+    if (cookie.x1 > 1.0) cookie.x1 /= BASE_W;
+    if (cookie.y1 > 1.0) cookie.y1 /= BASE_H;
+    if (cookie.x2 > 1.0) cookie.x2 /= BASE_W;
+    if (cookie.y2 > 1.0) cookie.y2 /= BASE_H;
+    if (cookie.spX > 1.0) cookie.spX /= BASE_W;
+    if (cookie.spY > 1.0) cookie.spY /= BASE_H;
+
+    return cookie;
 }
 
-// ============ ABAS ============
-function mudarAba(id, btn) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    btn.classList.add('active');
-}
+let configCalib = carregarCalibracaoCookie();
 
-// ============ CÂMERA ============
-async function iniciarCamera() {
-    try {
-        stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } 
-        });
-        document.getElementById('video').srcObject = stream;
-        document.getElementById('statusScan').textContent = '📸 Câmera ativa!';
-        document.getElementById('statusScan').className = 'status-msg success';
-    } catch (e) {
-        alert('Erro ao acessar câmera: ' + e.message);
+window.salvarCalibracaoCookie = function() {
+    const numOpcoes = parseInt(document.getElementById('selectNumOpcoes').value) || 5;
+    const numQuestoes = parseInt(document.getElementById('input_numQuestoes').value) || 7;
+    const numColunas = parseInt(document.getElementById('select_numColunas').value) || 1;
+    const valorProva = parseFloat(document.getElementById('input_valorProva').value) || 10.0;
+    
+    // Converte os valores dos sliders em proporções (0.0 a 1.0)
+    const x1 = parseInt(document.getElementById('input_x1').value) / BASE_W;
+    const y1 = parseInt(document.getElementById('input_y1').value) / BASE_H;
+    const x2 = parseInt(document.getElementById('input_x2').value) / BASE_W;
+    const y2 = parseInt(document.getElementById('input_y2').value) / BASE_H;
+    const spX = parseInt(document.getElementById('input_spX').value) / BASE_W;
+    const spY = parseInt(document.getElementById('input_spY').value) / BASE_H;
+
+    const config = { 
+        numOpcoes, numQuestoes, numColunas, valorProva, 
+        x1, y1, x2, y2, spX, spY, 
+        gabarito: [] 
+    };
+    
+    for (let i = 0; i < numQuestoes; i++) {
+        const el = document.getElementById(`qc_${i}`);
+        config.gabarito.push(el ? el.value : "A");
+    }
+    
+    setCookie('corrigePro_calib_v1', config, 365);
+    configCalib = config;
+    alert("✅ Calibragem e Gabarito salvos com sucesso nos Cookies!");
+};
+
+function renderizarGridGabarito() {
+    const container = document.getElementById('containerGabaritoCalib');
+    if (!container) return;
+
+    const numOpcoes = parseInt(document.getElementById('selectNumOpcoes').value) || 5;
+    const numQuestoes = parseInt(document.getElementById('input_numQuestoes')?.value) || configCalib.numQuestoes || 7;
+    const letrasAtivas = LETRAS_TODAS.slice(0, numOpcoes);
+
+    container.innerHTML = "";
+    for (let i = 0; i < numQuestoes; i++) {
+        let gabVal = configCalib.gabarito?.[i] || "A";
+        if (!letrasAtivas.includes(gabVal)) gabVal = "A";
+
+        container.innerHTML += `<div>
+            <label>Q${(i+1).toString().padStart(2, '0')}: </label>
+            <select id="qc_${i}" onchange="desenharPreviewAjuste()">
+                ${letrasAtivas.map(l => `<option value="${l}" ${l === gabVal ? 'selected' : ''}>${l}</option>`).join('')}
+            </select>
+        </div>`;
     }
 }
 
-// ============ GABARITO DINÂMICO ============
-function gerarInputsGabarito() {
-    const total = parseInt(document.getElementById('numQuestoes').value) || 7;
-    const numOpcoes = parseInt(document.querySelector('input[name="opcoes"]:checked').value) || 4;
-    const letras = ['A', 'B', 'C', 'D', 'E'].slice(0, numOpcoes);
-    const container = document.getElementById('gabaritoContainer');
-    container.innerHTML = '';
+function desenharPreviewAjuste() {
+    if (!imagemBaseWarpedCanvas.width) return;
 
-    for (let i = 1; i <= total; i++) {
-        const div = document.createElement('div');
-        div.className = 'questao-item';
-        let html = `<span class="q-label">${i}:</span><span class="opcoes">`;
-        letras.forEach(l => {
-            html += `<input type="radio" name="q${i}" id="q${i}_${l}" value="${l}">`;
-            html += `<label for="q${i}_${l}">${l}</label>`;
-        });
-        html += '</span>';
-        div.innerHTML = html;
-        container.appendChild(div);
-    }
-}
+    const canvas = document.getElementById('canvasCalibPreview');
+    if (!canvas) return;
 
-function coletarGabarito() {
-    const total = parseInt(document.getElementById('numQuestoes').value) || 7;
-    const gab = {};
-    for (let i = 1; i <= total; i++) {
-        const sel = document.querySelector(`input[name="q${i}"]:checked`);
-        gab[i] = sel ? sel.value : null;
-    }
-    return gab;
-}
+    canvas.width = BASE_W; canvas.height = BASE_H;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(imagemBaseWarpedCanvas, 0, 0);
 
-function preencherGabarito(gab) {
-    for (let i in gab) {
-        if (gab[i]) {
-            const r = document.getElementById(`q${i}_${gab[i]}`);
-            if (r) r.checked = true;
+    const v_x1 = parseInt(document.getElementById('input_x1').value);
+    const v_y1 = parseInt(document.getElementById('input_y1').value);
+    const v_x2 = parseInt(document.getElementById('input_x2').value);
+    const v_y2 = parseInt(document.getElementById('input_y2').value);
+    const v_spX = parseInt(document.getElementById('input_spX').value);
+    const v_spY = parseInt(document.getElementById('input_spY').value);
+    
+    const numOpcoes = parseInt(document.getElementById('selectNumOpcoes').value) || 5;
+    const numQuestoes = parseInt(document.getElementById('input_numQuestoes')?.value) || configCalib.numQuestoes || 7;
+    const numColunas = parseInt(document.getElementById('select_numColunas')?.value) || configCalib.numColunas || 1;
+    
+    const qPorColuna = Math.ceil(numQuestoes / numColunas);
+
+    const displayCol2 = (numColunas === 2) ? 'block' : 'none';
+    document.getElementById('input_x2').parentElement.style.display = displayCol2;
+    document.getElementById('input_y2').parentElement.style.display = displayCol2;
+
+    ctx.strokeStyle = "#ff0000";
+    ctx.lineWidth = 2;
+
+    for (let q = 0; q < numQuestoes; q++) {
+        let isCol2 = (numColunas === 2) && (q >= qPorColuna);
+        let colBaseX = isCol2 ? v_x2 : v_x1;
+        let colBaseY = isCol2 ? v_y2 : v_y1;
+        let linhaIdx = isCol2 ? (q - qPorColuna) : q;
+        let yPonto = colBaseY + (linhaIdx * v_spY);
+
+        for (let i = 0; i < numOpcoes; i++) {
+            let xPonto = colBaseX + (i * v_spX);
+            ctx.beginPath();
+            ctx.arc(xPonto, yPonto, 10, 0, 2 * Math.PI);
+            ctx.stroke();
         }
     }
 }
 
-// ============ SLIDERS ============
-function atualizarValor(id) {
-    const v = document.getElementById(id).value;
-    const el = document.getElementById(id + 'Val');
-    if (el) el.textContent = v + ' px';
-}
+// ================= 3. NAVEGAÇÃO E INTERFACE =================
+window.trocarAba = function(idAba, event) {
+    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    
+    document.getElementById(idAba).style.display = 'block';
+    if (event && event.target) event.target.classList.add('active');
 
-// ============ GERENCIADOR DE CONFIGURAÇÕES (LOCALSTORAGE) ============
-function atualizarListaConfigs() {
-    const configs = JSON.parse(localStorage.getItem('corrigeProConfigs') || '{}');
-    const sel = document.getElementById('selectConfig');
-    sel.innerHTML = '<option value="">-- Selecione uma configuração --</option>';
-    for (let nome in configs) {
-        const opt = document.createElement('option');
-        opt.value = nome;
-        opt.textContent = nome;
-        sel.appendChild(opt);
+    if (idAba === 'abaCalibragem') iniciarCamera('webcamCalib');
+    if (idAba === 'abaExportar') atualizarDadosExportacao();
+};
+
+function atualizarDisplayNota() {
+    const notaSalva = bancoNotasLocais[ALUNO_PADRAO];
+    const display = document.getElementById('displayNotaAtual');
+    if (notaSalva !== undefined) {
+        display.innerText = notaSalva.toFixed(1);
+        display.style.color = "var(--success)";
+    } else {
+        display.innerText = "---";
+        display.style.color = "#666";
     }
 }
 
-function salvarNovaConfig() {
-    const nome = prompt("Digite um nome para esta configuração (ex: Prova 7 Questões, Simulado 14):");
-    if (!nome) return;
-    const configs = JSON.parse(localStorage.getItem('corrigeProConfigs') || '{}');
-    configs[nome] = coletarConfigAtual();
-    localStorage.setItem('corrigeProConfigs', JSON.stringify(configs));
-    atualizarListaConfigs();
-    document.getElementById('selectConfig').value = nome;
-    alert('✅ Configuração "' + nome + '" salva!');
+// ================= 4. CÂMERA E VISÃO COMPUTACIONAL =================
+function iniciarCamera(elementId) {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } })
+            .then(stream => {
+                streamVideoGlobal = stream;
+                const videoEl = document.getElementById(elementId);
+                if (videoEl) videoEl.srcObject = stream;
+            })
+            .catch(err => console.log("Acesso à câmera negado ou indisponível:", err));
+    }
 }
 
-function carregarConfig() {
-    const nome = document.getElementById('selectConfig').value;
-    if (!nome) return alert('Selecione uma configuração na lista.');
-    const configs = JSON.parse(localStorage.getItem('corrigeProConfigs') || '{}');
-    const cfg = configs[nome];
-    if (!cfg) return;
-    aplicarConfig(cfg);
-    alert('✅ Configuração "' + nome + '" carregada!');
-}
+window.abrirModalScan = function() {
+    jaDigitalizado = false;
+    isBuscandoGabarito = false;
 
-function excluirConfig() {
-    const nome = document.getElementById('selectConfig').value;
-    if (!nome) return;
-    if (!confirm('Excluir "' + nome + '"?')) return;
-    const configs = JSON.parse(localStorage.getItem('corrigeProConfigs') || '{}');
-    delete configs[nome];
-    localStorage.setItem('corrigeProConfigs', JSON.stringify(configs));
-    atualizarListaConfigs();
-}
+    if (contagemIntervalo) clearInterval(contagemIntervalo);
+    if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
 
-function coletarConfigAtual() {
-    return {
-        nomeAluno: document.getElementById('nomeAluno').value,
-        numQuestoes: parseInt(document.getElementById('numQuestoes').value),
-        numColunas: parseInt(document.querySelector('input[name="colunas"]:checked').value),
-        valorProva: parseFloat(document.getElementById('valorProva').value),
-        numOpcoes: parseInt(document.querySelector('input[name="opcoes"]:checked').value),
-        x1: parseInt(document.getElementById('x1').value),
-        y1: parseInt(document.getElementById('y1').value),
-        x2: parseInt(document.getElementById('x2').value),
-        y2: parseInt(document.getElementById('y2').value),
-        spX: parseInt(document.getElementById('spX').value),
-        spY: parseInt(document.getElementById('spY').value),
-        gabarito: coletarGabarito()
-    };
-}
+    document.getElementById('nomeAlunoModal').innerText = `Provas de: ${ALUNO_PADRAO}`;
+    document.getElementById('webcamScan').style.display = 'block';
+    document.getElementById('canvasScanResult').style.display = 'none';
+    document.getElementById('notaBannerModal').style.display = 'none';
+    
+    const btnEsc = document.getElementById('btnEscanearAluno');
+    btnEsc.innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
+    btnEsc.style.background = "var(--success)";
 
-function aplicarConfig(cfg) {
-    document.getElementById('nomeAluno').value = cfg.nomeAluno || 'Estudante Teste';
-    document.getElementById('numQuestoes').value = cfg.numQuestoes || 7;
-    document.getElementById('valorProva').value = cfg.valorProva || 10;
-    document.getElementById(`col${cfg.numColunas || 2}`).checked = true;
-    document.getElementById(`op${cfg.numOpcoes || 4}`).checked = true;
-    document.getElementById('x1').value = cfg.x1 || 100;
-    document.getElementById('y1').value = cfg.y1 || 104;
-    document.getElementById('x2').value = cfg.x2 || 356;
-    document.getElementById('y2').value = cfg.y2 || 105;
-    document.getElementById('spX').value = cfg.spX || 33;
-    document.getElementById('spY').value = cfg.spY || 51;
-    ['x1','y1','x2','y2','spX','spY'].forEach(atualizarValor);
-    gerarInputsGabarito();
-    if (cfg.gabarito) preencherGabarito(cfg.gabarito);
-    configAtual = cfg;
-}
+    document.getElementById('modalCamera').style.display = 'flex';
+    iniciarCamera('webcamScan');
+};
 
-function salvarGabarito() {
-    configAtual = coletarConfigAtual();
-    localStorage.setItem('corrigeProConfigAtual', JSON.stringify(configAtual));
-    alert('✅ Gabarito e ajustes salvos!');
-}
+window.fecharModalCamera = function() {
+    document.getElementById('modalCamera').style.display = 'none';
+    isBuscandoGabarito = false;
+    if (contagemIntervalo) clearInterval(contagemIntervalo);
+    if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
 
-// ============ ESCANEAMENTO DA PROVA ============
-async function escanearProva() {
-    if (!cvReady) return alert('OpenCV ainda não carregou!');
-    const video = document.getElementById('video');
-    if (!video.srcObject) return alert('Inicie a câmera primeiro!');
+    if (streamVideoGlobal) streamVideoGlobal.getTracks().forEach(track => track.stop());
+    atualizarDisplayNota();
+};
 
-    const statusEl = document.getElementById('statusScan');
-    statusEl.textContent = '🔄 Lendo prova...';
-    statusEl.className = 'status-msg info';
-
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0);
+function processarPerspectivaCompleta(src) {
+    let gray = new cv.Mat(), blurred = new cv.Mat(), thresh = new cv.Mat(), morphed = new cv.Mat();
+    let kernel = null, contours = new cv.MatVector(), hierarchy = new cv.Mat();
 
     try {
-        let src = cv.imread(canvas);
-        let gray = new cv.Mat();
-        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-        cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
-        cv.threshold(gray, gray, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
+        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
+        cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
+        cv.adaptiveThreshold(blurred, thresh, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 15, 7);
+        kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
+        cv.morphologyEx(thresh, morphed, cv.MORPH_CLOSE, kernel);
 
-        // Lê as respostas usando a matemática correta para qualquer nº de questões
-        const respostas = lerRespostas(gray);
+        cv.findContours(morphed, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
         
-        src.delete(); gray.delete();
+        let anchors = [];
+        for (let i = 0; i < contours.size(); i++) {
+            let cnt = contours.get(i);
+            let peri = cv.arcLength(cnt, true);
+            let approx = new cv.Mat();
+            cv.approxPolyDP(cnt, approx, 0.04 * peri, true);
 
-        // Compara com o gabarito
-        const resultado = compararComGabarito(respostas);
-        exibirResultado(resultado);
-        
-        statusEl.textContent = '✅ Prova corrigida com sucesso!';
-        statusEl.className = 'status-msg success';
-    } catch (e) {
-        statusEl.textContent = '❌ Erro: ' + e.message;
-        statusEl.className = 'status-msg error';
-        console.error(e);
-    }
-}
-
-function lerRespostas(grayMat) {
-    const numQuestoes = parseInt(document.getElementById('numQuestoes').value);
-    const numColunas = parseInt(document.querySelector('input[name="colunas"]:checked').value);
-    const numOpcoes = parseInt(document.querySelector('input[name="opcoes"]:checked').value);
-    const x1 = parseInt(document.getElementById('x1').value);
-    const y1 = parseInt(document.getElementById('y1').value);
-    const x2 = parseInt(document.getElementById('x2').value);
-    const y2 = parseInt(document.getElementById('y2').value);
-    const spX = parseInt(document.getElementById('spX').value);
-    const spY = parseInt(document.getElementById('spY').value);
-
-    // MATEMÁTICA CORRETA: usa Math.ceil para suportar 7, 14 ou qualquer nº
-    const totalLinhas = Math.ceil(numQuestoes / numColunas);
-    const respostas = {};
-    const raioBolha = Math.floor(spX / 2);
-
-    for (let row = 0; row < totalLinhas; row++) {
-        for (let col = 0; col < numColunas; col++) {
-            const numQuestao = (row * numColunas) + col + 1;
-            // Se a questão não existe (ex: linha 4 de uma prova de 7 com 2 colunas)
-            if (numQuestao > numQuestoes) continue;
-
-            const xBase = (col === 0) ? x1 : x2;
-            const yBase = (col === 0) ? y1 : y2;
-            const yLinha = yBase + (row * spY);
-
-            let melhorOpcao = null;
-            let menorMedia = Infinity;
-
-            for (let op = 0; op < numOpcoes; op++) {
-                const xCentro = xBase + (op * spX);
-                const yCentro = yLinha;
-
-                // Recorta a região da bolha
-                const x0 = Math.max(0, xCentro - raioBolha);
-                const y0 = Math.max(0, yCentro - raioBolha);
-                const x1r = Math.min(grayMat.cols, xCentro + raioBolha);
-                const y1r = Math.min(grayMat.rows, yCentro + raioBolha);
-
-                if (x1r <= x0 || y1r <= y0) continue;
-
-                const roi = grayMat.roi(new cv.Rect(x0, y0, x1r - x0, y1r - y0));
-                const media = cv.mean(roi)[0];
-                roi.delete();
-
-                // Quanto menor a média, mais escura (preenchida)
-                if (media < menorMedia) {
-                    menorMedia = media;
-                    melhorOpcao = ['A', 'B', 'C', 'D', 'E'][op];
+            if (approx.rows === 4) {
+                let rect = cv.boundingRect(approx);
+                let area = rect.width * rect.height;
+                let ar = rect.width / rect.height;
+                if (area > 300 && area < 60000 && ar > 0.7 && ar < 1.3) {
+                    let M = cv.moments(cnt);
+                    if (M.m00 !== 0) anchors.push({ x: Math.round(M.m10 / M.m00), y: Math.round(M.m01 / M.m00) });
                 }
             }
-
-            // Threshold para considerar marcada (ajustável)
-            respostas[numQuestao] = menorMedia < 180 ? melhorOpcao : null;
+            approx.delete(); cnt.delete();
         }
+
+        if (anchors.length !== 4) return null;
+
+        let sum = anchors.map(p => p.x + p.y);
+        let diff = anchors.map(p => p.y - p.x);
+        let tl = anchors[sum.indexOf(Math.min(...sum))], br = anchors[sum.indexOf(Math.max(...sum))];
+        let tr = anchors[diff.indexOf(Math.min(...diff))], bl = anchors[diff.indexOf(Math.max(...diff))];
+
+        let srcComPontos = src.clone();
+        let dW = BASE_W, dH = BASE_H;
+        let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [tl.x, tl.y, tr.x, tr.y, bl.x, bl.y, br.x, br.y]);
+        let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, dW, 0, 0, dH, dW, dH]);
+        let M_warp = cv.getPerspectiveTransform(srcTri, dstTri);
+
+        let warped = new cv.Mat();
+        cv.warpPerspective(src, warped, M_warp, new cv.Size(dW, dH));
+
+        srcTri.delete(); dstTri.delete(); M_warp.delete();
+        return { warped, srcComPontos };
+    } finally {
+        gray.delete(); blurred.delete(); thresh.delete(); morphed.delete();
+        if (kernel) kernel.delete();
+        contours.delete(); hierarchy.delete();
     }
-    return respostas;
 }
 
-function compararComGabarito(respostas) {
-    const gabarito = configAtual.gabarito || coletarGabarito();
-    const valorProva = parseFloat(document.getElementById('valorProva').value);
-    const total = parseInt(document.getElementById('numQuestoes').value);
-    let acertos = 0;
-    const detalhes = [];
+// ================= 5. AUTO-CAPTURA A CADA 0,5 SEGUNDOS =================
+window.acionarCaptura = function() {
+    if (jaDigitalizado) {
+        fecharModalCamera();
+        return;
+    }
 
-    for (let i = 1; i <= total; i++) {
-        const resp = respostas[i] || '-';
-        const gab = gabarito[i] || '-';
-        let status;
-        if (!respostas[i]) {
-            status = 'branca';
-        } else if (respostas[i] === gabarito[i]) {
-            status = 'correta';
-            acertos++;
+    if (isBuscandoGabarito) {
+        isBuscandoGabarito = false;
+        if (contagemIntervalo) clearInterval(contagemIntervalo);
+        if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
+        
+        const btn = document.getElementById('btnEscanearAluno');
+        btn.style.background = "var(--success)";
+        btn.innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
+        return;
+    }
+
+    if (!window.cvReady) {
+        alert("⏳ O motor OpenCV ainda está carregando. Aguarde um segundo...");
+        return;
+    }
+
+    iniciarContagemRegressiva();
+};
+
+function iniciarContagemRegressiva() {
+    isBuscandoGabarito = true;
+    tentativasCount = 0;
+    
+    const btnEsc = document.getElementById('btnEscanearAluno');
+    let contador = 1; 
+    
+    btnEsc.style.background = "var(--warning)";
+    btnEsc.innerText = `⏳ APONTE A CÂMERA... (${contador})`;
+
+    contagemIntervalo = setInterval(() => {
+        contador--;
+        if (contador > 0) {
+            btnEsc.innerText = `⏳ APONTE A CÂMERA... (${contador})`;
         } else {
-            status = 'errada';
+            clearInterval(contagemIntervalo);
+            tentarCapturaEmLoop();
         }
-        detalhes.push({ num: i, resposta: resp, gabarito: gab, status });
+    }, 1000);
+}
+
+function tentarCapturaEmLoop() {
+    if (!isBuscandoGabarito || jaDigitalizado) return;
+
+    const video = document.getElementById('webcamScan');
+    const btnEsc = document.getElementById('btnEscanearAluno');
+
+    tentativasCount++;
+    btnEsc.innerText = `🔍 TENTATIVA ${tentativasCount}/${MAX_TENTATIVAS}...`;
+
+    const canvasHidden = document.getElementById('canvasHidden');
+    canvasHidden.width = video.videoWidth; 
+    canvasHidden.height = video.videoHeight;
+    canvasHidden.getContext('2d').drawImage(video, 0, 0);
+
+    let src = cv.imread(canvasHidden);
+    let res = processarPerspectivaCompleta(src);
+    src.delete();
+
+    if (res) {
+        isBuscandoGabarito = false;
+        processarCorrecaoFinal(res.warped);
+        res.srcComPontos.delete();
+        return;
     }
 
-    const nota = (acertos / total) * valorProva;
-    return { acertos, total, nota, detalhes, valorProva };
-}
-
-function exibirResultado(resultado) {
-    ultimoResultado = resultado;
-    document.getElementById('resultadoContainer').style.display = 'block';
-    const notaEl = document.getElementById('notaFinal');
-    notaEl.textContent = `${resultado.nota.toFixed(2)} / ${resultado.valorProva} (${resultado.acertos}/${resultado.total})`;
-    notaEl.className = resultado.acertos >= resultado.total/2 ? 'nota-final' : 'nota-final erro';
-
-    const lista = document.getElementById('listaQuestoes');
-    lista.innerHTML = '';
-    resultado.detalhes.forEach(d => {
-        const div = document.createElement('div');
-        div.className = 'questao-resultado ' + d.status;
-        div.innerHTML = `<span><b>Q${d.num}:</b> Sua resposta: <b>${d.resposta}</b></span><span>Gabarito: <b>${d.gabarito}</b></span>`;
-        lista.appendChild(div);
-    });
-
-    // Salva na aba Exportar
-    document.getElementById('infoAluno').textContent = configAtual.nomeAluno;
-    document.getElementById('infoNota').textContent = resultado.nota.toFixed(2);
-    document.getElementById('infoData').textContent = new Date().toLocaleString('pt-BR');
-    localStorage.setItem('corrigeProUltimoResultado', JSON.stringify({
-        aluno: configAtual.nomeAluno,
-        nota: resultado.nota,
-        data: new Date().toISOString(),
-        detalhes: resultado.detalhes
-    }));
-}
-
-// ============ EXPORTAR ============
-function baixarCSV() {
-    const dados = JSON.parse(localStorage.getItem('corrigeProUltimoResultado') || 'null');
-    if (!dados) return alert('Nenhum resultado para exportar!');
-    let csv = 'Aluno,Nota,Data\n';
-    csv += `"${dados.aluno}",${dados.nota},"${new Date(dados.data).toLocaleString('pt-BR')}"\n\n`;
-    csv += 'Questão,Resposta,Gabarito,Status\n';
-    dados.detalhes.forEach(d => {
-        csv += `${d.num},${d.resposta},${d.gabarito},${d.status}\n`;
-    });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `prova_${dados.aluno.replace(/\s/g,'_')}_${Date.now()}.csv`;
-    a.click();
-}
-
-function limparDados() {
-    if (!confirm('Limpar último resultado?')) return;
-    localStorage.removeItem('corrigeProUltimoResultado');
-    document.getElementById('infoAluno').textContent = '-';
-    document.getElementById('infoNota').textContent = '-';
-    document.getElementById('infoData').textContent = '-';
-    document.getElementById('resultadoContainer').style.display = 'none';
-}
-
-// ============ INICIALIZAÇÃO ============
-document.addEventListener('DOMContentLoaded', () => {
-    // Carrega config atual
-    const cfgSalva = localStorage.getItem('corrigeProConfigAtual');
-    if (cfgSalva) {
-        aplicarConfig(JSON.parse(cfgSalva));
+    if (tentativasCount < MAX_TENTATIVAS) {
+        loopCapturaTimeout = setTimeout(tentarCapturaEmLoop, 500);
     } else {
-        gerarInputsGabarito();
+        isBuscandoGabarito = false;
+        btnEsc.innerText = "❌ NÃO RECONHECIDO. TENTAR NOVAMENTE";
+        btnEsc.style.background = "var(--danger)";
     }
-    atualizarListaConfigs();
+}
 
-    // Listeners para regenerar gabarito
-    document.getElementById('numQuestoes').addEventListener('change', gerarInputsGabarito);
-    document.querySelectorAll('input[name="opcoes"]').forEach(r => {
-        r.addEventListener('change', gerarInputsGabarito);
+function processarCorrecaoFinal(warped) {
+    let dW = warped.cols;
+    let dH = warped.rows;
+
+    let warpedGray = new cv.Mat();
+    cv.cvtColor(warped, warpedGray, cv.COLOR_RGBA2GRAY);
+    let warpedThresh = new cv.Mat();
+    let warpedBlur = new cv.Mat();
+    cv.GaussianBlur(warpedGray, warpedBlur, new cv.Size(3, 3), 0);
+    cv.threshold(warpedBlur, warpedThresh, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
+
+    let stringGabarito = configCalib.gabarito;
+    let numOpcoes = configCalib.numOpcoes || 5;
+    let numQuestoes = configCalib.numQuestoes || 7;
+    let numColunas = configCalib.numColunas || 1;
+    let valorProva = configCalib.valorProva || 10.0;
+    
+    let qPorColuna = Math.ceil(numQuestoes / numColunas);
+    let acertos = 0;
+    let respostasLidas = [];
+
+    const LIMIAR_MINIMO_TINTA = 120;
+    let greenColor = new cv.Scalar(0, 255, 0, 255);
+    let redColor = new cv.Scalar(255, 0, 0, 255);
+    let grayColor = new cv.Scalar(200, 200, 200, 255);
+
+    let scaleFactor = dW / BASE_W;
+    let roiSize = Math.round(24 * scaleFactor);
+    let halfRoi = Math.floor(roiSize / 2);
+    let raioMascara = Math.round(9 * scaleFactor);
+
+    let maskCircular = cv.Mat.zeros(roiSize, roiSize, cv.CV_8UC1);
+    cv.circle(maskCircular, new cv.Point(halfRoi, halfRoi), raioMascara, new cv.Scalar(255), -1);
+
+    for (let q = 0; q < numQuestoes; q++) {
+        let isCol2 = (numColunas === 2) && (q >= qPorColuna);
+        
+        let propBaseX = isCol2 ? configCalib.x2 : configCalib.x1;
+        let propBaseY = isCol2 ? configCalib.y2 : configCalib.y1;
+        
+        let colBaseX = Math.round(propBaseX * dW);
+        let colBaseY = Math.round(propBaseY * dH);
+        
+        let spX_real = configCalib.spX * dW;
+        let spY_real = configCalib.spY * dH;
+
+        let linhaIdx = isCol2 ? (q - qPorColuna) : q;
+        let yPonto = Math.round(colBaseY + (linhaIdx * spY_real));
+
+        let valoresAlternativas = [];
+        let coords = [];
+
+        for (let i = 0; i < numOpcoes; i++) {
+            let xPonto = Math.round(colBaseX + (i * spX_real));
+            coords.push({ x: xPonto, y: yPonto });
+
+            let totalPixels = 0;
+            if (yPonto >= halfRoi && yPonto < dH - halfRoi && xPonto >= halfRoi && xPonto < dW - halfRoi) {
+                let roi = warpedThresh.roi(new cv.Rect(xPonto - halfRoi, yPonto - halfRoi, roiSize, roiSize));
+                let roiFiltrada = new cv.Mat();
+                cv.bitwise_and(roi, roi, roiFiltrada, maskCircular);
+                
+                totalPixels = cv.countNonZero(roiFiltrada);
+                
+                roi.delete();
+                roiFiltrada.delete();
+            }
+            valoresAlternativas.push(totalPixels);
+        }
+
+        let ordenados = [...valoresAlternativas].sort((a, b) => b - a);
+        let maior = ordenados[0];
+        let segundaMaior = ordenados[1];
+
+        let idxMarcado = valoresAlternativas.indexOf(maior);
+        let respostaAluno = "-";
+
+        if (maior > LIMIAR_MINIMO_TINTA) {
+            if (segundaMaior > LIMIAR_MINIMO_TINTA && segundaMaior > (maior * 0.60)) {
+                respostaAluno = "*";
+            } else {
+                let outras = valoresAlternativas.filter((_, idx) => idx !== idxMarcado);
+                let mediaOutras = outras.reduce((a, b) => a + b, 0) / (outras.length || 1);
+                if (maior > (mediaOutras * 1.8)) {
+                    respostaAluno = LETRAS_TODAS[idxMarcado];
+                }
+            }
+        }
+
+        respostasLidas.push(respostaAluno);
+        let acertou = (respostaAluno === stringGabarito[q]);
+        if (acertou) acertos++;
+
+        coords.forEach((c, idx) => {
+            let center = new cv.Point(c.x, c.y);
+            let radiusCircle = Math.round(8 * scaleFactor);
+            let radiusDot = Math.round(3 * scaleFactor);
+
+            if (idx === idxMarcado && respostaAluno !== "-") {
+                let color = acertou ? greenColor : redColor;
+                cv.circle(warped, center, radiusCircle, color, -1);
+            } else if (respostaAluno === "*" && valoresAlternativas[idx] > LIMIAR_MINIMO_TINTA) {
+                cv.circle(warped, center, radiusCircle, redColor, -1);
+            } else {
+                cv.circle(warped, center, radiusDot, grayColor, -1);
+            }
+        });
+    }
+
+    let notaFinal = (acertos / numQuestoes) * valorProva;
+    
+    bancoNotasLocais[ALUNO_PADRAO] = notaFinal;
+    localStorage.setItem('corrigePro_notas_alunos', JSON.stringify(bancoNotasLocais));
+
+    cv.imshow('canvasScanResult', warped);
+    document.getElementById('webcamScan').style.display = 'none';
+    document.getElementById('canvasScanResult').style.display = 'block';
+
+    const banner = document.getElementById('notaBannerModal');
+    banner.innerText = `NOTA: ${notaFinal.toFixed(1)} / ${valorProva.toFixed(1)} (${acertos} acertos)`;
+    banner.style.display = 'block';
+
+    const btnEsc = document.getElementById('btnEscanearAluno');
+    btnEsc.innerText = "✅ CONCLUÍDO (FECHAR)";
+    btnEsc.style.background = "#007bff";
+    jaDigitalizado = true;
+
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        osc.connect(audioCtx.destination); osc.frequency.value = 800; osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+    } catch(e) {}
+
+    if (streamVideoGlobal) streamVideoGlobal.getTracks().forEach(track => track.stop());
+
+    maskCircular.delete();
+    warped.delete(); warpedGray.delete(); warpedBlur.delete(); warpedThresh.delete();
+}
+
+// ================= 6. EXPORTAÇÃO E GERENCIAMENTO =================
+function atualizarDadosExportacao() {
+    const notaSalva = bancoNotasLocais[ALUNO_PADRAO];
+    document.getElementById('exportNome').innerText = ALUNO_PADRAO;
+    document.getElementById('exportNota').innerText = notaSalva !== undefined ? notaSalva.toFixed(1) : "---";
+}
+
+window.exportarCSV = function() {
+    const notaSalva = bancoNotasLocais[ALUNO_PADRAO];
+    
+    if (notaSalva === undefined) {
+        alert("Nenhuma nota foi registrada ainda.");
+        return;
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,Nome do Aluno;Nota\n";
+    csvContent += `"${ALUNO_PADRAO}";"${notaSalva.toFixed(1)}"\n`;
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `nota_${ALUNO_PADRAO.replace(/\s+/g, '_').toLowerCase()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+
+window.limparTodasNotas = function() {
+    const confirmacao = confirm("⚠️ Tem certeza que deseja apagar a nota deste estudante?\n\nEsta ação não poderá ser desfeita.");
+    if (!confirmacao) return;
+
+    delete bancoNotasLocais[ALUNO_PADRAO];
+    localStorage.setItem('corrigePro_notas_alunos', JSON.stringify(bancoNotasLocais));
+    
+    atualizarDisplayNota();
+    atualizarDadosExportacao();
+
+    alert("🗑️ Nota apagada com sucesso!");
+};
+
+// ================= 7. EVENT LISTENERS APÓS CARREGAR A TELA =================
+document.addEventListener('DOMContentLoaded', () => {
+    atualizarDisplayNota();
+
+    const inputNumQuestoes = document.getElementById('input_numQuestoes');
+    const selectNumColunas = document.getElementById('select_numColunas');
+    const inputValorProva = document.getElementById('input_valorProva');
+
+    if (inputNumQuestoes) inputNumQuestoes.value = configCalib.numQuestoes || 7;
+    if (selectNumColunas) selectNumColunas.value = configCalib.numColunas || 1;
+    if (inputValorProva) inputValorProva.value = configCalib.valorProva || 10.0;
+
+    const selectNumOpcoes = document.getElementById('selectNumOpcoes');
+    if (selectNumOpcoes && configCalib.numOpcoes) {
+        selectNumOpcoes.value = configCalib.numOpcoes;
+    }
+
+    renderizarGridGabarito();
+
+    [inputNumQuestoes, selectNumColunas, selectNumOpcoes].forEach(el => {
+        el?.addEventListener('change', () => {
+            renderizarGridGabarito();
+            desenharPreviewAjuste();
+        });
     });
+
+    sliders.forEach(s => {
+        const el = document.getElementById(`input_${s}`);
+        if (el) {
+            let pxVal = (s.includes('Y') || s === 'spY') ? configCalib[s] * BASE_H : configCalib[s] * BASE_W;
+            el.value = Math.round(pxVal);
+
+            const valEl = document.getElementById(`val_${s}`);
+            if (valEl) valEl.innerText = el.value;
+            
+            el.addEventListener('input', (e) => {
+                if (valEl) valEl.innerText = e.target.value;
+                desenharPreviewAjuste();
+            });
+        }
+    });
+
+    document.getElementById('btnCapturarModelo')?.addEventListener('click', () => {
+        if (!window.cvReady) {
+            alert("Aguarde o motor de visão computacional (OpenCV) terminar de carregar.");
+            return;
+        }
+
+        const video = document.getElementById('webcamCalib');
+        if (video.videoWidth === 0) {
+            alert("Aguarde a câmera carregar na tela...");
+            return;
+        }
+
+        const canvasHidden = document.getElementById('canvasHidden');
+        canvasHidden.width = video.videoWidth; canvasHidden.height = video.videoHeight;
+        canvasHidden.getContext('2d').drawImage(video, 0, 0);
+
+        let src = cv.imread(canvasHidden);
+        let res = processarPerspectivaCompleta(src);
+        src.delete();
+
+        if (res) {
+            const canvasOrig = document.getElementById('canvasFotoOriginalAjuste');
+            if (canvasOrig) cv.imshow(canvasOrig, res.srcComPontos);
+            res.srcComPontos.delete();
+
+            imagemBaseWarpedCanvas.width = BASE_W; imagemBaseWarpedCanvas.height = BASE_H;
+            cv.imshow(imagemBaseWarpedCanvas, res.warped);
+            res.warped.delete();
+
+            document.getElementById('painelSliders').style.display = 'block';
+            desenharPreviewAjuste();
+        } else {
+            alert("⚠️ Os 4 cantos do gabarito não foram identificados. Tente posicionar a folha inteira no quadro.");
+        }
+    });
+
+    document.getElementById('btnEscanearAluno')?.addEventListener('click', acionarCaptura);
 });
+
+window.enviarPorEmail = function() {
+    const emailInput = document.getElementById('inputEmailExport')?.value.trim();
+    if (!emailInput) {
+        alert("Por favor, informe um endereço de e-mail válido.");
+        return;
+    }
+
+    const notaSalva = bancoNotasLocais[ALUNO_PADRAO];
+    if (notaSalva === undefined) {
+        alert("Não há notas para enviar.");
+        return;
+    }
+
+    let textoEmail = `RELATÓRIO DE NOTA\n\n`;
+    textoEmail += `===============================\n`;
+    textoEmail += `ALUNO: ${ALUNO_PADRAO}\n`;
+    textoEmail += `===============================\n`;
+    textoEmail += `Nota Final: ${notaSalva.toFixed(1)}\n`;
+
+    const assunto = encodeURIComponent(`Nota de ${ALUNO_PADRAO} - CorrigePro`);
+    const corpo = encodeURIComponent(textoEmail);
+    
+    window.location.href = `mailto:${emailInput}?subject=${assunto}&body=${corpo}`;
+};
 </script>
+
+<script async src="https://docs.opencv.org/4.9.0/opencv.js"></script>
 </body>
 </html>
