@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testador de Chave de API</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #444;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+        .resultado {
+            margin-top: 2rem;
+        }
+        .resposta {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid #22c55e;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .erro {
+            border-left-color: #ef4444;
+            background-color: #fef2f2;
+        }
+        .aviso {
+            background-color: #fef3c7;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #f59e0b;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔑 Testador de Chave de API</h1>
+
+    <div class="aviso">
+        ⚠️ <strong>Atenção:</strong> Não compartilhe este arquivo com sua chave preenchida e não envie chaves para APIs públicas não confiáveis.
+    </div>
+
+    <div class="form-group">
+        <label for="apiUrl">URL da API:</label>
+        <input type="url" id="apiUrl" placeholder="https://exemplo.com/api/dados" required>
+    </div>
+
+    <div class="form-group">
+        <label for="chaveApi">Chave da API:</label>
+        <input type="password" id="chaveApi" placeholder="Cole sua chave aqui" required>
+    </div>
+
+    <div class="form-group">
+        <label for="metodo">Método HTTP:</label>
+        <select id="metodo">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="cabecalhoNome">Nome do cabeçalho (ex: Authorization, X-API-Key):</label>
+        <input type="text" id="cabecalhoNome" value="Authorization">
+    </div>
+
+    <div class="form-group">
+        <label for="prefixo">Prefixo do valor (se houver, ex: Bearer ):</label>
+        <input type="text" id="prefixo" placeholder="Bearer ">
+    </div>
+
+    <button id="btnTestar">Testar Conexão</button>
+
+    <div class="resultado">
+        <h2>Resposta:</h2>
+        <pre id="resposta" class="resposta" style="display: none;"></pre>
+    </div>
+
+    <script>
+        const btnTestar = document.getElementById('btnTestar');
+        const elResposta = document.getElementById('resposta');
+
+        btnTestar.addEventListener('click', async () => {
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const chaveApi = document.getElementById('chaveApi').value.trim();
+            const metodo = document.getElementById('metodo').value;
+            const cabecalhoNome = document.getElementById('cabecalhoNome').value.trim();
+            const prefixo = document.getElementById('prefixo').value;
+
+            if (!apiUrl || !chaveApi) {
+                mostrarResposta('Preencha a URL e a chave da API.', true);
+                return;
+            }
+
+            btnTestar.disabled = true;
+            btnTestar.textContent = 'Testando...';
+            elResposta.style.display = 'none';
+
+            try {
+                const cabecalhos = {
+                    'Content-Type': 'application/json'
+                };
+                cabecalhos[cabecalhoNome] = prefixo + chaveApi;
+
+                const resposta = await fetch(apiUrl, {
+                    method: metodo,
+                    headers: cabecalhos,
+                    mode: 'cors'
+                });
+
+                const dados = await resposta.json().catch(() => resposta.text());
+                
+                mostrarResposta(
+                    `Status: ${resposta.status} ${resposta.statusText}\n\n${typeof dados === 'string' ? dados : JSON.stringify(dados, null, 2)}`,
+                    !resposta.ok
+                );
+
+            } catch (erro) {
+                mostrarResposta(`Erro de conexão:\n${erro.message}\n\nVerifique:\n- A URL está correta\n- A API permite requisições do navegador (CORS)\n- Sua chave está válida`, true);
+            } finally {
+                btnTestar.disabled = false;
+                btnTestar.textContent = 'Testar Conexão';
+            }
+        });
+
+        function mostrarResposta(texto, isErro) {
+            elResposta.textContent = texto;
+            elResposta.style.display = 'block';
+            elResposta.classList.toggle('erro', isErro);
+        }
+    </script>
+</body>
+</html>
