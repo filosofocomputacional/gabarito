@@ -3,7 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jornal Escolar - E.E. Nova Contagem</title>
+
+    <!-- SEO Básico -->
+    <title>Jornal Escolar & Memorial | E.E. Nova Contagem - 40 Anos</title>
+    <meta name="description" content="Jornal Escolar Digital e Acervo de Memórias da E.E. Nova Contagem em Contagem - MG. Celebrando 40 anos de história, registros e educação comunitária (1986–2026).">
+    <meta name="keywords" content="E.E. Nova Contagem, Escola Estadual Nova Contagem, Jornal Escolar, Memorial Escolar, Contagem MG, Educação, 40 anos, Notícias Escolares">
+    <meta name="author" content="E.E. Nova Contagem">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Redes Sociais (WhatsApp, Facebook, LinkedIn) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Jornal Escolar & Memorial - E.E. Nova Contagem (40 Anos)">
+    <meta property="og:description" content="Confira as notícias e o acervo histórico dos 40 anos da Escola Estadual Nova Contagem. Produzido pelos alunos e comunidade escolar.">
+    <meta property="og:image" content="https://placehold.co/1200x630/0f2338/ffffff?text=E.E.+Nova+Contagem+-+40+Anos">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="E.E. Nova Contagem">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Jornal Escolar & Memorial - E.E. Nova Contagem">
+    <meta name="twitter:description" content="Acompanhe o jornal digital e o acervo de memórias da E.E. Nova Contagem.">
+    <meta name="twitter:image" content="https://placehold.co/1200x630/0f2338/ffffff?text=E.E.+Nova+Contagem+-+40+Anos">
+
+    <!-- Favicon de Museu (SVG embutido - não precisa carregar arquivo externo) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>">
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -182,7 +206,6 @@
             padding: 0 20px;
         }
 
-        /* 1. Banner Escuro CTA */
         .cta-banner {
             background-color: var(--cor-card-dark);
             color: #ffffff;
@@ -224,7 +247,6 @@
             opacity: 0.9;
         }
 
-        /* 2. Marcadores / Números */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -263,7 +285,6 @@
             color: var(--texto-secundario);
         }
 
-        /* 3. Rodapé Inferior */
         .bottom-bar {
             display: flex;
             justify-content: space-between;
@@ -321,7 +342,6 @@
         }
 
         .modal-body p {
-            TEXT-ALIGN: JUSTIFY;
             line-height: 1.8;
             color: #374151;
             font-size: 1.05rem;
@@ -408,18 +428,15 @@
         </p>
     </main>
 
-    <!-- RODAPÉ COMPLETO ESTILO MEMORIAL -->
     <footer>
-        <!-- Banner Dark de Chamada -->
         <div class="cta-banner">
             <div class="cta-text">
                 <h3>Você tem fotos, cartas ou memórias da escola?</h3>
                 <p>Envie sua sugestão de pauta ou registro histórico para a equipe do jornal escolar.</p>
             </div>
-            <a href="https://novacontagem.netlify.app" target="_blank" class="cta-button">Enviar Registro</a>
+            <a href="https://novacontagem.netlify.app/" target="_blank" rel="noopener" class="cta-button">Enviar Registro</a>
         </div>
 
-        <!-- Colunas com Números e História -->
         <div class="stats-grid">
             <div class="stat-item">
                 <span class="stat-label">Fundação</span>
@@ -443,7 +460,6 @@
             </div>
         </div>
 
-        <!-- Barra do Fim da Página -->
         <div class="bottom-bar">
             <p>© 1986–2026 E.E. Nova Contagem • Todos os direitos reservados</p>
             <p>Acervo Digital & Jornal Escolar</p>
@@ -459,7 +475,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxKQAWe2eGEnxUttQWHX_F12WalG4X6niIYuqU7Azsrntw7taJXUlq-QzEi_nO9mbLK/exec";
+        const API_URL = "URL_DA_SUA_API_DO_GOOGLE_APPS_SCRIPT";
 
         async function carregarNoticias() {
             try {
@@ -485,10 +501,10 @@
                     const imagemFallback = 'https://placehold.co/600x400/0f2338/ffffff?text=E.E.+Nova+Contagem';
 
                     card.innerHTML = `
-                        <img class="card-img" src="${noticia.Imagem || imagemFallback}" alt="Imagem de capa">
+                        <img class="card-img" src="${noticia.Imagem || imagemFallback}" alt="${noticia.Chamada || 'Imagem da notícia'}">
                         <div class="card-body">
                             <div>
-                                <div class="card-tag">Notícia #${index + 1}</div>
+                                <div class="card-tag">Reminiscência #${index + 1}</div>
                                 <h2 class="card-title">${noticia.Chamada}</h2>
                             </div>
                             <p class="card-author">Por: ${noticia.Redator || 'Redação'}</p>
@@ -518,7 +534,7 @@
                 <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 16px;">
                     Redação: <strong>${noticia.Redator || 'Redação Escolar'}</strong>
                 </p>
-                <img src="${noticia.Imagem || imagemFallback}" alt="Imagem da notícia">
+                <img src="${noticia.Imagem || imagemFallback}" alt="${noticia.Chamada}">
                 <p>${noticia.Noticia}</p>
             `;
             document.getElementById('modal-overlay').style.display = 'flex';
