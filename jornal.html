@@ -139,13 +139,10 @@
           const card = document.createElement('div');
           card.className = 'news-card';
           
-          card.innerHTML = `
-            <img src="${noticia.Imagem || 'https://via.placeholder.com/300x180?text=Sem+Imagem'}" alt="${noticia.Chamada}">
-            <div class="news-card-content">
-              <h3>${noticia.Chamada}</h3>
-              <p class="author">Por: ${noticia.Redator || 'Redação'}</p>
-            </div>
-          `;
+         card.innerHTML = `
+  <img src="${noticia.Imagem || 'https://placehold.co/300x180/cccccc/333333?text=Sem+Imagem'}" alt="${noticia.Chamada}">
+  ...
+`;
 
           // Evento de clique para abrir o modal
           card.addEventListener('click', () => abrirModal(noticia));
