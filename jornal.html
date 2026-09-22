@@ -3,205 +3,301 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Memorial - E.E. Nova Contagem</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <title>MEMORIAL - E.E. Nova Contagem</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
     <style>
-        /* Estilos Gerais e Tematização da Escola */
         :root {
-            --cor-principal: #1a4a7e; /* Azul Escolar */
-            --cor-detalhe: #f5a623;    /* Amarelo/Dourado dos 40 anos */
-            --fundo-pagina: #f4f6f9;
-            --texto-padrão: #333;
+            --bg-site: #f7f8fa;
+            --cor-primaria: #0d1b2a;
+            --cor-card-dark: #0f2338;
+            --cor-destaque: #d4a373;
+            --texto-principal: #1f2937;
+            --texto-secundario: #6b7280;
+            --raio-borda: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--fundo-pagina);
-            margin: 0;
-            padding: 0;
-            color: var(--texto-padrão);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-site);
+            color: var(--texto-principal);
+            padding-bottom: 60px;
         }
 
-        /* Cabeçalho Profissional (Header) */
+        /* --- CABEÇALHO --- */
         header {
             background-color: #ffffff;
-            padding: 20px 50px;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 30px 20px;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
-        .escola-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo-placeholder {
-            width: 50px;
-            height: 50px;
-            background-color: var(--cor-principal);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            font-weight: 600;
-        }
-
-        header h1 {
+        .titulo-escola h1 {
             font-family: 'Playfair Display', serif;
-            color: var(--cor-principal);
-            margin: 0;
-            font-size: 1.8rem;
-        }
-
-        .aniversario-selo {
-            text-align: right;
-            border-left: 2px solid var(--cor-detalhe);
-            padding-left: 15px;
-        }
-
-        .aniversario-selo .numero {
             font-size: 2.2rem;
+            color: var(--cor-primaria);
+            letter-spacing: -0.5px;
+        }
+
+        .titulo-escola p {
+            color: var(--texto-secundario);
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        .selo-40anos {
+            background-color: var(--cor-primaria);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.85rem;
+        }
+
+        .selo-40anos span {
+            color: var(--cor-destaque);
             font-weight: 700;
-            color: var(--cor-detalhe);
-            line-height: 1;
+            font-size: 1.2rem;
         }
 
-        .aniversario-selo .datas {
-            font-size: 0.8rem;
-            color: #777;
-        }
-
-        /* Grid de Notícias */
+        /* --- GRID PRINCIPAL (DESKTOP) --- */
         .grid-container {
             max-width: 1200px;
-            margin: 40px auto;
+            margin: 40px auto 0;
             padding: 0 20px;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
         }
 
-        /* Cartão de Notícia (Card) */
+        /* CARD BASE */
         .card {
-            background: white;
-            border-radius: 12px;
+            background: #ffffff;
+            border-radius: var(--raio-borda);
+            border: 1px solid #e5e7eb;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
             cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
         }
 
         .card-img {
             width: 100%;
-            height: 180px;
+            height: 200px;
             object-fit: cover;
         }
 
-        .card-content {
-            padding: 20px;
+        .card-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-grow: 1;
+        }
+
+        .card-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--cor-destaque);
+            margin-bottom: 8px;
         }
 
         .card-title {
             font-family: 'Playfair Display', serif;
-            font-size: 1.2rem;
-            color: #222;
-            margin: 0 0 10px 0;
-            line-height: 1.3;
+            font-size: 1.25rem;
+            line-height: 1.35;
+            color: var(--cor-primaria);
+            margin-bottom: 12px;
         }
 
         .card-author {
-            font-size: 0.8rem;
-            color: #888;
-            margin: 0;
-            font-weight: 300;
+            font-size: 0.85rem;
+            color: var(--texto-secundario);
+            margin-top: auto;
         }
 
-        /* Modal / Popup */
+        /* VARIATAS DE TAMANHO PARA O DESKTOP */
+        
+        /* 1. Card Grande (Ocupa 2 colunas) */
+        .card-destaque-2col {
+            grid-column: span 2;
+        }
+        .card-destaque-2col .card-img {
+            height: 280px;
+        }
+        .card-destaque-2col .card-title {
+            font-size: 1.6rem;
+        }
+
+        /* 2. Banner Horizontal Escuro (Ocupa a largura total de 3 colunas) */
+        .card-banner-full {
+            grid-column: 1 / -1;
+            flex-direction: row;
+            background-color: var(--cor-card-dark);
+            border: none;
+            color: #ffffff;
+        }
+        .card-banner-full .card-img {
+            width: 48%;
+            height: 320px;
+        }
+        .card-banner-full .card-body {
+            width: 52%;
+            padding: 36px;
+        }
+        .card-banner-full .card-title {
+            color: #ffffff;
+            font-size: 1.8rem;
+            margin-bottom: 16px;
+        }
+        .card-banner-full .card-author {
+            color: #9ca3af;
+        }
+
+        /* --- MODAL / POPUP --- */
         .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(13, 27, 42, 0.75);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(6px);
         }
 
         .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
+            background: #ffffff;
+            padding: 36px;
+            border-radius: var(--raio-borda);
             width: 90%;
-            max-width: 700px;
+            max-width: 720px;
             max-height: 85vh;
             overflow-y: auto;
             position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
 
         .modal-close {
             position: absolute;
-            top: 15px;
-            right: 20px;
+            top: 18px;
+            right: 22px;
             font-size: 1.8rem;
             background: none;
             border: none;
             cursor: pointer;
-            color: #aaa;
-        }
-
-        .modal-close:hover {
-            color: #333;
+            color: var(--texto-secundario);
         }
 
         .modal-body img {
             width: 100%;
-            max-height: 350px;
+            max-height: 380px;
             object-fit: cover;
-            border-radius: 8px;
-            margin: 15px 0;
+            border-radius: 10px;
+            margin: 20px 0;
         }
 
         .modal-body p {
             line-height: 1.8;
-            color: #444;
+            color: #374151;
+            font-size: 1.05rem;
             white-space: pre-wrap;
-            font-size: 1rem;
+        }
+
+        /* --- RESPONSIVIDADE (CELULAR E TABLET PEQUENO) --- */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .grid-container {
+                grid-template-columns: 1fr; /* Força 1 coluna única no celular */
+                gap: 20px;
+            }
+
+            /* Reseta todas as variações de tamanho para o padrão de celular */
+            .card-destaque-2col,
+            .card-banner-full {
+                grid-column: span 1 !important;
+                flex-direction: column !important;
+            }
+
+            .card-banner-full .card-img,
+            .card-banner-full .card-body {
+                width: 100% !important;
+            }
+
+            .card-banner-full .card-img {
+                height: 200px !important;
+            }
+
+            .card-banner-full {
+                background-color: #ffffff;
+                border: 1px solid #e5e7eb;
+                color: var(--texto-principal);
+            }
+
+            .card-banner-full .card-title {
+                color: var(--cor-primaria);
+                font-size: 1.25rem;
+            }
+
+            .card-banner-full .card-author {
+                color: var(--texto-secundario);
+            }
+
+            .modal-content {
+                padding: 24px 18px;
+            }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="escola-info">
-            <div class="logo-placeholder">EE</div>
-            <div>
-                <h1>O Novo Contagem</h1>
-                <p style="margin: 0; font-size: 0.9rem; color: #777;">Jornal Escolar da E.E. Nova Contagem</p>
+        <div class="header-content">
+            <div class="titulo-escola">
+                <h1>E.E. Nova Contagem</h1>
+                <p>Memorial & Jornal Escolar Digital</p>
             </div>
-        </div>
-        <div class="aniversario-selo">
-            <div class="numero">40 Anos</div>
-            <div class="datas">1986 - 2026<br>Inaugurada em 21/02/1986</div>
+            <div class="selo-40anos">
+                <span>40</span> Anos de História (1986 — 2026)
+            </div>
         </div>
     </header>
 
-    <div class="grid-container" id="news-grid">
-        <p style="text-align: center; grid-column: 1 / -1;">Carregando o jornal de hoje...</p>
-    </div>
+    <main class="grid-container" id="news-grid">
+        <p style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #6b7280;">
+            Carregando edições...
+        </p>
+    </main>
 
     <div class="modal" id="modal-overlay">
         <div class="modal-content">
@@ -211,7 +307,6 @@
     </div>
 
     <script>
-        // *** IMPORTANTE: Cole sua URL do Google Apps Script abaixo ***
         const API_URL = "https://script.google.com/macros/s/AKfycbxKQAWe2eGEnxUttQWHX_F12WalG4X6niIYuqU7Azsrntw7taJXUlq-QzEi_nO9mbLK/exec";
 
         async function carregarNoticias() {
@@ -221,34 +316,61 @@
                 const grid = document.getElementById('news-grid');
                 grid.innerHTML = '';
 
-                // Limitando às 10 primeiras linhas da planilha
                 const dezPrimeiras = noticias.slice(0, 10);
 
-                dezPrimeiras.forEach(noticia => {
-                    const card = document.createElement('div');
+                dezPrimeiras.forEach((noticia, index) => {
+                    const card = document.createElement('article');
                     card.className = 'card';
+
+                    // Lógica para variar o tamanho das notícias no computador
+                    if (index === 0) {
+                        // Notícia 1: Destaque grande (2 colunas)
+                        card.classList.add('card-destaque-2col');
+                    } else if (index === 2) {
+                        // Notícia 3: Banner horizontal (largura total)
+                        card.classList.add('card-banner-full');
+                    } else if (index === 6) {
+                        // Notícia 7: Outro destaque em 2 colunas
+                        card.classList.add('card-destaque-2col');
+                    }
+
+                    const imagemFallback = 'https://placehold.co/600x400/0f2338/ffffff?text=E.E.+Nova+Contagem';
+
                     card.innerHTML = `
-                        <img class="card-img" src="${noticia.Imagem || 'https://via.placeholder.com/300x180/eee/999?text=Sem+Imagem'}" alt="Capa da notícia">
-                        <div class="card-content">
-                            <h2 class="card-title">${noticia.Chamada}</h2>
+                        <img class="card-img" src="${noticia.Imagem || imagemFallback}" alt="Imagem de capa">
+                        <div class="card-body">
+                            <div>
+                                <div class="card-tag">Notícia #${index + 1}</div>
+                                <h2 class="card-title">${noticia.Chamada}</h2>
+                            </div>
                             <p class="card-author">Por: ${noticia.Redator || 'Redação'}</p>
                         </div>
                     `;
+
                     card.addEventListener('click', () => abrirModal(noticia));
                     grid.appendChild(card);
                 });
             } catch (erro) {
-                console.error("Erro na API:", erro);
-                document.getElementById('news-grid').innerHTML = '<p style="color: red; text-align: center;">Erro ao carregar o jornal.</p>';
+                console.error("Erro ao carregar dados:", erro);
+                document.getElementById('news-grid').innerHTML = `
+                    <p style="grid-column: 1 / -1; text-align: center; color: #ef4444; padding: 40px;">
+                        Erro ao carregar as notícias. Verifique a conexão com a planilha.
+                    </p>`;
             }
         }
 
         function abrirModal(noticia) {
             const body = document.getElementById('modal-body');
+            const imagemFallback = 'https://placehold.co/600x400/0f2338/ffffff?text=E.E.+Nova+Contagem';
+
             body.innerHTML = `
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2rem; color: #1a4a7e; margin-bottom: 5px;">${noticia.Chamada}</h2>
-                <p style="color: #777; margin-bottom: 20px;">Redator(a): ${noticia.Redator || 'Redação'}</p>
-                <img src="${noticia.Imagem || 'https://via.placeholder.com/600x350/eee/999?text=Sem+Imagem'}" alt="Capa">
+                <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #0d1b2a; margin-bottom: 8px;">
+                    ${noticia.Chamada}
+                </h2>
+                <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 16px;">
+                    Redação: <strong>${noticia.Redator || 'Redação Escolar'}</strong>
+                </p>
+                <img src="${noticia.Imagem || imagemFallback}" alt="Imagem da notícia">
                 <p>${noticia.Noticia}</p>
             `;
             document.getElementById('modal-overlay').style.display = 'flex';
@@ -259,7 +381,7 @@
         }
 
         window.onclick = function(e) {
-            if (e.target.className === 'modal') fecharModal();
+            if (e.target.id === 'modal-overlay') fecharModal();
         }
 
         carregarNoticias();
