@@ -43,14 +43,14 @@
     .modal-corpo { line-height: 1.7; color: #34495e; white-space: pre-line; }
 
     .carregando { text-align: center; padding: 40px; color: #7f8c8d; font-size: 1.1rem; }
-    .erro { color: #e74c3c; }
+    .erro { color: #e74c3c; line-height: 1.6; }
   </style>
 </head>
 <body>
 
   <header>
     <h1>📰 Jornal da Escola</h1>
-    <p>Notícias e acontecimentos — Atualizado direto da planilha</p>
+    <p>Notícias e acontecimentos</p>
   </header>
 
   <div id="carregando" class="carregando">Carregando notícias...</div>
@@ -71,8 +71,8 @@
 
   <script>
     // ===== CONFIGURAÇÕES =====
-    const ID_PLANILHA = "1J-cM14wEXgLscEKPayA3E8OezP9WwzEd6cw5yyXB5so"; // ← cole o ID da planilha entre as aspas
-    const NOME_ABA = "Planilha1";       // ← nome da aba com as notícias
+    const ID_PLANILHA = "1J-cM14wEXgLscEKPayA3E8OezP9WwzEd6cw5yyXB5so"; // ← cole o ID da planilha
+    const NOME_ABA = "Planilha1";       // ← nome da aba
     const MAX_NOTICIAS = 10;
     // ========================
 
@@ -84,11 +84,18 @@
 
       try {
         const resposta = await fetch(url);
-        if (!resposta.ok) throw new Error("Não foi possível acessar a planilha");
+        if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
         
         let texto = await resposta.text();
-        // Limpa o formato JSON que o Google retorna
-        texto = texto.replace(/.*google\.visualization\.Query\.setResponse\(|\);\s*$/g, "");
+        
+        // ✅ LIMPEZA CORRIGIDA — remove comentários e envelopamento
+        // Remove /*O_o*/ e tudo antes de { e depois de }
+        texto = texto.replace(/\/\*.*?\*\//g, ''); // remove comentários
+        const inicio = texto.indexOf('{');
+        const fim = texto.lastIndexOf('}');
+        if (inicio === -1 || fim === -1) throw new Error("Formato inesperado");
+        texto = texto.slice(inicio, fim + 1);
+
         const dados = JSON.parse(texto);
         
         noticias = converterDados(dados);
@@ -98,25 +105,23 @@
         document.getElementById("carregando").style.display = "none";
       } catch (erro) {
         document.getElementById("carregando").innerHTML = 
-          `<span class="erro">❌ Erro: ${erro.message}<br>Verifique o ID da planilha e se está compartilhada como "Qualquer pessoa com o link".</span>`;
+          `<span class="erro">❌ ${erro.message}<br><br>Verifique:<br>1. O ID da planilha está correto?<br>2. Compartilhar → "Qualquer pessoa com o link"?<br>3. A aba se chama "${NOME_ABA}"?</span>`;
         console.error(erro);
       }
     }
 
     function converterDados(dados) {
-      const linhas = dados.table.rows;
+      const linhas = dados.table?.rows;
       if (!linhas || linhas.length < 2) return [];
 
-      // Linha 0 = cabeçalhos
       const cabecalhos = linhas[0].c.map(c => (c?.v || "").trim());
       const resultado = [];
 
-      // Da linha 1 em diante = notícias
       for (let i = 1; i < linhas.length; i++) {
         const celulas = linhas[i].c;
         const item = {};
         cabecalhos.forEach((nome, idx) => {
-          item[nome] = (celulas[idx]?.v || "").toString().trim();
+          item[nome] = (celulas?.[idx]?.v ?? "").toString().trim();
         });
         if (item.chamada) resultado.push(item);
       }
@@ -171,7 +176,6 @@
       if (e.key === "Escape") fecharModal();
     });
 
-    // Inicia
     carregarNoticias();
   </script>
 </body>
