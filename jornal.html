@@ -43,7 +43,7 @@
     .modal-corpo { line-height: 1.7; color: #34495e; white-space: pre-line; }
 
     .carregando { text-align: center; padding: 40px; color: #7f8c8d; font-size: 1.1rem; }
-    .erro { color: #e74c3c; line-height: 1.6; }
+    .erro { color: #e74c3c; line-height: 1.8; }
   </style>
 </head>
 <body>
@@ -56,7 +56,6 @@
   <div id="carregando" class="carregando">Carregando notícias...</div>
   <div id="noticias-container" class="noticias-grid"></div>
 
-  <!-- Popup -->
   <div id="modal" class="modal-fundo" onclick="fecharModalFora(event)">
     <div class="modal-conteudo">
       <button class="modal-fechar" onclick="fecharModal()">&times;</button>
@@ -71,41 +70,50 @@
 
   <script>
     // ===== CONFIGURAÇÕES =====
-    const ID_PLANILHA = "1J-cM14wEXgLscEKPayA3E8OezP9WwzEd6cw5yyXB5so"; // ← cole o ID da planilha
-    const NOME_ABA = "Planilha1";       // ← nome da aba
+    const ID_PLANILHA = "1J-cM14wEXgLscEKPayA3E8OezP9WwzEd6cw5yyXB5so";
+    const NOME_ABA = "Planilha1";
     const MAX_NOTICIAS = 10;
     // ========================
 
     let noticias = [];
 
     async function carregarNoticias() {
+      // ✅ URL CORRIGIDA — formato oficial do Google
       const abaCodificada = encodeURIComponent(NOME_ABA);
       const url = `https://docs.google.com/spreadsheets/d/${ID_PLANILHA}/gviz/tq?tqx=out:json&sheet=${abaCodificada}`;
 
       try {
         const resposta = await fetch(url);
-        if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
+        
+        // Se der erro de CORS/não publicado → avisa o que fazer
+        if (!resposta.ok) {
+          throw new Error(`A planilha ainda não foi publicada!`);
+        }
         
         let texto = await resposta.text();
         
-        // ✅ LIMPEZA CORRIGIDA — remove comentários e envelopamento
-        // Remove /*O_o*/ e tudo antes de { e depois de }
-        texto = texto.replace(/\/\*.*?\*\//g, ''); // remove comentários
+        // ✅ Limpeza correta do JSON do Google
+        texto = texto.replace(/\/\*.*?\*\//g, '');
         const inicio = texto.indexOf('{');
         const fim = texto.lastIndexOf('}');
         if (inicio === -1 || fim === -1) throw new Error("Formato inesperado");
         texto = texto.slice(inicio, fim + 1);
 
         const dados = JSON.parse(texto);
-        
         noticias = converterDados(dados);
         noticias = noticias.slice(0, MAX_NOTICIAS);
+        
+        if (noticias.length === 0) {
+          document.getElementById("carregando").innerHTML = 
+            `<span class="erro">⚠️ Conectou, mas sem dados.<br>Verifique a linha 1: chamada, imagem_url, corpo_noticia, data</span>`;
+          return;
+        }
         
         renderizarNoticias();
         document.getElementById("carregando").style.display = "none";
       } catch (erro) {
         document.getElementById("carregando").innerHTML = 
-          `<span class="erro">❌ ${erro.message}<br><br>Verifique:<br>1. O ID da planilha está correto?<br>2. Compartilhar → "Qualquer pessoa com o link"?<br>3. A aba se chama "${NOME_ABA}"?</span>`;
+          `<span class="erro">❌ ${erro.message}<br><br>👉 Solução: <strong>Arquivo → Publicar na web</strong><br>Escolha "Planilha1" → formato: CSV → clique em Publicar<br>Recarregue a página depois!</span>`;
         console.error(erro);
       }
     }
@@ -114,7 +122,7 @@
       const linhas = dados.table?.rows;
       if (!linhas || linhas.length < 2) return [];
 
-      const cabecalhos = linhas[0].c.map(c => (c?.v || "").trim());
+      const cabecalhos = linhas[0].c.map(c => (c?.v || "").trim().toLowerCase());
       const resultado = [];
 
       for (let i = 1; i < linhas.length; i++) {
@@ -131,13 +139,13 @@
     function renderizarNoticias() {
       const container = document.getElementById("noticias-container");
       container.innerHTML = "";
+      const imgPadrao = "https://via.placeholder.com/300x180?text=Sem+Imagem";
 
       noticias.forEach((noticia, indice) => {
         const card = document.createElement("div");
         card.className = "noticia-card";
         card.onclick = () => abrirModal(indice);
 
-        const imgPadrao = "https://via.placeholder.com/300x180?text=Sem+Imagem";
         card.innerHTML = `
           <img src="${noticia.imagem_url || imgPadrao}" alt="${noticia.chamada}" class="noticia-img"
                onerror="this.src='${imgPadrao}'">
@@ -155,10 +163,8 @@
       document.getElementById("modal-titulo").textContent = n.chamada;
       document.getElementById("modal-data").textContent = n.data || "";
       document.getElementById("modal-corpo").textContent = n.corpo_noticia || "Sem conteúdo.";
-      
       const imgPadrao = "https://via.placeholder.com/700x250?text=Sem+Imagem";
       document.getElementById("modal-img").src = n.imagem_url || imgPadrao;
-      
       document.getElementById("modal").classList.add("modal-aberto");
       document.body.style.overflow = "hidden";
     }
