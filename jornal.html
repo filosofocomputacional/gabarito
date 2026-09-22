@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEMORIAL - E.E. Nova Contagem</title>
+    <title>Jornal Escolar - E.E. Nova Contagem</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-site: #f7f8fa;
             --cor-primaria: #0d1b2a;
-            --cor-card-dark: #0f2338;F
+            --cor-card-dark: #0f2338;
             --cor-destaque: #d4a373;
             --texto-principal: #1f2937;
             --texto-secundario: #6b7280;
@@ -26,7 +26,7 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-site);
             color: var(--texto-principal);
-            padding-bottom: 60px;
+            padding-bottom: 40px;
         }
 
         /* --- CABEÇALHO --- */
@@ -140,9 +140,7 @@
             margin-top: auto;
         }
 
-        /* VARIATAS DE TAMANHO PARA O DESKTOP */
-        
-        /* 1. Card Grande (Ocupa 2 colunas) */
+        /* VARIANTES DE TAMANHO */
         .card-destaque-2col {
             grid-column: span 2;
         }
@@ -153,7 +151,6 @@
             font-size: 1.6rem;
         }
 
-        /* 2. Banner Horizontal Escuro (Ocupa a largura total de 3 colunas) */
         .card-banner-full {
             grid-column: 1 / -1;
             flex-direction: row;
@@ -176,6 +173,106 @@
         }
         .card-banner-full .card-author {
             color: #9ca3af;
+        }
+
+        /* --- RODAPÉ (ESTILO MEMORIAL) --- */
+        footer {
+            max-width: 1200px;
+            margin: 60px auto 0;
+            padding: 0 20px;
+        }
+
+        /* 1. Banner Escuro CTA */
+        .cta-banner {
+            background-color: var(--cor-card-dark);
+            color: #ffffff;
+            border-radius: var(--raio-borda);
+            padding: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .cta-text h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .cta-text p {
+            color: #9ca3af;
+            font-size: 0.95rem;
+        }
+
+        .cta-button {
+            background-color: var(--cor-destaque);
+            color: var(--cor-primaria);
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-block;
+            transition: opacity 0.2s;
+        }
+
+        .cta-button:hover {
+            opacity: 0.9;
+        }
+
+        /* 2. Marcadores / Números */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 30px 0;
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 30px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--texto-secundario);
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--cor-primaria);
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+
+        .stat-desc {
+            font-size: 0.85rem;
+            color: var(--texto-secundario);
+        }
+
+        /* 3. Rodapé Inferior */
+        .bottom-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: var(--texto-secundario);
+            padding-bottom: 20px;
         }
 
         /* --- MODAL / POPUP --- */
@@ -230,7 +327,7 @@
             white-space: pre-wrap;
         }
 
-        /* --- RESPONSIVIDADE (CELULAR E TABLET PEQUENO) --- */
+        /* --- RESPONSIVIDADE (CELULAR) --- */
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -238,11 +335,10 @@
             }
 
             .grid-container {
-                grid-template-columns: 1fr; /* Força 1 coluna única no celular */
+                grid-template-columns: 1fr;
                 gap: 20px;
             }
 
-            /* Reseta todas as variações de tamanho para o padrão de celular */
             .card-destaque-2col,
             .card-banner-full {
                 grid-column: span 1 !important;
@@ -273,8 +369,20 @@
                 color: var(--texto-secundario);
             }
 
-            .modal-content {
-                padding: 24px 18px;
+            .cta-banner {
+                padding: 24px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 24px;
+            }
+
+            .bottom-bar {
+                flex-direction: column;
+                text-align: center;
             }
         }
     </style>
@@ -299,6 +407,49 @@
         </p>
     </main>
 
+    <!-- RODAPÉ COMPLETO ESTILO MEMORIAL -->
+    <footer>
+        <!-- Banner Dark de Chamada -->
+        <div class="cta-banner">
+            <div class="cta-text">
+                <h3>Você tem fotos, cartas ou memórias da escola?</h3>
+                <p>Envie sua sugestão de pauta ou registro histórico para a equipe do jornal escolar.</p>
+            </div>
+            <a href="https://forms.google.com" target="_blank" class="cta-button">Enviar Registro</a>
+        </div>
+
+        <!-- Colunas com Números e História -->
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-label">Fundação</span>
+                <span class="stat-value">1986</span>
+                <span class="stat-desc">Inaugurada em 21/02/1986</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Legado Contínuo</span>
+                <span class="stat-value">40 Anos</span>
+                <span class="stat-desc">Formando gerações na comunidade</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Projeto Digital</span>
+                <span class="stat-value">Jornal</span>
+                <span class="stat-desc">Produzido por alunos e professores</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Comunidade</span>
+                <span class="stat-value">E.E. N. C.</span>
+                <span class="stat-desc">Educação e cidadania em Contagem</span>
+            </div>
+        </div>
+
+        <!-- Barra do Fim da Página -->
+        <div class="bottom-bar">
+            <p>© 1986–2026 E.E. Nova Contagem • Todos os direitos reservados</p>
+            <p>Acervo Digital & Jornal Escolar</p>
+        </div>
+    </footer>
+
+    <!-- POPUP / MODAL -->
     <div class="modal" id="modal-overlay">
         <div class="modal-content">
             <button class="modal-close" onclick="fecharModal()">&times;</button>
@@ -322,15 +473,11 @@
                     const card = document.createElement('article');
                     card.className = 'card';
 
-                    // Lógica para variar o tamanho das notícias no computador
                     if (index === 0) {
-                        // Notícia 1: Destaque grande (2 colunas)
                         card.classList.add('card-destaque-2col');
                     } else if (index === 2) {
-                        // Notícia 3: Banner horizontal (largura total)
                         card.classList.add('card-banner-full');
                     } else if (index === 6) {
-                        // Notícia 7: Outro destaque em 2 colunas
                         card.classList.add('card-destaque-2col');
                     }
 
@@ -340,7 +487,7 @@
                         <img class="card-img" src="${noticia.Imagem || imagemFallback}" alt="Imagem de capa">
                         <div class="card-body">
                             <div>
-                                <div class="card-tag">Reminiscência #${index + 1}</div>
+                                <div class="card-tag">Notícia #${index + 1}</div>
                                 <h2 class="card-title">${noticia.Chamada}</h2>
                             </div>
                             <p class="card-author">Por: ${noticia.Redator || 'Redação'}</p>
