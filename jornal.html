@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📰 Jornal da Escola</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { background: #f5f5f5; padding: 20px; max-width: 1200px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    h1 { color: #2c3e50; }
+
+    .noticias-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+    .noticia-card {
+      background: white; border-radius: 10px; overflow: hidden;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.3s;
+    }
+    .noticia-card:hover { transform: translateY(-5px); }
+    .noticia-img { width: 100%; height: 180px; object-fit: cover; background: #ddd; }
+    .noticia-conteudo { padding: 15px; }
+    .noticia-chamada { font-size: 1.1rem; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+    .noticia-data { font-size: 0.85rem; color: #7f8c8d; }
+
+    .modal-fundo {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; padding: 20px;
+    }
+    .modal-aberto { display: flex; }
+    .modal-conteudo {
+      background: white; border-radius: 10px; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative;
+      animation: aparecer 0.3s ease;
+    }
+    @keyframes aparecer { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .modal-fechar {
+      position: absolute; top: 15px; right: 20px; font-size: 1.8rem; cursor: pointer; color: #7f8c8d;
+      background: none; border: none; padding: 0; line-height: 1;
+    }
+    .modal-fechar:hover { color: #e74c3c; }
+    .modal-imagem { width: 100%; height: 250px; object-fit: cover; }
+    .modal-texto { padding: 25px; }
+    .modal-texto h2 { color: #2c3e50; margin-bottom: 10px; }
+    .modal-data { color: #7f8c8d; font-size: 0.9rem; margin-bottom: 20px; display: block; }
+    .modal-corpo { line-height: 1.7; color: #34495e; white-space: pre-line; }
+
+    .carregando { text-align: center; padding: 40px; color: #7f8c8d; font-size: 1.1rem; }
+    .erro { color: #e74c3c; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>📰 Jornal da Escola</h1>
+    <p>Notícias e acontecimentos — Atualizado direto da planilha</p>
+  </header>
+
+  <div id="carregando" class="carregando">Carregando notícias...</div>
+  <div id="noticias-container" class="noticias-grid"></div>
+
+  <!-- Popup -->
+  <div id="modal" class="modal-fundo" onclick="fecharModalFora(event)">
+    <div class="modal-conteudo">
+      <button class="modal-fechar" onclick="fecharModal()">&times;</button>
+      <img id="modal-img" class="modal-imagem" src="" alt="">
+      <div class="modal-texto">
+        <h2 id="modal-titulo"></h2>
+        <span id="modal-data" class="modal-data"></span>
+        <p id="modal-corpo" class="modal-corpo"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== CONFIGURAÇÕES =====
+    const ID_PLANILHA = "1J-cM14wEXgLscEKPayA3E8OezP9WwzEd6cw5yyXB5so"; // ← cole o ID da planilha entre as aspas
+    const NOME_ABA = "Planilha1";       // ← nome da aba com as notícias
+    const MAX_NOTICIAS = 10;
+    // ========================
+
+    let noticias = [];
+
+    async function carregarNoticias() {
+      const abaCodificada = encodeURIComponent(NOME_ABA);
+      const url = `https://docs.google.com/spreadsheets/d/${ID_PLANILHA}/gviz/tq?tqx=out:json&sheet=${abaCodificada}`;
+
+      try {
+        const resposta = await fetch(url);
+        if (!resposta.ok) throw new Error("Não foi possível acessar a planilha");
+        
+        let texto = await resposta.text();
+        // Limpa o formato JSON que o Google retorna
+        texto = texto.replace(/.*google\.visualization\.Query\.setResponse\(|\);\s*$/g, "");
+        const dados = JSON.parse(texto);
+        
+        noticias = converterDados(dados);
+        noticias = noticias.slice(0, MAX_NOTICIAS);
+        
+        renderizarNoticias();
+        document.getElementById("carregando").style.display = "none";
+      } catch (erro) {
+        document.getElementById("carregando").innerHTML = 
+          `<span class="erro">❌ Erro: ${erro.message}<br>Verifique o ID da planilha e se está compartilhada como "Qualquer pessoa com o link".</span>`;
+        console.error(erro);
+      }
+    }
+
+    function converterDados(dados) {
+      const linhas = dados.table.rows;
+      if (!linhas || linhas.length < 2) return [];
+
+      // Linha 0 = cabeçalhos
+      const cabecalhos = linhas[0].c.map(c => (c?.v || "").trim());
+      const resultado = [];
+
+      // Da linha 1 em diante = notícias
+      for (let i = 1; i < linhas.length; i++) {
+        const celulas = linhas[i].c;
+        const item = {};
+        cabecalhos.forEach((nome, idx) => {
+          item[nome] = (celulas[idx]?.v || "").toString().trim();
+        });
+        if (item.chamada) resultado.push(item);
+      }
+      return resultado;
+    }
+
+    function renderizarNoticias() {
+      const container = document.getElementById("noticias-container");
+      container.innerHTML = "";
+
+      noticias.forEach((noticia, indice) => {
+        const card = document.createElement("div");
+        card.className = "noticia-card";
+        card.onclick = () => abrirModal(indice);
+
+        const imgPadrao = "https://via.placeholder.com/300x180?text=Sem+Imagem";
+        card.innerHTML = `
+          <img src="${noticia.imagem_url || imgPadrao}" alt="${noticia.chamada}" class="noticia-img"
+               onerror="this.src='${imgPadrao}'">
+          <div class="noticia-conteudo">
+            <h3 class="noticia-chamada">${noticia.chamada}</h3>
+            <span class="noticia-data">${noticia.data || ""}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function abrirModal(indice) {
+      const n = noticias[indice];
+      document.getElementById("modal-titulo").textContent = n.chamada;
+      document.getElementById("modal-data").textContent = n.data || "";
+      document.getElementById("modal-corpo").textContent = n.corpo_noticia || "Sem conteúdo.";
+      
+      const imgPadrao = "https://via.placeholder.com/700x250?text=Sem+Imagem";
+      document.getElementById("modal-img").src = n.imagem_url || imgPadrao;
+      
+      document.getElementById("modal").classList.add("modal-aberto");
+      document.body.style.overflow = "hidden";
+    }
+
+    function fecharModal() {
+      document.getElementById("modal").classList.remove("modal-aberto");
+      document.body.style.overflow = "auto";
+    }
+
+    function fecharModalFora(event) {
+      if (event.target.id === "modal") fecharModal();
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") fecharModal();
+    });
+
+    // Inicia
+    carregarNoticias();
+  </script>
+</body>
+</html>
