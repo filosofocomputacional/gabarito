@@ -168,7 +168,6 @@ header {
 .card-banner-full .card-body { width: 52%; padding: 36px; }
 .card-banner-full .card-title { color: #ffffff; font-size: 1.8rem; margin-bottom: 16px; }
 .card-banner-full .card-author { color: #9ca3af; }
-/* Botão Ver Mais */
 .ver-mais-container {
   grid-column: 1 / -1;
   text-align: center;
@@ -317,7 +316,6 @@ footer {
   font-size: 1.05rem;
   white-space: pre-wrap;
 }
-/* CARROSSEL */
 .carrossel {
   position: relative;
   width: 100%;
@@ -376,7 +374,6 @@ footer {
   cursor: pointer;
 }
 .carrossel-dot.ativo { background: white; box-shadow: 0 0 4px rgba(0,0,0,0.3); }
-/* VÍDEO */
 .video-container {
   position: relative;
   width: 100%;
@@ -392,7 +389,6 @@ footer {
   width: 100%; height: 100%;
   border: none;
 }
-/* RESPONSIVIDADE */
 @media (max-width: 768px) {
   .header-content { flex-direction: column; align-items: flex-start; }
   .grid-container { grid-template-columns: 1fr; gap: 20px; }
@@ -479,20 +475,29 @@ let todasNoticias = [];
 let noticiasExibidas = LIMITE_INICIAL;
 let indiceCarrosselAtual = 0;
 
-// 🔄 Converte link do Google Drive para formato exibível
+// ✅ CONVERSÃO CONFIÁVEL PARA GOOGLE DRIVE
 function normalizarLinkImagem(link) {
   if (!link) return link;
   link = link.trim();
   
-  // Padrão Google Drive: /file/d/ID/view
-  const match = link.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (match) {
-    return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+  // Formato: /file/d/ID/view
+  const match1 = link.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (match1) {
+    const id = match1[1];
+    return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
   }
-  // Se já estiver no formato uc?export=view
-  if (link.includes('uc?export=view')) {
+  
+  // Formato: /open?id=ID
+  const match2 = link.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+  if (match2) {
+    return `https://drive.google.com/thumbnail?id=${match2[1]}&sz=w1000`;
+  }
+  
+  // Já está no formato correto
+  if (link.includes('thumbnail?id=') || link.includes('uc?export=view')) {
     return link;
   }
+  
   return link;
 }
 
@@ -508,13 +513,9 @@ async function carregarNoticias() {
     const resposta = await fetch(API_URL);
     todasNoticias = await resposta.json();
     
-    // Exibe imediatamente as primeiras 10
     renderizarNoticias(0, LIMITE_INICIAL);
     
-    // Carrega o restante em segundo plano
     if (todasNoticias.length > LIMITE_INICIAL) {
-      // Simula preparação em segundo plano (dados já estão carregados)
-      // Apenas mostra o botão "Ver mais"
       adicionarBotaoVerMais();
     }
   } catch (erro) {
@@ -535,7 +536,6 @@ function renderizarNoticias(de, ate) {
     const card = document.createElement('article');
     card.className = 'card';
     
-    // Destaques nas posições como antes
     if (i === 0) card.classList.add('card-destaque-2col');
     else if (i === 2) card.classList.add('card-banner-full');
     else if (i === 6) card.classList.add('card-destaque-2col');
@@ -598,13 +598,10 @@ function exibirMaisNoticias() {
   btn.style.display = 'none';
   carregando.style.display = 'block';
   
-  // Pequeno delay para feedback visual
   setTimeout(() => {
     const novoLimite = todasNoticias.length;
     renderizarNoticias(noticiasExibidas, novoLimite);
     noticiasExibidas = novoLimite;
-    
-    // Remove o botão
     document.getElementById('ver-mais-container').remove();
   }, 300);
 }
