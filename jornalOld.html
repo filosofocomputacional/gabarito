@@ -547,7 +547,98 @@
         window.onclick = function(e) {
             if (e.target.id === 'modal-overlay') fecharModal();
         }
+// Função que converte links de visualização do Google Drive em links diretos de imagem
+function converterUrlDrive(url) {
+    if (!url) return '';
+    
+    // Procura o ID do arquivo no link do Google Drive
+    const match = url.match(/\/file\/d\/([^\/]+)|id=([^&]+)/);
+    if (match) {
+        const fileId = match[1] || match[2];
+        return `https://lh3.googleusercontent.com/d/${fileId}`;
+    }
+    
+    return url; // Se não for do Drive, retorna o link original
+}
 
+async function carregarNoticias() {
+    try {
+        const resposta = await fetch(API_URL);
+        const noticias = await resposta.json();
+        const grid = document.getElementById('news-grid');
+        grid.innerHTML = '';
+
+        const dezPrimeiras = noticias.slice(0, 10);
+
+        dezPrimeiras.forEach((noticia, index) => {
+            const card = document.createElement('article');
+            card.className = 'card';
+
+            if (index === 0) {
+                card.classList.add('card-destaque-2col');
+            } else if (index === 2) {
+                card.classList.add('card-banner-full');
+            } else if (index === 6) {
+                card.classList.add('card-destaque-2col');
+            }
+
+            const imagemFallback = 'https://placehold.co/600x400/0f2338/ffffff?text=E.E.+Nova+Contagem';
+            
+            // AQUI: Convertendo a URL caso seja do Google Drive
+            const urlImagemFormatada = converterUrlDrive(noticia.Imagem) || imagemFallback;
+
+            card.innerHTML = `
+                <img class="card-img" src="${urlImagemFormatada}" alt="${noticia.Chamada || 'Imagem da notícia'}">
+                <div class="card-body">
+                    <div>
+                        <div class="card-tag">Notícia #${index + 1}</div>
+                        <h2 class="card-title">${noticia.Chamada}</h2>
+                    </div>
+                    <p class="card-author">Por: ${noticia.Redator || 'Redação'}</p>
+                </div>
+            `;
+
+            card.addEventListener('click', () => abrirModal(noticia));
+            grid.appendChild(card);
+        });
+    } catch (erro) {
+        console.error("Erro ao carregar dados:", erro);
+        document.getElementById('news-grid').innerHTML = `
+            <p style="grid-column: 1 / -1; text-align: center; color: #ef4444; padding: 40px;">
+                Erro ao carregar as notícias. Verifique a conexão com a planilha.
+            </p>`;
+    }
+}
+
+function abrirModal(noticia) {
+    const body = document.getElementById('modal-body');
+    const imagemFallback = 'https://placehold.co/600x400/0f2338/ffffff?text=E.E.+Nova+Contagem';
+    
+    // AQUI TAMBÉM: Convertendo a URL para o popup
+    const urlImagemFormatada = converterUrlDrive(noticia.Imagem) || imagemFallback;
+
+    body.innerHTML = `
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #0d1b2a; margin-bottom: 8px;">
+            ${noticia.Chamada}
+        </h2>
+        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 16px;">
+            Redação: <strong>${noticia.Redator || 'Redação Escolar'}</strong>
+        </p>
+        <img src="${urlImagemFormatada}" alt="${noticia.Chamada}">
+        <p>${noticia.Noticia}</p>
+    `;
+    document.getElementById('modal-overlay').style.display = 'flex';
+}
+
+function fecharModal() {
+    document.getElementById('modal-overlay').style.display = 'none';
+}
+
+window.onclick = function(e) {
+    if (e.target.id === 'modal-overlay') fecharModal();
+}
+
+carregarNoticias();
         carregarNoticias();
     </script>
 </body>
