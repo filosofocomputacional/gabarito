@@ -561,7 +561,8 @@ function processarUrlVideo(url) {
   };
 }
 
-function iniciarAlternanciaImagens(container) {
+// Agora aceita o parâmetro 'tempo' (padrão 3000ms se não for informado)
+function iniciarAlternanciaImagens(container, tempo = 3000) {
   const imagens = container.querySelectorAll('img');
   const pontos = container.querySelectorAll('.dot');
 
@@ -577,7 +578,7 @@ function iniciarAlternanciaImagens(container) {
 
     imagens[indice].classList.add('active');
     if (pontos[indice]) pontos[indice].classList.add('active');
-  }, 3000);
+  }, tempo); // <--- Usa o tempo dinâmico informado
 }
 
 function renderizarNoticias(de, ate) {
