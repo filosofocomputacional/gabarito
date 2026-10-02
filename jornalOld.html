@@ -1,386 +1,813 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mural de Notícias</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jornal Escolar & Memorial | E.E. Nova Contagem - 40 Anos</title>
+<meta name="description" content="Jornal Escolar Digital e Acervo de Memórias da E.E. Nova Contagem em Contagem - MG. Celebrando 40 anos de história, registros e educação comunitária (1986–2026).">
+<meta name="keywords" content="E.E. Nova Contagem, Escola Estadual Nova Contagem, Jornal Escolar, Memorial Escolar, Contagem MG, Educação, 40 anos, Notícias Escolares">
+<meta name="author" content="E.E. Nova Contagem">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jornal Escolar & Memorial - E.E. Nova Contagem (40 Anos)">
+<meta property="og:description" content="Confira as notícias e o acervo histórico dos 40 anos da Escola Estadual Nova Contagem. Produzido pelos alunos e comunidade escolar.">
+<meta property="og:image" content="https://placehold.co/1200x630/0f2338/ffffff?text=E.E.+Nova+Contagem+-+40+Anos">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="E.E. Nova Contagem">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Jornal Escolar & Memorial - E.E. Nova Contagem">
+<meta name="twitter:description" content="Acompanhe o jornal digital e o acervo de memórias da E.E. Nova Contagem.">
+<meta name="twitter:image" content="https://placehold.co/1200x630/0f2338/ffffff?text=E.E.+Nova+Contagem+-+40+Anos">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8F%9B%EF%B8%8F</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-site: #f7f8fa;
+  --cor-primaria: #0d1b2a;
+  --cor-card-dark: #0f2338;
+  --cor-destaque: #d4a373;
+  --texto-principal: #1f2937;
+  --texto-secundario: #6b7280;
+  --raio-borda: 16px;
+  --sombra-suave: 0 4px 12px rgba(0,0,0,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg-site);
+  color: var(--texto-principal);
+  padding-bottom: 40px;
+}
+header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 30px 20px;
+}
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.titulo-escola h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  color: var(--cor-primaria);
+  letter-spacing: -0.5px;
+}
+.titulo-escola p {
+  color: var(--texto-secundario);
+  font-size: 0.95rem;
+  margin-top: 4px;
+}
+.selo-40anos {
+  background-color: var(--cor-primaria);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+}
+.selo-40anos span {
+  color: var(--cor-destaque);
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+.grid-container {
+  max-width: 1200px;
+  margin: 40px auto 0;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.card {
+  background: #ffffff;
+  border-radius: var(--raio-borda);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
-            color: #333;
-            padding: 20px;
-        }
+/* CARROSSEL E CAPA DE IMAGENS NOS CARDS */
+.card-img-wrapper {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background-color: #0f2338;
+  overflow: hidden;
+}
+.card-img-wrapper img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+}
+.card-img-wrapper img.active {
+  opacity: 1;
+}
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+/* Indicadores de pontinhos no carrossel */
+.carousel-dots {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+}
+.dot.active {
+  background-color: var(--cor-destaque);
+  transform: scale(1.3);
+}
 
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #0d1b2a;
-            font-size: 2.2rem;
-        }
+.card-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
+}
+.card-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--cor-destaque);
+  margin-bottom: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.tag-video {
+  background: #ef4444;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+}
+.tag-galeria {
+  background: #3b82f6;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+}
+.tag-drive {
+  background: #10b981;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+}
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  line-height: 1.35;
+  color: var(--cor-primaria);
+  margin-bottom: 12px;
+}
+.card-author {
+  font-size: 0.85rem;
+  color: var(--texto-secundario);
+  margin-top: auto;
+}
+.card-destaque-2col { grid-column: span 2; }
+.card-destaque-2col .card-img-wrapper { height: 280px; }
+.card-destaque-2col .card-title { font-size: 1.6rem; }
 
-        /* Layout em Grid */
-        .news-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
+.card-banner-full {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  background-color: var(--cor-card-dark);
+  border: none;
+  color: #ffffff;
+}
+.card-banner-full .card-img-wrapper { width: 48%; height: 320px; }
+.card-banner-full .card-body { width: 52%; padding: 36px; }
+.card-banner-full .card-title { color: #ffffff; font-size: 1.8rem; margin-bottom: 16px; }
+.card-banner-full .card-author { color: #9ca3af; }
 
-        /* Estilo dos Cards */
-        .card {
-            background-color: #fff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
+.ver-mais-container {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-top: 20px;
+  padding: 20px;
+}
+.ver-mais-btn {
+  background-color: var(--cor-destaque);
+  color: var(--cor-primaria);
+  font-weight: 700;
+  padding: 14px 32px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ver-mais-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+.ver-mais-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.carregando-mais {
+  color: var(--texto-secundario);
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
 
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-        }
+footer {
+  max-width: 1200px;
+  margin: 60px auto 0;
+  padding: 0 20px;
+}
+.cta-banner {
+  background-color: var(--cor-card-dark);
+  color: #ffffff;
+  border-radius: var(--raio-borda);
+  padding: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+.cta-text h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.cta-text p { color: #9ca3af; font-size: 0.95rem; }
+.cta-button {
+  background-color: var(--cor-destaque);
+  color: var(--cor-primaria);
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: inline-block;
+  transition: opacity 0.2s;
+}
+.cta-button:hover { opacity: 0.9; }
 
-        /* Container de Imagem com Carrossel Suave */
-        .card-img-wrapper {
-            position: relative;
-            width: 100%;
-            height: 220px;
-            background-color: #e2e8f0;
-            overflow: hidden;
-        }
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  padding: 30px 0;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 30px;
+}
+.stat-item { display: flex; flex-direction: column; }
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--texto-secundario);
+  margin-bottom: 6px;
+}
+.stat-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--cor-primaria);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.stat-desc { font-size: 0.85rem; color: var(--texto-secundario); }
 
-        .card-img-wrapper img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0;
-            transition: opacity 0.8s ease-in-out;
-        }
+.bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  font-size: 0.85rem;
+  color: var(--texto-secundario);
+  padding-bottom: 20px;
+}
 
-        .card-img-wrapper img.active {
-            opacity: 1;
-        }
+/* ESTILOS DO MODAL E VÍDEO */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(13, 27, 42, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(6px);
+  padding: 20px;
+}
+.modal-content {
+  background: #ffffff;
+  padding: 36px;
+  border-radius: var(--raio-borda);
+  width: 90%;
+  max-width: 760px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+.modal-close {
+  position: absolute;
+  top: 18px; right: 22px;
+  font-size: 1.8rem;
+  background: #f3f4f6;
+  border: none;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--texto-principal);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-body p {
+  line-height: 1.8;
+  color: #374151;
+  font-size: 1.05rem;
+  white-space: pre-wrap;
+}
 
-        /* Indicadores (Pontos de navegação) */
-        .carousel-dots {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 6px;
-            z-index: 2;
-        }
+/* CARROSSEL NO MODAL */
+.modal-carrossel-wrapper {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 20px 0;
+  background-color: #0f2338;
+}
+.modal-carrossel-wrapper img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+}
+.modal-carrossel-wrapper img.active {
+  opacity: 1;
+}
 
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.5);
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
+/* CONTAINER DE VÍDEO RESPONSIVO */
+.video-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  margin: 20px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #000;
+}
+.video-container iframe, 
+.video-container video {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: none;
+  object-fit: contain;
+}
 
-        .dot.active {
-            background-color: #ffffff;
-            transform: scale(1.2);
-        }
+@media (max-width: 768px) {
+  .header-content { flex-direction: column; align-items: flex-start; }
+  .grid-container { grid-template-columns: 1fr; gap: 20px; }
+  .card-destaque-2col, .card-banner-full { grid-column: span 1 !important; flex-direction: column !important; }
+  .card-banner-full .card-img-wrapper, .card-banner-full .card-body { width: 100% !important; }
+  .card-banner-full .card-img-wrapper { height: 200px !important; }
+  .card-banner-full { background-color: #fff; border: 1px solid #e5e7eb; color: var(--texto-principal); }
+  .card-banner-full .card-title { color: var(--cor-primaria); font-size: 1.25rem; }
+  .card-banner-full .card-author { color: var(--texto-secundario); }
+  .cta-banner { padding: 24px; flex-direction: column; align-items: flex-start; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .bottom-bar { flex-direction: column; text-align: center; }
+  .modal-carrossel-wrapper { height: 240px; }
+}
+</style>
+</head><body>
 
-        /* Conteúdo do Card */
-        .card-body {
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            flex-grow: 1;
-        }
-
-        .card-tag {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            font-weight: 700;
-            color: #2563eb;
-            margin-bottom: 6px;
-        }
-
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1e293b;
-            line-height: 1.4;
-            margin-bottom: 12px;
-        }
-
-        .card-author {
-            font-size: 0.85rem;
-            color: #64748b;
-        }
-
-        /* Modal overlay */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background: #fff;
-            width: 100%;
-            max-width: 650px;
-            max-height: 90vh;
-            border-radius: 12px;
-            padding: 24px;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            background: #f1f5f9;
-            border: none;
-            font-size: 1.2rem;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        .modal-img-wrapper {
-            position: relative;
-            width: 100%;
-            height: 320px;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 16px 0;
-            background-color: #e2e8f0;
-        }
-
-        .modal-img-wrapper img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0;
-            transition: opacity 0.8s ease-in-out;
-        }
-
-        .modal-img-wrapper img.active {
-            opacity: 1;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <h1>Mural de Notícias</h1>
-        <div id="news-grid" class="news-grid"></div>
+<header>
+  <div class="header-content">
+    <div class="titulo-escola">
+      <h1>E.E. Nova Contagem</h1>
+      <p>Memorial & Jornal Escolar Digital</p>
     </div>
+    <div class="selo-40anos">
+      <span>40</span> Anos de História (1986 — 2026)
+    </div>
+  </div>
+</header>
 
-    <!-- Estrutura do Modal -->
-    <div id="modal-overlay" class="modal-overlay" onclick="fecharModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="fecharModal()">&times;</button>
-            <div id="modal-body"></div>
+<main class="grid-container" id="news-grid">
+  <p style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #6b7280;">
+    Carregando edições...
+  </p>
+</main>
+
+<footer>
+  <div class="cta-banner">
+    <div class="cta-text">
+      <h3>Você tem fotos, cartas ou memórias da escola?</h3>
+      <p>Envie sua sugestão de pauta ou registro histórico para a equipe do jornal escolar.</p>
+    </div>
+    <a href="https://novacontagem.netlify.app/" target="_blank" rel="noopener" class="cta-button">Enviar Registro</a>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-item">
+      <span class="stat-label">Fundação</span>
+      <span class="stat-value">1986</span>
+      <span class="stat-desc">Inaugurada em 21/02/1986</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Legado Contínuo</span>
+      <span class="stat-value">40 Anos</span>
+      <span class="stat-desc">Formando gerações na comunidade</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Projeto Digital</span>
+      <span class="stat-value">Jornal</span>
+      <span class="stat-desc">Produzido por alunos e professores</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Comunidade</span>
+      <span class="stat-value">E.E. N. C.</span>
+      <span class="stat-desc">Educação e cidadania em Contagem</span>
+    </div>
+  </div>
+  <div class="bottom-bar">
+    <p>© 1986–2026 E.E. Nova Contagem • Todos os direitos reservados</p>
+    <p>Acervo Digital & Jornal Escolar</p>
+  </div>
+</footer>
+
+<div class="modal" id="modal-overlay" onclick="fecharModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="fecharModal()">&times;</button>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxKQAWe2eGEnxUttQWHX_F12WalG4X6niIYuqU7Azsrntw7taJXUlq-QzEi_nO9mbLK/exec";
+const LIMITE_INICIAL = 10;
+const IMAGEM_FALLBACK = 'https://placehold.co/600x400/0f2338/ffffff?text=E.E.+Nova+Contagem';
+
+let todasNoticias = [];
+let noticiasExibidas = LIMITE_INICIAL;
+let modalInterval = null; // Timer para o carrossel do modal
+
+// ✅ NORMALIZAÇÃO E CONVERSÃO DE LINKS DO GOOGLE DRIVE E MÍDIAS
+function normalizarLinkImagem(link) {
+  if (!link || typeof link !== 'string') return '';
+  link = link.trim();
+  
+  const matchDrive = link.match(/\/file\/d\/([a-zA-Z0-9_-]+)|[?&]id=([a-zA-Z0-9_-]+)/);
+  const fileId = matchDrive ? (matchDrive[1] || matchDrive[2]) : null;
+
+  if (fileId) {
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`;
+  }
+  
+  if (/^[a-zA-Z0-9_-]{25,}$/.test(link)) {
+    return `https://drive.google.com/thumbnail?id=${link}&sz=w1200`;
+  }
+  
+  return link;
+}
+
+// Extrai todas as imagens válidas da notícia (combina Imagem e Imagens_Galeria)
+function obterListaImagens(noticia) {
+  let lista = [];
+  
+  if (noticia.Imagens_Galeria && noticia.Imagens_Galeria.trim() !== '') {
+    lista = lista.concat(noticia.Imagens_Galeria.split(','));
+  }
+  if (noticia.Imagem && noticia.Imagem.trim() !== '') {
+    lista = lista.concat(noticia.Imagem.split(','));
+  }
+  
+  return lista
+    .map(s => normalizarLinkImagem(s))
+    .filter(s => s && s.length > 0 && !ehUrlVideo(s));
+}
+
+// Deteta se o link é um vídeo
+function ehUrlVideo(url) {
+  if (!url || typeof url !== 'string') return false;
+  const u = url.toLowerCase();
+  return u.includes('.mp4') || u.includes('.webm') || u.includes('youtube.com') || u.includes('youtu.be');
+}
+
+// Processa o vídeo para gerar a URL correta de embed com Autoplay
+function processarUrlVideo(url) {
+  if (!url) return null;
+  url = url.trim();
+
+  // YouTube
+  const matchYT = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+  if (matchYT) {
+    return {
+      tipo: 'youtube',
+      url: `https://www.youtube.com/embed/${matchYT[1]}?autoplay=1&enablejsapi=1`
+    };
+  }
+
+  // Google Drive Vídeo
+  const matchDrive = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)|[?&]id=([a-zA-Z0-9_-]+)/);
+  const fileId = matchDrive ? (matchDrive[1] || matchDrive[2]) : null;
+  if (fileId) {
+    return {
+      tipo: 'drive',
+      url: `https://drive.google.com/file/d/${fileId}/preview`
+    };
+  }
+
+  // Arquivo de vídeo direto (MP4, WEBM)
+  return {
+    tipo: 'direto',
+    url: url
+  };
+}
+
+// Inicia rotação automática de 5 segundos no container de imagens
+function iniciarAlternanciaImagens(container) {
+  const imagens = container.querySelectorAll('img');
+  const pontos = container.querySelectorAll('.dot');
+
+  if (imagens.length <= 1) return null;
+
+  let indice = 0;
+
+  return setInterval(() => {
+    imagens[indice].classList.remove('active');
+    if (pontos[indice]) pontos[indice].classList.remove('active');
+
+    indice = (indice + 1) % imagens.length;
+
+    imagens[indice].classList.add('active');
+    if (pontos[indice]) pontos[indice].classList.add('active');
+  }, 3000); // 5 segundos
+}
+
+async function carregarNoticias() {
+  try {
+    const resposta = await fetch(API_URL);
+    todasNoticias = await resposta.json();
+    
+    renderizarNoticias(0, LIMITE_INICIAL);
+    
+    if (todasNoticias.length > LIMITE_INICIAL) {
+      adicionarBotaoVerMais();
+    }
+  } catch (erro) {
+    console.error("Erro ao carregar dados:", erro);
+    document.getElementById('news-grid').innerHTML = `
+      <p style="grid-column: 1 / -1; text-align: center; color: #ef4444; padding: 40px;">
+        Erro ao carregar as notícias. Verifique a conexão com a planilha.
+      </p>`;
+  }
+}
+
+function renderizarNoticias(de, ate) {
+  const grid = document.getElementById('news-grid');
+  
+  for (let i = de; i < ate && i < todasNoticias.length; i++) {
+    const noticia = todasNoticias[i];
+    const card = document.createElement('article');
+    card.className = 'card';
+    
+    if (i === 0) card.classList.add('card-destaque-2col');
+    else if (i === 2) card.classList.add('card-banner-full');
+    else if (i === 6) card.classList.add('card-destaque-2col');
+
+    const imagens = obterListaImagens(noticia);
+    const temVideo = noticia.Vídeo && noticia.Vídeo.trim() !== '';
+    const temGaleria = imagens.length > 1;
+    const temDrive = (noticia.Imagem || '').includes('drive.google.com') || 
+                     (noticia.Imagens_Galeria || '').includes('drive.google.com');
+    
+    let tags = '';
+    if (temVideo) tags += `<span class="tag-video">🎬 Vídeo</span>`;
+    if (temGaleria) tags += `<span class="tag-galeria">📸 Galeria (${imagens.length})</span>`;
+    if (temDrive) tags += `<span class="tag-drive">☁️ Drive</span>`;
+
+    const imagensParaExibir = imagens.length > 0 ? imagens : [IMAGEM_FALLBACK];
+
+    const imgsHtml = imagensParaExibir.map((img, idx) => `
+      <img class="${idx === 0 ? 'active' : ''}" src="${img}" alt="${noticia.Chamada || 'Notícia'}" onerror="this.src='${IMAGEM_FALLBACK}'">
+    `).join('');
+
+    const pontosHtml = imagensParaExibir.length > 1 ? `
+      <div class="carousel-dots">
+        ${imagensParaExibir.map((_, idx) => `<span class="dot ${idx === 0 ? 'active' : ''}"></span>`).join('')}
+      </div>
+    ` : '';
+
+    const titulo = noticia.Chamada && noticia.Chamada.trim() !== '' 
+      ? noticia.Chamada 
+      : (noticia.Noticia ? noticia.Noticia.slice(0, 60) + '...' : 'Registro Histórico');
+
+    card.innerHTML = `
+      <div class="card-img-wrapper">
+        ${imgsHtml}
+        ${pontosHtml}
+      </div>
+      <div class="card-body">
+        <div>
+          <div class="card-tag">
+            Reminiscência #${i + 1}
+            ${tags}
+          </div>
+          <h2 class="card-title">${titulo}</h2>
         </div>
-    </div>
+        <p class="card-author">Por: ${noticia.Redator || 'Redação'}</p>
+      </div>
+    `;
 
-    <script>
-       
-    // Cole aqui a URL da sua API do Google Apps Script (terminada em /exec)
-       const API_URL = "https://script.google.com/macros/s/AKfycbxKQAWe2eGEnxUttQWHX_F12WalG4X6niIYuqU7Azsrntw7taJXUlq-QzEi_nO9mbLK/exec";
+    // Ativa a rotação das imagens a cada 5 segundos no card
+    const wrapper = card.querySelector('.card-img-wrapper');
+    iniciarAlternanciaImagens(wrapper);
 
-        const IMAGEM_FALLBACK = 'https://placehold.co/600x400/e2e8f0/475569?text=Imagem+Indispon%C3%ADvel';
-        let modalInterval = null; // Guarda o timer do slideshow do modal
+    card.addEventListener('click', () => abrirModal(noticia, titulo, imagens));
+    grid.appendChild(card);
+  }
+}
 
-        // Converte IDs ou Links do Google Drive para o link direto do CDN
-        function formatarUrlImagem(url) {
-            if (!url || typeof url !== 'string') return '';
-            url = url.trim();
+function adicionarBotaoVerMais() {
+  const grid = document.getElementById('news-grid');
+  const container = document.createElement('div');
+  container.className = 'ver-mais-container';
+  container.id = 'ver-mais-container';
+  container.innerHTML = `
+    <button class="ver-mais-btn" id="ver-mais-btn" onclick="exibirMaisNoticias()">
+      Ver mais notícias (${todasNoticias.length - noticiasExibidas} restantes)
+    </button>
+    <p class="carregando-mais" id="carregando-mais" style="display:none;">
+      Carregando mais registros...
+    </p>
+  `;
+  grid.appendChild(container);
+}
 
-            const matchDrive = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)|[?&]id=([a-zA-Z0-9_-]+)|drive\.google\.com\/d\/([a-zA-Z0-9_-]+)/);
-            const fileId = matchDrive ? (matchDrive[1] || matchDrive[2] || matchDrive[3]) : null;
+function exibirMaisNoticias() {
+  const btn = document.getElementById('ver-mais-btn');
+  const carregando = document.getElementById('carregando-mais');
+  
+  btn.disabled = true;
+  btn.style.display = 'none';
+  carregando.style.display = 'block';
+  
+  setTimeout(() => {
+    const novoLimite = todasNoticias.length;
+    renderizarNoticias(noticiasExibidas, novoLimite);
+    noticiasExibidas = novoLimite;
+    document.getElementById('ver-mais-container').remove();
+  }, 300);
+}
 
-            if (fileId) return `https://lh3.googleusercontent.com/d/${fileId}`;
-            if (/^[a-zA-Z0-9_-]{25,}$/.test(url)) return `https://lh3.googleusercontent.com/d/${url}`;
-            if (url.startsWith('http://') || url.startsWith('https://')) return url;
+function abrirModal(noticia, tituloFallback, imagens) {
+  const body = document.getElementById('modal-body');
+  const titulo = noticia.Chamada && noticia.Chamada.trim() !== '' ? noticia.Chamada : tituloFallback;
+  
+  if (modalInterval) clearInterval(modalInterval);
 
-            return '';
-        }
+  let midiaHtml = '';
+  const videoObj = noticia.Vídeo ? processarUrlVideo(noticia.Vídeo) : null;
 
-        // Separa a string com vírgulas e retorna uma lista de URLs formatadas
-        function extrairUrlsImagens(stringImagens) {
-            if (!stringImagens || typeof stringImagens !== 'string') return [];
-            
-            return stringImagens
-                .split(',')
-                .map(item => item.trim())
-                .filter(Boolean)
-                .map(url => formatarUrlImagem(url))
-                .filter(Boolean);
-        }
+  // 1. Se tiver VÍDEO -> Prepara o player com Autoplay
+  if (videoObj) {
+    if (videoObj.tipo === 'direto') {
+      midiaHtml = `
+        <div class="video-container">
+          <video id="modal-video-element" controls autoplay playsinline>
+            <source src="${videoObj.url}">
+            Seu navegador não suporta reprodução de vídeo.
+          </video>
+        </div>
+      `;
+    } else {
+      midiaHtml = `
+        <div class="video-container">
+          <iframe id="modal-iframe-element" src="${videoObj.url}" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+      `;
+    }
+  } 
+  // 2. Se forem IMAGENS -> Gera galeria rotativa de 5 segundos
+  else {
+    const imgsValidas = imagens.length > 0 ? imagens : [IMAGEM_FALLBACK];
+    const imgsHtml = imgsValidas.map((img, idx) => `
+      <img class="${idx === 0 ? 'active' : ''}" src="${img}" alt="${titulo}" onerror="this.src='${IMAGEM_FALLBACK}'">
+    `).join('');
 
-        // Inicia a rotação de imagens a cada 5 segundos
-        function iniciarSlideshow(container) {
-            const imagens = container.querySelectorAll('img');
-            const pontos = container.querySelectorAll('.dot');
+    const pontosHtml = imgsValidas.length > 1 ? `
+      <div class="carousel-dots">
+        ${imgsValidas.map((_, idx) => `<span class="dot ${idx === 0 ? 'active' : ''}"></span>`).join('')}
+      </div>
+    ` : '';
 
-            if (imagens.length <= 1) return null;
+    midiaHtml = `
+      <div class="modal-carrossel-wrapper">
+        ${imgsHtml}
+        ${pontosHtml}
+      </div>
+    `;
+  }
 
-            let indiceAtual = 0;
+  body.innerHTML = `
+    <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #0d1b2a; margin-bottom: 8px;">
+      ${titulo}
+    </h2>
+    <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 16px;">
+      Redação: <strong>${noticia.Redator || 'Redação Escolar'}</strong>
+    </p>
 
-            return setInterval(() => {
-                // Remove classe ativa da imagem e do ponto atual
-                imagens[indiceAtual].classList.remove('active');
-                if (pontos[indiceAtual]) pontos[indiceAtual].classList.remove('active');
+    ${midiaHtml}
 
-                // Avança para a próxima imagem
-                indiceAtual = (indiceAtual + 1) % imagens.length;
+    <p style="margin-top: 16px;">${noticia.Noticia || ''}</p>
+  `;
 
-                // Adiciona classe ativa na nova imagem e ponto
-                imagens[indiceAtual].classList.add('active');
-                if (pontos[indiceAtual]) pontos[indiceAtual].classList.add('active');
-            }, 5000); // 5000ms = 5 segundos
-        }
+  // Autoplay para elemento de vídeo HTML5 se o navegador exigir comando explícito
+  const videoElem = document.getElementById('modal-video-element');
+  if (videoElem) {
+    videoElem.play().catch(e => console.log("Autoplay retido pelo navegador:", e));
+  }
 
-        // Cria a estrutura HTML da imagem / carrossel
-        function criarHtmlCarrossel(listaImagens, titulo, classeWrapper = 'card-img-wrapper') {
-            const imagensValidas = listaImagens.length > 0 ? listaImagens : [IMAGEM_FALLBACK];
+  // Inicia rotação no modal se forem imagens
+  const modalWrapper = body.querySelector('.modal-carrossel-wrapper');
+  if (modalWrapper) {
+    modalInterval = iniciarAlternanciaImagens(modalWrapper);
+  }
 
-            const imgsHtml = imagensValidas.map((src, i) => `
-                <img class="${i === 0 ? 'active' : ''}" 
-                     src="${src}" 
-                     alt="${titulo}"
-                     referrerpolicy="no-referrer"
-                     onerror="this.onerror=null; this.src='${IMAGEM_FALLBACK}';">
-            `).join('');
+  document.getElementById('modal-overlay').style.display = 'flex';
+}
 
-            const pontosHtml = imagensValidas.length > 1 ? `
-                <div class="carousel-dots">
-                    ${imagensValidas.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}"></span>`).join('')}
-                </div>
-            ` : '';
+// FECHA O MODAL E INTERROMPE QUALQUER VÍDEO/ÁUDIO IMEDIATAMENTE
+function fecharModal(e) {
+  const overlay = document.getElementById('modal-overlay');
+  const body = document.getElementById('modal-body');
 
-            return `
-                <div class="${classeWrapper}">
-                    ${imgsHtml}
-                    ${pontosHtml}
-                </div>
-            `;
-        }
+  if (modalInterval) clearInterval(modalInterval);
 
-        async function carregarNoticias() {
-            try {
-                const resposta = await fetch(API_URL);
-                const dadosBrutos = await resposta.json();
+  // Parar vídeos HTML5
+  const videos = body.querySelectorAll('video');
+  videos.forEach(v => {
+    v.pause();
+    v.currentTime = 0;
+  });
 
-                // Filtra registros que estão totalmente vazios
-                const noticiasValidas = dadosBrutos.filter(item => 
-                    (item.Noticia && item.Noticia.trim() !== '') || 
-                    (item.Redator && item.Redator.trim() !== '') ||
-                    (item.Imagem && item.Imagem.trim() !== '')
-                );
+  // Limpar src dos Iframes para fechar o áudio do Youtube/Drive imediatamente
+  const iframes = body.querySelectorAll('iframe');
+  iframes.forEach(i => {
+    i.src = '';
+  });
 
-                const grid = document.getElementById('news-grid');
-                grid.innerHTML = '';
+  body.innerHTML = '';
+  overlay.style.display = 'none';
+}
 
-                noticiasValidas.forEach((noticia, index) => {
-                    const card = document.createElement('article');
-                    card.className = 'card';
+// Fechar modal ao pressionar ESC
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') fecharModal();
+});
 
-                    // Fallback para o título caso 'Chamada' esteja em branco
-                    const titulo = noticia.Chamada && noticia.Chamada.trim() !== '' 
-                        ? noticia.Chamada 
-                        : (noticia.Noticia ? noticia.Noticia.slice(0, 60) + '...' : 'Notícia Sem Título');
-
-                    const imagens = extrairUrlsImagens(noticia.Imagem || noticia.imagem);
-
-                    card.innerHTML = `
-                        ${criarHtmlCarrossel(imagens, titulo, 'card-img-wrapper')}
-                        <div class="card-body">
-                            <div>
-                                <div class="card-tag">Notícia #${index + 1}</div>
-                                <h2 class="card-title">${titulo}</h2>
-                            </div>
-                            <p class="card-author">Por: ${noticia.Redator || 'Redação'}</p>
-                        </div>
-                    `;
-
-                    // Ativa o slideshow automático de 5 segundos no card
-                    const wrapper = card.querySelector('.card-img-wrapper');
-                    iniciarSlideshow(wrapper);
-
-                    card.addEventListener('click', () => abrirModal(noticia, titulo, imagens));
-                    grid.appendChild(card);
-                });
-
-            } catch (erro) {
-                console.error("Erro ao carregar notícias:", erro);
-            }
-        }
-
-        function abrirModal(noticia, tituloFallback, imagens) {
-            const body = document.getElementById('modal-body');
-            const titulo = noticia.Chamada && noticia.Chamada.trim() !== '' ? noticia.Chamada : tituloFallback;
-
-            // Limpa o timer do modal anterior se existir
-            if (modalInterval) clearInterval(modalInterval);
-
-            body.innerHTML = `
-                <h2 style="font-size: 1.5rem; color: #0d1b2a; margin-bottom: 8px;">${titulo}</h2>
-                <p style="color: #64748b; font-size: 0.9rem;">
-                    Por: <strong>${noticia.Redator || 'Redação'}</strong>
-                </p>
-
-                ${criarHtmlCarrossel(imagens, titulo, 'modal-img-wrapper')}
-
-                <p style="margin-top: 16px; line-height: 1.6; color: #334155;">
-                    ${noticia.Noticia || ''}
-                </p>
-            `;
-
-            // Ativa o carrossel de 5s dentro do modal também
-            const modalWrapper = body.querySelector('.modal-img-wrapper');
-            modalInterval = iniciarSlideshow(modalWrapper);
-
-            document.getElementById('modal-overlay').style.display = 'flex';
-        }
-
-        function fecharModal(e) {
-            document.getElementById('modal-overlay').style.display = 'none';
-            if (modalInterval) clearInterval(modalInterval);
-        }
-
-        // Inicia o carregamento
-        carregarNoticias();
-    </script>
-</body>
-</html>
+carregarNoticias();
+</script>
+</body></html>
