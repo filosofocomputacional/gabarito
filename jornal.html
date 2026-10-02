@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="pt-BR"><head>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jornal Escolar & Memorial | E.E. Nova Contagem - 40 Anos</title>
@@ -98,11 +100,49 @@ header {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(0,0,0,0.08);
 }
-.card-img {
+
+/* CARROSSEL E CAPA DE IMAGENS NOS CARDS */
+.card-img-wrapper {
+  position: relative;
   width: 100%;
   height: 200px;
-  object-fit: cover;
+  background-color: #0f2338;
+  overflow: hidden;
 }
+.card-img-wrapper img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+}
+.card-img-wrapper img.active {
+  opacity: 1;
+}
+
+/* Indicadores de pontinhos no carrossel */
+.carousel-dots {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+}
+.dot.active {
+  background-color: var(--cor-destaque);
+  transform: scale(1.3);
+}
+
 .card-body {
   padding: 24px;
   display: flex;
@@ -120,6 +160,7 @@ header {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 .tag-video {
   background: #ef4444;
@@ -155,8 +196,9 @@ header {
   margin-top: auto;
 }
 .card-destaque-2col { grid-column: span 2; }
-.card-destaque-2col .card-img { height: 280px; }
+.card-destaque-2col .card-img-wrapper { height: 280px; }
 .card-destaque-2col .card-title { font-size: 1.6rem; }
+
 .card-banner-full {
   grid-column: 1 / -1;
   flex-direction: row;
@@ -164,10 +206,11 @@ header {
   border: none;
   color: #ffffff;
 }
-.card-banner-full .card-img { width: 48%; height: 320px; }
+.card-banner-full .card-img-wrapper { width: 48%; height: 320px; }
 .card-banner-full .card-body { width: 52%; padding: 36px; }
 .card-banner-full .card-title { color: #ffffff; font-size: 1.8rem; margin-bottom: 16px; }
 .card-banner-full .card-author { color: #9ca3af; }
+
 .ver-mais-container {
   grid-column: 1 / -1;
   text-align: center;
@@ -199,6 +242,7 @@ header {
   font-size: 0.9rem;
   margin-top: 10px;
 }
+
 footer {
   max-width: 1200px;
   margin: 60px auto 0;
@@ -235,6 +279,7 @@ footer {
   transition: opacity 0.2s;
 }
 .cta-button:hover { opacity: 0.9; }
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -262,6 +307,7 @@ footer {
   margin-bottom: 4px;
 }
 .stat-desc { font-size: 0.85rem; color: var(--texto-secundario); }
+
 .bottom-bar {
   display: flex;
   justify-content: space-between;
@@ -272,11 +318,13 @@ footer {
   color: var(--texto-secundario);
   padding-bottom: 20px;
 }
+
+/* ESTILOS DO MODAL E VÍDEO */
 .modal {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(13, 27, 42, 0.75);
+  background: rgba(13, 27, 42, 0.8);
   display: none;
   justify-content: center;
   align-items: center;
@@ -289,7 +337,7 @@ footer {
   padding: 36px;
   border-radius: var(--raio-borda);
   width: 90%;
-  max-width: 720px;
+  max-width: 760px;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
@@ -298,17 +346,16 @@ footer {
   position: absolute;
   top: 18px; right: 22px;
   font-size: 1.8rem;
-  background: none; border: none;
+  background: #f3f4f6;
+  border: none;
+  width: 38px; height: 38px;
+  border-radius: 50%;
   cursor: pointer;
-  color: var(--texto-secundario);
+  color: var(--texto-principal);
   z-index: 10;
-}
-.modal-body img {
-  width: 100%;
-  max-height: 380px;
-  object-fit: cover;
-  border-radius: 10px;
-  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .modal-body p {
   line-height: 1.8;
@@ -316,92 +363,62 @@ footer {
   font-size: 1.05rem;
   white-space: pre-wrap;
 }
-.carrossel {
+
+/* CARROSSEL NO MODAL */
+.modal-carrossel-wrapper {
   position: relative;
   width: 100%;
-  overflow: hidden;
-  border-radius: 10px;
-  margin: 20px 0;
-}
-.carrossel-slides {
-  display: flex;
-  transition: transform 0.4s ease;
-}
-.carrossel-slide {
-  min-width: 100%;
-}
-.carrossel-slide img {
-  width: 100%;
   height: 380px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 20px 0;
+  background-color: #0f2338;
+}
+.modal-carrossel-wrapper img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   object-fit: cover;
-  border-radius: 0;
-  margin: 0;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
 }
-.carrossel-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0,0,0,0.6);
-  color: white;
-  border: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
+.modal-carrossel-wrapper img.active {
+  opacity: 1;
 }
-.carrossel-btn:hover { background: rgba(0,0,0,0.8); }
-.carrossel-anterior { left: 12px; }
-.carrossel-proximo { right: 12px; }
-.carrossel-indicadores {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-}
-.carrossel-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.4);
-  border: none;
-  cursor: pointer;
-}
-.carrossel-dot.ativo { background: white; box-shadow: 0 0 4px rgba(0,0,0,0.3); }
+
+/* CONTAINER DE VÍDEO RESPONSIVO */
 .video-container {
   position: relative;
   width: 100%;
-  padding-bottom: 56.25%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
   height: 0;
   margin: 20px 0;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
+  background-color: #000;
 }
-.video-container iframe {
+.video-container iframe, 
+.video-container video {
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
   border: none;
+  object-fit: contain;
 }
+
 @media (max-width: 768px) {
   .header-content { flex-direction: column; align-items: flex-start; }
   .grid-container { grid-template-columns: 1fr; gap: 20px; }
   .card-destaque-2col, .card-banner-full { grid-column: span 1 !important; flex-direction: column !important; }
-  .card-banner-full .card-img, .card-banner-full .card-body { width: 100% !important; }
-  .card-banner-full .card-img { height: 200px !important; }
+  .card-banner-full .card-img-wrapper, .card-banner-full .card-body { width: 100% !important; }
+  .card-banner-full .card-img-wrapper { height: 200px !important; }
   .card-banner-full { background-color: #fff; border: 1px solid #e5e7eb; color: var(--texto-principal); }
   .card-banner-full .card-title { color: var(--cor-primaria); font-size: 1.25rem; }
   .card-banner-full .card-author { color: var(--texto-secundario); }
   .cta-banner { padding: 24px; flex-direction: column; align-items: flex-start; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
   .bottom-bar { flex-direction: column; text-align: center; }
-  .carrossel-slide img { height: 240px; }
+  .modal-carrossel-wrapper { height: 240px; }
 }
 </style>
 </head><body>
@@ -460,8 +477,8 @@ footer {
   </div>
 </footer>
 
-<div class="modal" id="modal-overlay">
-  <div class="modal-content">
+<div class="modal" id="modal-overlay" onclick="fecharModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="fecharModal()">&times;</button>
     <div class="modal-body" id="modal-body"></div>
   </div>
@@ -470,42 +487,110 @@ footer {
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxKQAWe2eGEnxUttQWHX_F12WalG4X6niIYuqU7Azsrntw7taJXUlq-QzEi_nO9mbLK/exec";
 const LIMITE_INICIAL = 10;
+const IMAGEM_FALLBACK = 'https://placehold.co/600x400/0f2338/ffffff?text=E.E.+Nova+Contagem';
 
 let todasNoticias = [];
 let noticiasExibidas = LIMITE_INICIAL;
-let indiceCarrosselAtual = 0;
+let modalInterval = null; // Timer do carrossel do modal
 
-// ✅ CONVERSÃO CONFIÁVEL PARA GOOGLE DRIVE
+// ✅ NORMALIZAÇÃO E CONVERSÃO DE LINKS DO GOOGLE DRIVE E MÍDIAS
 function normalizarLinkImagem(link) {
-  if (!link) return link;
+  if (!link || typeof link !== 'string') return '';
   link = link.trim();
   
-  // Formato: /file/d/ID/view
-  const match1 = link.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (match1) {
-    const id = match1[1];
-    return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+  const matchDrive = link.match(/\/file\/d\/([a-zA-Z0-9_-]+)|[?&]id=([a-zA-Z0-9_-]+)/);
+  const fileId = matchDrive ? (matchDrive[1] || matchDrive[2]) : null;
+
+  if (fileId) {
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`;
   }
   
-  // Formato: /open?id=ID
-  const match2 = link.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
-  if (match2) {
-    return `https://drive.google.com/thumbnail?id=${match2[1]}&sz=w1000`;
-  }
-  
-  // Já está no formato correto
-  if (link.includes('thumbnail?id=') || link.includes('uc?export=view')) {
-    return link;
+  if (/^[a-zA-Z0-9_-]{25,}$/.test(link)) {
+    return `https://drive.google.com/thumbnail?id=${link}&sz=w1200`;
   }
   
   return link;
 }
 
-function processarImagensGaleria(texto) {
-  if (!texto || !texto.trim()) return [];
-  return texto.split(',')
-    .map(s => normalizarLinkImagem(s.trim()))
-    .filter(s => s);
+// Extrai todas as imagens válidas da notícia (combina Imagem e Imagens_Galeria)
+function obterListaImagens(noticia) {
+  let lista = [];
+  
+  if (noticia.Imagens_Galeria && noticia.Imagens_Galeria.trim() !== '') {
+    lista = lista.concat(noticia.Imagens_Galeria.split(','));
+  }
+  if (noticia.Imagem && noticia.Imagem.trim() !== '') {
+    lista = lista.concat(noticia.Imagem.split(','));
+  }
+  
+  return lista
+    .map(s => normalizarLinkImagem(s))
+    .filter(s => s && s.length > 0 && !ehUrlVideo(s));
+}
+
+// Tolera diferentes nomes para a coluna de vídeo (Vídeo, Video, video, VIDEO)
+function obterUrlVideo(noticia) {
+  const v = noticia.Vídeo || noticia.Video || noticia.video || noticia.VIDEO;
+  return (v && typeof v === 'string') ? v.trim() : '';
+}
+
+// Deteta se o link é um vídeo
+function ehUrlVideo(url) {
+  if (!url || typeof url !== 'string') return false;
+  const u = url.toLowerCase();
+  return u.includes('.mp4') || u.includes('.webm') || u.includes('youtube.com') || u.includes('youtu.be');
+}
+
+// Processa a URL do vídeo
+function processarUrlVideo(url) {
+  if (!url) return null;
+  url = url.trim();
+
+  // 1. YouTube
+  const matchYT = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+  if (matchYT) {
+    return {
+      tipo: 'iframe',
+      url: `https://www.youtube.com/embed/${matchYT[1]}?autoplay=1&enablejsapi=1`
+    };
+  }
+
+  // 2. Google Drive Vídeo
+  const matchDrive = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)|[?&]id=([a-zA-Z0-9_-]+)/);
+  const fileId = matchDrive ? (matchDrive[1] || matchDrive[2]) : null;
+  if (fileId) {
+    return {
+      tipo: 'drive',
+      urlStream: `https://lh3.googleusercontent.com/d/${fileId}`,
+      urlIframe: `https://drive.google.com/file/d/${fileId}/preview`
+    };
+  }
+
+  // 3. Link direto (ex: arquivo.mp4)
+  return {
+    tipo: 'direto',
+    urlStream: url
+  };
+}
+
+// Inicia rotação automática de 3 segundos no container de imagens
+function iniciarAlternanciaImagens(container) {
+  const imagens = container.querySelectorAll('img');
+  const pontos = container.querySelectorAll('.dot');
+
+  if (imagens.length <= 1) return null;
+
+  let indice = 0;
+
+  return setInterval(() => {
+    imagens[indice].classList.remove('active');
+    if (pontos[indice]) pontos[indice].classList.remove('active');
+
+    indice = (indice + 1) % imagens.length;
+
+    imagens[indice].classList.add('active');
+    if (pontos[indice]) pontos[indice].classList.add('active');
+  }, 3000); // 3 SEGUNDOS
 }
 
 async function carregarNoticias() {
@@ -529,7 +614,6 @@ async function carregarNoticias() {
 
 function renderizarNoticias(de, ate) {
   const grid = document.getElementById('news-grid');
-  const imagemFallback = 'https://placehold.co/600x400/0f2338/ffffff?text=E.E.+Nova+Contagem';
   
   for (let i = de; i < ate && i < todasNoticias.length; i++) {
     const noticia = todasNoticias[i];
@@ -540,36 +624,57 @@ function renderizarNoticias(de, ate) {
     else if (i === 2) card.classList.add('card-banner-full');
     else if (i === 6) card.classList.add('card-destaque-2col');
 
-    const imagensGaleria = processarImagensGaleria(noticia.Imagens_Galeria);
-    const temGaleria = imagensGaleria.length > 0;
-    const temVideo = noticia.Vídeo && noticia.Vídeo.trim() !== '';
+    const imagens = obterListaImagens(noticia);
+    const urlVideo = obterUrlVideo(noticia);
+    const temVideo = urlVideo !== '';
+    const temGaleria = imagens.length > 1;
     const temDrive = (noticia.Imagem || '').includes('drive.google.com') || 
-                     (noticia.Imagens_Galeria || '').includes('drive.google.com');
+                     (noticia.Imagens_Galeria || '').includes('drive.google.com') ||
+                     urlVideo.includes('drive.google.com');
     
-    const imgCapa = temGaleria 
-      ? imagensGaleria[0] 
-      : normalizarLinkImagem(noticia.Imagem) || imagemFallback;
-
     let tags = '';
     if (temVideo) tags += `<span class="tag-video">🎬 Vídeo</span>`;
-    if (temGaleria) tags += `<span class="tag-galeria">📸 Galeria</span>`;
+    if (temGaleria) tags += `<span class="tag-galeria">📸 Galeria (${imagens.length})</span>`;
     if (temDrive) tags += `<span class="tag-drive">☁️ Drive</span>`;
 
+    const imagensParaExibir = imagens.length > 0 ? imagens : [IMAGEM_FALLBACK];
+
+    const imgsHtml = imagensParaExibir.map((img, idx) => `
+      <img class="${idx === 0 ? 'active' : ''}" src="${img}" alt="${noticia.Chamada || 'Notícia'}" onerror="this.src='${IMAGEM_FALLBACK}'">
+    `).join('');
+
+    const pontosHtml = imagensParaExibir.length > 1 ? `
+      <div class="carousel-dots">
+        ${imagensParaExibir.map((_, idx) => `<span class="dot ${idx === 0 ? 'active' : ''}"></span>`).join('')}
+      </div>
+    ` : '';
+
+    const titulo = noticia.Chamada && noticia.Chamada.trim() !== '' 
+      ? noticia.Chamada 
+      : (noticia.Noticia ? noticia.Noticia.slice(0, 60) + '...' : 'Registro Histórico');
+
     card.innerHTML = `
-      <img class="card-img" src="${imgCapa}" alt="${noticia.Chamada || 'Imagem da notícia'}"
-           onerror="this.src='${imagemFallback}'">
+      <div class="card-img-wrapper">
+        ${imgsHtml}
+        ${pontosHtml}
+      </div>
       <div class="card-body">
         <div>
           <div class="card-tag">
             Reminiscência #${i + 1}
             ${tags}
           </div>
-          <h2 class="card-title">${noticia.Chamada}</h2>
+          <h2 class="card-title">${titulo}</h2>
         </div>
         <p class="card-author">Por: ${noticia.Redator || 'Redação'}</p>
       </div>
     `;
-    card.addEventListener('click', () => abrirModal(noticia));
+
+    // Ativa a rotação de imagens a cada 3 segundos no card
+    const wrapper = card.querySelector('.card-img-wrapper');
+    iniciarAlternanciaImagens(wrapper);
+
+    card.addEventListener('click', () => abrirModal(noticia, titulo, imagens));
     grid.appendChild(card);
   }
 }
@@ -606,105 +711,118 @@ function exibirMaisNoticias() {
   }, 300);
 }
 
-function abrirModal(noticia) {
+function abrirModal(noticia, tituloFallback, imagens) {
   const body = document.getElementById('modal-body');
-  const imagemFallback = 'https://placehold.co/600x400/0f2338/ffffff?text=E.E.+Nova+Contagem';
+  const titulo = noticia.Chamada && noticia.Chamada.trim() !== '' ? noticia.Chamada : tituloFallback;
   
-  const imagens = processarImagensGaleria(noticia.Imagens_Galeria);
-  const temGaleria = imagens.length > 0;
-  const temVideo = noticia.Vídeo && noticia.Vídeo.trim() !== '';
-  const videoUrl = temVideo ? noticia.Vídeo.trim() : '';
+  if (modalInterval) clearInterval(modalInterval);
 
   let midiaHtml = '';
-  if (imagens.length > 1) {
+  const urlVideo = obterUrlVideo(noticia);
+  const videoObj = urlVideo ? processarUrlVideo(urlVideo) : null;
+
+  // Renderização de Mídia no Modal
+  if (videoObj) {
+    if (videoObj.tipo === 'drive') {
+      midiaHtml = `
+        <div class="video-container">
+          <video id="modal-video-element" controls autoplay playsinline style="width:100%; height:100%;">
+            <source src="${videoObj.urlStream}" type="video/mp4">
+            <iframe src="${videoObj.urlIframe}" allow="autoplay; encrypted-media" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>
+          </video>
+        </div>
+      `;
+    } else if (videoObj.tipo === 'direto') {
+      midiaHtml = `
+        <div class="video-container">
+          <video id="modal-video-element" controls autoplay playsinline>
+            <source src="${videoObj.urlStream}">
+          </video>
+        </div>
+      `;
+    } else if (videoObj.tipo === 'iframe') {
+      midiaHtml = `
+        <div class="video-container">
+          <iframe id="modal-iframe-element" src="${videoObj.url}" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+      `;
+    }
+  } else {
+    // Galeria de fotos rotativa de 3 segundos
+    const imgsValidas = imagens.length > 0 ? imagens : [IMAGEM_FALLBACK];
+    const imgsHtml = imgsValidas.map((img, idx) => `
+      <img class="${idx === 0 ? 'active' : ''}" src="${img}" alt="${titulo}" onerror="this.src='${IMAGEM_FALLBACK}'">
+    `).join('');
+
+    const pontosHtml = imgsValidas.length > 1 ? `
+      <div class="carousel-dots">
+        ${imgsValidas.map((_, idx) => `<span class="dot ${idx === 0 ? 'active' : ''}"></span>`).join('')}
+      </div>
+    ` : '';
+
     midiaHtml = `
-      <div class="carrossel" id="carrossel-principal">
-        <div class="carrossel-slides" id="slides">
-          ${imagens.map((img, i) => `
-            <div class="carrossel-slide">
-              <img src="${img}" alt="Imagem ${i+1}" onerror="this.src='${imagemFallback}'">
-            </div>
-          `).join('')}
-        </div>
-        <button class="carrossel-btn carrossel-anterior" onclick="moverCarrossel(-1)">&#10094;</button>
-        <button class="carrossel-btn carrossel-proximo" onclick="moverCarrossel(1)">&#10095;</button>
-        <div class="carrossel-indicadores">
-          ${imagens.map((_, i) => `
-            <button class="carrossel-dot ${i===0?'ativo':''}" onclick="irSlide(${i})"></button>
-          `).join('')}
-        </div>
+      <div class="modal-carrossel-wrapper">
+        ${imgsHtml}
+        ${pontosHtml}
       </div>
     `;
-  } else if (imagens.length === 1) {
-    midiaHtml = `<img src="${imagens[0]}" alt="${noticia.Chamada}" onerror="this.src='${imagemFallback}'">`;
-  } else if (noticia.Imagem) {
-    const imgFinal = normalizarLinkImagem(noticia.Imagem);
-    midiaHtml = `<img src="${imgFinal}" alt="${noticia.Chamada}" onerror="this.src='${imagemFallback}'">`;
   }
-
-  const videoHtml = temVideo ? `
-    <div class="video-container">
-      <iframe src="${videoUrl}" title="Vídeo da notícia" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
-    </div>
-  ` : '';
 
   body.innerHTML = `
     <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #0d1b2a; margin-bottom: 8px;">
-      ${noticia.Chamada}
+      ${titulo}
     </h2>
     <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 16px;">
       Redação: <strong>${noticia.Redator || 'Redação Escolar'}</strong>
     </p>
+
     ${midiaHtml}
-    ${videoHtml}
-    <p>${noticia.Noticia}</p>
+
+    <p style="margin-top: 16px;">${noticia.Noticia || ''}</p>
   `;
 
-  indiceCarrosselAtual = 0;
+  // Forçar autoplay no vídeo
+  const videoElem = document.getElementById('modal-video-element');
+  if (videoElem) {
+    videoElem.play().catch(e => console.log("Autoplay aguardando interação do usuário:", e));
+  }
+
+  // Ativar carrossel de 3 segundos no modal para imagens
+  const modalWrapper = body.querySelector('.modal-carrossel-wrapper');
+  if (modalWrapper) {
+    modalInterval = iniciarAlternanciaImagens(modalWrapper);
+  }
+
   document.getElementById('modal-overlay').style.display = 'flex';
 }
 
-function moverCarrossel(direcao) {
-  const slides = document.getElementById('slides');
-  if (!slides) return;
-  
-  const totalSlides = slides.children.length;
-  indiceCarrosselAtual = (indiceCarrosselAtual + direcao + totalSlides) % totalSlides;
-  atualizarCarrossel();
-}
+// FECHA O MODAL E INTERROMPE QUALQUER REPRODUÇÃO IMEDIATAMENTE
+function fecharModal(e) {
+  const overlay = document.getElementById('modal-overlay');
+  const body = document.getElementById('modal-body');
 
-function irSlide(indice) {
-  indiceCarrosselAtual = indice;
-  atualizarCarrossel();
-}
+  if (modalInterval) clearInterval(modalInterval);
 
-function atualizarCarrossel() {
-  const slides = document.getElementById('slides');
-  if (!slides) return;
-  
-  slides.style.transform = `translateX(-${indiceCarrosselAtual * 100}%)`;
-  
-  const dots = document.querySelectorAll('.carrossel-dot');
-  dots.forEach((dot, i) => {
-    dot.classList.toggle('ativo', i === indiceCarrosselAtual);
+  // Interrompe vídeos HTML5
+  const videos = body.querySelectorAll('video');
+  videos.forEach(v => {
+    v.pause();
+    v.currentTime = 0;
   });
+
+  // Limpa o src de iFrames para cancelar o som imediatamente
+  const iframes = body.querySelectorAll('iframe');
+  iframes.forEach(i => {
+    i.src = '';
+  });
+
+  body.innerHTML = '';
+  overlay.style.display = 'none';
 }
 
-function fecharModal() {
-  document.getElementById('modal-overlay').style.display = 'none';
-  indiceCarrosselAtual = 0;
-}
-
-window.onclick = function(e) {
-  if (e.target.id === 'modal-overlay') fecharModal();
-};
-
+// Fechar modal ao pressionar a tecla ESC
 document.addEventListener('keydown', e => {
-  if (document.getElementById('modal-overlay').style.display === 'flex') {
-    if (e.key === 'ArrowLeft') moverCarrossel(-1);
-    if (e.key === 'ArrowRight') moverCarrossel(1);
-    if (e.key === 'Escape') fecharModal();
-  }
+  if (e.key === 'Escape') fecharModal();
 });
 
 carregarNoticias();
