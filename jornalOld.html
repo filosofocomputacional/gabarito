@@ -475,23 +475,25 @@
             <div class="modal-body" id="modal-body"></div>
         </div>
     </div>
-<script>
+    <script>
     // Cole aqui a URL da sua API do Google Apps Script (terminada em /exec)
        const API_URL = "https://script.google.com/macros/s/AKfycbxKQAWe2eGEnxUttQWHX_F12WalG4X6niIYuqU7Azsrntw7taJXUlq-QzEi_nO9mbLK/exec";
 
-    // Converte qualquer link do Google Drive para o link direto do servidor de mídias (lh3)
+    // Converte links do Google Drive para o link direto de exibição (thumbnail de alta resolução)
     function formatarUrlImagem(url) {
         if (!url || typeof url !== 'string') return '';
         url = url.trim();
 
+        // Extrai o ID do arquivo do Google Drive
         const matchDrive = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)|[?&]id=([a-zA-Z0-9_-]+)|drive\.google\.com\/d\/([a-zA-Z0-9_-]+)/);
         if (matchDrive) {
             const fileId = matchDrive[1] || matchDrive[2] || matchDrive[3];
-            return `https://lh3.googleusercontent.com/d/${fileId}`;
+            return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
         }
 
+        // Se for colado apenas o ID isolado do arquivo
         if (/^[a-zA-Z0-9_-]{25,}$/.test(url)) {
-            return `https://lh3.googleusercontent.com/d/${url}`;
+            return `https://drive.google.com/thumbnail?id=${url}&sz=w1000`;
         }
 
         if (url.startsWith('http://') || url.startsWith('https://')) {
@@ -505,6 +507,10 @@
         try {
             const resposta = await fetch(API_URL);
             const noticias = await resposta.json();
+            
+            // Exibe os dados retornados no Console (F12) para diagnóstico
+            console.log("Dados recebidos da API:", noticias);
+
             const grid = document.getElementById('news-grid');
             grid.innerHTML = '';
 
@@ -522,21 +528,21 @@
                     card.classList.add('card-destaque-2col');
                 }
 
-                // Placeholder claro para diferenciar de uma imagem com erro
+                // Aceita 'Imagem', 'imagem' ou 'Foto' caso a coluna varie
+                const urlOriginal = noticia.Imagem || noticia.imagem || noticia.Foto || noticia.foto || '';
                 const imagemFallback = 'https://placehold.co/600x400/e2e8f0/475569?text=Imagem+Indispon%C3%ADvel';
-                const urlImagemFormatada = formatarUrlImagem(noticia.Imagem) || imagemFallback;
+                const urlImagemFormatada = formatarUrlImagem(urlOriginal) || imagemFallback;
 
-                // referrerpolicy="no-referrer" evita o bloqueio de imagem do Google Drive
                 card.innerHTML = `
                     <img class="card-img" 
                          src="${urlImagemFormatada}" 
                          alt="${noticia.Chamada || 'Imagem da notícia'}"
                          referrerpolicy="no-referrer"
-                         onerror="this.onerror=null; this.src='${imagemFallback}';">
+                         onerror="console.warn('Erro ao carregar imagem da notícia:', '${noticia.Chamada}'); this.onerror=null; this.src='${imagemFallback}';">
                     <div class="card-body">
                         <div>
                             <div class="card-tag">Notícia #${index + 1}</div>
-                            <h2 class="card-title">${noticia.Chamada}</h2>
+                            <h2 class="card-title">${noticia.Chamada || 'Sem título'}</h2>
                         </div>
                         <p class="card-author">Por: ${noticia.Redator || 'Redação'}</p>
                     </div>
@@ -549,28 +555,29 @@
             console.error("Erro ao carregar dados:", erro);
             document.getElementById('news-grid').innerHTML = `
                 <p style="grid-column: 1 / -1; text-align: center; color: #ef4444; padding: 40px;">
-                    Erro ao carregar as notícias. Verifique a conexão com a planilha.
+                    Erro ao carregar as notícias. Verifique a conexão com a API.
                 </p>`;
         }
     }
 
     function abrirModal(noticia) {
         const body = document.getElementById('modal-body');
+        const urlOriginal = noticia.Imagem || noticia.imagem || noticia.Foto || noticia.foto || '';
         const imagemFallback = 'https://placehold.co/600x400/e2e8f0/475569?text=Imagem+Indispon%C3%ADvel';
-        const urlImagemFormatada = formatarUrlImagem(noticia.Imagem) || imagemFallback;
+        const urlImagemFormatada = formatarUrlImagem(urlOriginal) || imagemFallback;
 
         body.innerHTML = `
             <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #0d1b2a; margin-bottom: 8px;">
-                ${noticia.Chamada}
+                ${noticia.Chamada || 'Sem título'}
             </h2>
             <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 16px;">
                 Redação: <strong>${noticia.Redator || 'Redação Escolar'}</strong>
             </p>
             <img src="${urlImagemFormatada}" 
-                 alt="${noticia.Chamada}"
+                 alt="${noticia.Chamada || 'Imagem'}"
                  referrerpolicy="no-referrer"
                  onerror="this.onerror=null; this.src='${imagemFallback}';">
-            <p>${noticia.Noticia}</p>
+            <p>${noticia.Noticia || ''}</p>
         `;
         document.getElementById('modal-overlay').style.display = 'flex';
     }
@@ -585,6 +592,7 @@
 
     carregarNoticias();
 </script>
+
 
 </body>
 </html>
