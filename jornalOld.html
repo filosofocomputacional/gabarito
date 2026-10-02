@@ -3,44 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- SEO Básico -->
-    <title>Jornal Escolar & Memorial | E.E. Nova Contagem - 40 Anos</title>
-    <meta name="description" content="Jornal Escolar Digital e Acervo de Memórias da E.E. Nova Contagem em Contagem - MG. Celebrando 40 anos de história, registros e educação comunitária (1986–2026).">
-    <meta name="keywords" content="E.E. Nova Contagem, Escola Estadual Nova Contagem, Jornal Escolar, Memorial Escolar, Contagem MG, Educação, 40 anos, Notícias Escolares">
-    <meta name="author" content="E.E. Nova Contagem">
-    <meta name="robots" content="index, follow">
-
-    <!-- Open Graph / Redes Sociais (WhatsApp, Facebook, LinkedIn) -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Jornal Escolar & Memorial - E.E. Nova Contagem (40 Anos)">
-    <meta property="og:description" content="Confira as notícias e o acervo histórico dos 40 anos da Escola Estadual Nova Contagem. Produzido pelos alunos e comunidade escolar.">
-    <meta property="og:image" content="https://placehold.co/1200x630/0f2338/ffffff?text=E.E.+Nova+Contagem+-+40+Anos">
-    <meta property="og:locale" content="pt_BR">
-    <meta property="og:site_name" content="E.E. Nova Contagem">
-
-    <!-- Twitter Cards -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Jornal Escolar & Memorial - E.E. Nova Contagem">
-    <meta name="twitter:description" content="Acompanhe o jornal digital e o acervo de memórias da E.E. Nova Contagem.">
-    <meta name="twitter:image" content="https://placehold.co/1200x630/0f2338/ffffff?text=E.E.+Nova+Contagem+-+40+Anos">
-
-    <!-- Favicon de Museu -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>">
-
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
-    
+    <title>Mural de Notícias</title>
     <style>
-        :root {
-            --bg-site: #f7f8fa;
-            --cor-primaria: #0d1b2a;
-            --cor-card-dark: #0f2338;
-            --cor-destaque: #d4a373;
-            --texto-principal: #1f2937;
-            --texto-secundario: #6b7280;
-            --raio-borda: 16px;
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
@@ -48,95 +12,99 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-site);
-            color: var(--texto-principal);
-            padding-bottom: 40px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            padding: 20px;
         }
 
-        /* --- CABEÇALHO --- */
-        header {
-            background-color: #ffffff;
-            border-bottom: 1px solid #e5e7eb;
-            padding: 30px 20px;
-        }
-
-        .header-content {
+        .container {
             max-width: 1200px;
             margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #0d1b2a;
+            font-size: 2.2rem;
+        }
+
+        /* Layout em Grid */
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
         }
 
-        .titulo-escola h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
-            color: var(--cor-primaria);
-            letter-spacing: -0.5px;
-        }
-
-        .titulo-escola p {
-            color: var(--texto-secundario);
-            font-size: 0.95rem;
-            margin-top: 4px;
-        }
-
-        .selo-40anos {
-            background-color: var(--cor-primaria);
-            color: #ffffff;
-            padding: 10px 20px;
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.85rem;
-        }
-
-        .selo-40anos span {
-            color: var(--cor-destaque);
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
-
-        /* --- GRID PRINCIPAL (DESKTOP) --- */
-        .grid-container {
-            max-width: 1200px;
-            margin: 40px auto 0;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-        }
-
-        /* CARD BASE */
+        /* Estilo dos Cards */
         .card {
-            background: #ffffff;
-            border-radius: var(--raio-borda);
-            border: 1px solid #e5e7eb;
+            background-color: #fff;
+            border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             display: flex;
             flex-direction: column;
             cursor: pointer;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
         }
 
-        .card-img {
+        /* Container de Imagem com Carrossel Suave */
+        .card-img-wrapper {
+            position: relative;
             width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background-color: #e5e7eb;
+            height: 220px;
+            background-color: #e2e8f0;
+            overflow: hidden;
         }
 
+        .card-img-wrapper img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .card-img-wrapper img.active {
+            opacity: 1;
+        }
+
+        /* Indicadores (Pontos de navegação) */
+        .carousel-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 2;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .dot.active {
+            background-color: #ffffff;
+            transform: scale(1.2);
+        }
+
+        /* Conteúdo do Card */
         .card-body {
-            padding: 24px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -145,451 +113,274 @@
 
         .card-tag {
             font-size: 0.75rem;
-            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--cor-destaque);
-            margin-bottom: 8px;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 6px;
         }
 
         .card-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.25rem;
-            line-height: 1.35;
-            color: var(--cor-primaria);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+            line-height: 1.4;
             margin-bottom: 12px;
         }
 
         .card-author {
             font-size: 0.85rem;
-            color: var(--texto-secundario);
-            margin-top: auto;
+            color: #64748b;
         }
 
-        /* VARIANTES DE TAMANHO PARA DESKTOP */
-        .card-destaque-2col {
-            grid-column: span 2;
-        }
-        .card-destaque-2col .card-img {
-            height: 280px;
-        }
-        .card-destaque-2col .card-title {
-            font-size: 1.6rem;
-        }
-
-        .card-banner-full {
-            grid-column: 1 / -1;
-            flex-direction: row;
-            background-color: var(--cor-card-dark);
-            border: none;
-            color: #ffffff;
-        }
-        .card-banner-full .card-img {
-            width: 48%;
-            height: 320px;
-        }
-        .card-banner-full .card-body {
-            width: 52%;
-            padding: 36px;
-        }
-        .card-banner-full .card-title {
-            color: #ffffff;
-            font-size: 1.8rem;
-            margin-bottom: 16px;
-        }
-        .card-banner-full .card-author {
-            color: #9ca3af;
-        }
-
-        /* --- RODAPÉ --- */
-        footer {
-            max-width: 1200px;
-            margin: 60px auto 0;
-            padding: 0 20px;
-        }
-
-        .cta-banner {
-            background-color: var(--cor-card-dark);
-            color: #ffffff;
-            border-radius: var(--raio-borda);
-            padding: 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .cta-text h3 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.6rem;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .cta-text p {
-            color: #9ca3af;
-            font-size: 0.95rem;
-        }
-
-        .cta-button {
-            background-color: var(--cor-destaque);
-            color: var(--cor-primaria);
-            font-weight: 700;
-            padding: 12px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 0.9rem;
-            display: inline-block;
-            transition: opacity 0.2s;
-        }
-
-        .cta-button:hover {
-            opacity: 0.9;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            padding: 30px 0;
-            border-top: 1px solid #e5e7eb;
-            border-bottom: 1px solid #e5e7eb;
-            margin-bottom: 30px;
-        }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--texto-secundario);
-            margin-bottom: 6px;
-        }
-
-        .stat-value {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--cor-primaria);
-            line-height: 1.1;
-            margin-bottom: 4px;
-        }
-
-        .stat-desc {
-            font-size: 0.85rem;
-            color: var(--texto-secundario);
-        }
-
-        .bottom-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            font-size: 0.85rem;
-            color: var(--texto-secundario);
-            padding-bottom: 20px;
-        }
-
-        /* --- MODAL / POPUP --- */
-        .modal {
+        /* Modal overlay */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(13, 27, 42, 0.75);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(6px);
+            padding: 20px;
         }
 
         .modal-content {
-            background: #ffffff;
-            padding: 36px;
-            border-radius: var(--raio-borda);
-            width: 90%;
-            max-width: 720px;
-            max-height: 85vh;
+            background: #fff;
+            width: 100%;
+            max-width: 650px;
+            max-height: 90vh;
+            border-radius: 12px;
+            padding: 24px;
             overflow-y: auto;
             position: relative;
         }
 
         .modal-close {
             position: absolute;
-            top: 18px;
-            right: 22px;
-            font-size: 1.8rem;
-            background: none;
+            top: 16px;
+            right: 16px;
+            background: #f1f5f9;
             border: none;
+            font-size: 1.2rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
             cursor: pointer;
-            color: var(--texto-secundario);
         }
 
-        .modal-body img {
+        .modal-img-wrapper {
+            position: relative;
             width: 100%;
-            max-height: 380px;
+            height: 320px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 16px 0;
+            background-color: #e2e8f0;
+        }
+
+        .modal-img-wrapper img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
-            border-radius: 10px;
-            margin: 20px 0;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
         }
 
-        .modal-body p {
-            line-height: 1.8;
-            color: #374151;
-            font-size: 1.05rem;
-            white-space: pre-wrap;
-        }
-
-        /* --- RESPONSIVIDADE (CELULAR E TABLET) --- */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .grid-container {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .card-destaque-2col,
-            .card-banner-full {
-                grid-column: span 1 !important;
-                flex-direction: column !important;
-            }
-
-            .card-banner-full .card-img,
-            .card-banner-full .card-body {
-                width: 100% !important;
-            }
-
-            .card-banner-full .card-img {
-                height: 200px !important;
-            }
-
-            .card-banner-full {
-                background-color: #ffffff;
-                border: 1px solid #e5e7eb;
-                color: var(--texto-principal);
-            }
-
-            .card-banner-full .card-title {
-                color: var(--cor-primaria);
-                font-size: 1.25rem;
-            }
-
-            .card-banner-full .card-author {
-                color: var(--texto-secundario);
-            }
-
-            .cta-banner {
-                padding: 24px;
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 24px;
-            }
-
-            .bottom-bar {
-                flex-direction: column;
-                text-align: center;
-            }
+        .modal-img-wrapper img.active {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="header-content">
-            <div class="titulo-escola">
-                <h1>E.E. Nova Contagem</h1>
-                <p>Memorial & Jornal Escolar Digital</p>
-            </div>
-            <div class="selo-40anos">
-                <span>40</span> Anos de História (1986 — 2026)
-            </div>
-        </div>
-    </header>
+    <div class="container">
+        <h1>Mural de Notícias</h1>
+        <div id="news-grid" class="news-grid"></div>
+    </div>
 
-    <main class="grid-container" id="news-grid">
-        <p style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #6b7280;">
-            Carregando edições...
-        </p>
-    </main>
-
-    <footer>
-        <div class="cta-banner">
-            <div class="cta-text">
-                <h3>Você tem fotos, cartas ou memórias da escola?</h3>
-                <p>Envie sua sugestão de pauta ou registro histórico para a equipe do jornal escolar.</p>
-            </div>
-            <a href="https://forms.google.com" target="_blank" rel="noopener" class="cta-button">Enviar Registro</a>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-item">
-                <span class="stat-label">Fundação</span>
-                <span class="stat-value">1986</span>
-                <span class="stat-desc">Inaugurada em 21/02/1986</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Legado Contínuo</span>
-                <span class="stat-value">40 Anos</span>
-                <span class="stat-desc">Formando gerações na comunidade</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Projeto Digital</span>
-                <span class="stat-value">Jornal</span>
-                <span class="stat-desc">Produzido por alunos e professores</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Comunidade</span>
-                <span class="stat-value">E.E. N. C.</span>
-                <span class="stat-desc">Educação e cidadania em Contagem</span>
-            </div>
-        </div>
-
-        <div class="bottom-bar">
-            <p>© 1986–2026 E.E. Nova Contagem • Todos os direitos reservados</p>
-            <p>Acervo Digital & Jornal Escolar</p>
-        </div>
-    </footer>
-
-    <!-- POPUP / MODAL -->
-    <div class="modal" id="modal-overlay">
-        <div class="modal-content">
+    <!-- Estrutura do Modal -->
+    <div id="modal-overlay" class="modal-overlay" onclick="fecharModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="fecharModal()">&times;</button>
-            <div class="modal-body" id="modal-body"></div>
+            <div id="modal-body"></div>
         </div>
     </div>
+
     <script>
+       
     // Cole aqui a URL da sua API do Google Apps Script (terminada em /exec)
        const API_URL = "https://script.google.com/macros/s/AKfycbxKQAWe2eGEnxUttQWHX_F12WalG4X6niIYuqU7Azsrntw7taJXUlq-QzEi_nO9mbLK/exec";
 
-    // Converte links do Google Drive para o link direto de exibição (thumbnail de alta resolução)
-   function formatarUrlImagem(url) {
-    if (!url || typeof url !== 'string') return '';
-    url = url.trim();
+        const IMAGEM_FALLBACK = 'https://placehold.co/600x400/e2e8f0/475569?text=Imagem+Indispon%C3%ADvel';
+        let modalInterval = null; // Guarda o timer do slideshow do modal
 
-    // Extrai o ID do ficheiro do Google Drive de vários formatos de link possíveis
-    const matchDrive = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)|[?&]id=([a-zA-Z0-9_-]+)|drive\.google\.com\/d\/([a-zA-Z0-9_-]+)/);
-    const fileId = matchDrive ? (matchDrive[1] || matchDrive[2] || matchDrive[3]) : null;
+        // Converte IDs ou Links do Google Drive para o link direto do CDN
+        function formatarUrlImagem(url) {
+            if (!url || typeof url !== 'string') return '';
+            url = url.trim();
 
-    if (fileId) {
-        // Retorna o link direto do servidor de imagens do Google (evita erros de API gapi e 400 Bad Request)
-        return `https://lh3.googleusercontent.com/d/${fileId}`;
-    }
+            const matchDrive = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)|[?&]id=([a-zA-Z0-9_-]+)|drive\.google\.com\/d\/([a-zA-Z0-9_-]+)/);
+            const fileId = matchDrive ? (matchDrive[1] || matchDrive[2] || matchDrive[3]) : null;
 
-    // Se a célula contiver apenas o ID isolado
-    if (/^[a-zA-Z0-9_-]{25,}$/.test(url)) {
-        return `https://lh3.googleusercontent.com/d/${url}`;
-    }
+            if (fileId) return `https://lh3.googleusercontent.com/d/${fileId}`;
+            if (/^[a-zA-Z0-9_-]{25,}$/.test(url)) return `https://lh3.googleusercontent.com/d/${url}`;
+            if (url.startsWith('http://') || url.startsWith('https://')) return url;
 
-    return url.startsWith('http') ? url : '';
-}
-    async function carregarNoticias() {
-        try {
-            const resposta = await fetch(API_URL);
-            const noticias = await resposta.json();
-            
-            // Exibe os dados retornados no Console (F12) para diagnóstico
-            console.log("Dados recebidos da API:", noticias);
-
-            const grid = document.getElementById('news-grid');
-            grid.innerHTML = '';
-
-            const dezPrimeiras = noticias.slice(0, 10);
-
-            dezPrimeiras.forEach((noticia, index) => {
-                const card = document.createElement('article');
-                card.className = 'card';
-
-                if (index === 0) {
-                    card.classList.add('card-destaque-2col');
-                } else if (index === 2) {
-                    card.classList.add('card-banner-full');
-                } else if (index === 6) {
-                    card.classList.add('card-destaque-2col');
-                }
-
-                // Aceita 'Imagem', 'imagem' ou 'Foto' caso a coluna varie
-                const urlOriginal = noticia.Imagem || noticia.imagem || noticia.Foto || noticia.foto || '';
-                const imagemFallback = 'https://placehold.co/600x400/e2e8f0/475569?text=Imagem+Indispon%C3%ADvel';
-                const urlImagemFormatada = formatarUrlImagem(urlOriginal) || imagemFallback;
-
-                card.innerHTML = `
-                    <img class="card-img" 
-                         src="${urlImagemFormatada}" 
-                         alt="${noticia.Chamada || 'Imagem da notícia'}"
-                         referrerpolicy="no-referrer"
-                         onerror="console.warn('Erro ao carregar imagem da notícia:', '${noticia.Chamada}'); this.onerror=null; this.src='${imagemFallback}';">
-                    <div class="card-body">
-                        <div>
-                            <div class="card-tag">Notícia #${index + 1}</div>
-                            <h2 class="card-title">${noticia.Chamada || 'Sem título'}</h2>
-                        </div>
-                        <p class="card-author">Por: ${noticia.Redator || 'Redação'}</p>
-                    </div>
-                `;
-
-                card.addEventListener('click', () => abrirModal(noticia));
-                grid.appendChild(card);
-            });
-        } catch (erro) {
-            console.error("Erro ao carregar dados:", erro);
-            document.getElementById('news-grid').innerHTML = `
-                <p style="grid-column: 1 / -1; text-align: center; color: #ef4444; padding: 40px;">
-                    Erro ao carregar as notícias. Verifique a conexão com a API.
-                </p>`;
+            return '';
         }
-    }
 
-    function abrirModal(noticia) {
-        const body = document.getElementById('modal-body');
-        const urlOriginal = noticia.Imagem || noticia.imagem || noticia.Foto || noticia.foto || '';
-        const imagemFallback = 'https://placehold.co/600x400/e2e8f0/475569?text=Imagem+Indispon%C3%ADvel';
-        const urlImagemFormatada = formatarUrlImagem(urlOriginal) || imagemFallback;
+        // Separa a string com vírgulas e retorna uma lista de URLs formatadas
+        function extrairUrlsImagens(stringImagens) {
+            if (!stringImagens || typeof stringImagens !== 'string') return [];
+            
+            return stringImagens
+                .split(',')
+                .map(item => item.trim())
+                .filter(Boolean)
+                .map(url => formatarUrlImagem(url))
+                .filter(Boolean);
+        }
 
-        body.innerHTML = `
-            <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #0d1b2a; margin-bottom: 8px;">
-                ${noticia.Chamada || 'Sem título'}
-            </h2>
-            <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 16px;">
-                Redação: <strong>${noticia.Redator || 'Redação Escolar'}</strong>
-            </p>
-            <img src="${urlImagemFormatada}" 
-                 alt="${noticia.Chamada || 'Imagem'}"
-                 referrerpolicy="no-referrer"
-                 onerror="this.onerror=null; this.src='${imagemFallback}';">
-            <p>${noticia.Noticia || ''}</p>
-        `;
-        document.getElementById('modal-overlay').style.display = 'flex';
-    }
+        // Inicia a rotação de imagens a cada 5 segundos
+        function iniciarSlideshow(container) {
+            const imagens = container.querySelectorAll('img');
+            const pontos = container.querySelectorAll('.dot');
 
-    function fecharModal() {
-        document.getElementById('modal-overlay').style.display = 'none';
-    }
+            if (imagens.length <= 1) return null;
 
-    window.onclick = function(e) {
-        if (e.target.id === 'modal-overlay') fecharModal();
-    }
+            let indiceAtual = 0;
 
-    carregarNoticias();
-</script>
+            return setInterval(() => {
+                // Remove classe ativa da imagem e do ponto atual
+                imagens[indiceAtual].classList.remove('active');
+                if (pontos[indiceAtual]) pontos[indiceAtual].classList.remove('active');
 
+                // Avança para a próxima imagem
+                indiceAtual = (indiceAtual + 1) % imagens.length;
 
+                // Adiciona classe ativa na nova imagem e ponto
+                imagens[indiceAtual].classList.add('active');
+                if (pontos[indiceAtual]) pontos[indiceAtual].classList.add('active');
+            }, 5000); // 5000ms = 5 segundos
+        }
+
+        // Cria a estrutura HTML da imagem / carrossel
+        function criarHtmlCarrossel(listaImagens, titulo, classeWrapper = 'card-img-wrapper') {
+            const imagensValidas = listaImagens.length > 0 ? listaImagens : [IMAGEM_FALLBACK];
+
+            const imgsHtml = imagensValidas.map((src, i) => `
+                <img class="${i === 0 ? 'active' : ''}" 
+                     src="${src}" 
+                     alt="${titulo}"
+                     referrerpolicy="no-referrer"
+                     onerror="this.onerror=null; this.src='${IMAGEM_FALLBACK}';">
+            `).join('');
+
+            const pontosHtml = imagensValidas.length > 1 ? `
+                <div class="carousel-dots">
+                    ${imagensValidas.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}"></span>`).join('')}
+                </div>
+            ` : '';
+
+            return `
+                <div class="${classeWrapper}">
+                    ${imgsHtml}
+                    ${pontosHtml}
+                </div>
+            `;
+        }
+
+        async function carregarNoticias() {
+            try {
+                const resposta = await fetch(API_URL);
+                const dadosBrutos = await resposta.json();
+
+                // Filtra registros que estão totalmente vazios
+                const noticiasValidas = dadosBrutos.filter(item => 
+                    (item.Noticia && item.Noticia.trim() !== '') || 
+                    (item.Redator && item.Redator.trim() !== '') ||
+                    (item.Imagem && item.Imagem.trim() !== '')
+                );
+
+                const grid = document.getElementById('news-grid');
+                grid.innerHTML = '';
+
+                noticiasValidas.forEach((noticia, index) => {
+                    const card = document.createElement('article');
+                    card.className = 'card';
+
+                    // Fallback para o título caso 'Chamada' esteja em branco
+                    const titulo = noticia.Chamada && noticia.Chamada.trim() !== '' 
+                        ? noticia.Chamada 
+                        : (noticia.Noticia ? noticia.Noticia.slice(0, 60) + '...' : 'Notícia Sem Título');
+
+                    const imagens = extrairUrlsImagens(noticia.Imagem || noticia.imagem);
+
+                    card.innerHTML = `
+                        ${criarHtmlCarrossel(imagens, titulo, 'card-img-wrapper')}
+                        <div class="card-body">
+                            <div>
+                                <div class="card-tag">Notícia #${index + 1}</div>
+                                <h2 class="card-title">${titulo}</h2>
+                            </div>
+                            <p class="card-author">Por: ${noticia.Redator || 'Redação'}</p>
+                        </div>
+                    `;
+
+                    // Ativa o slideshow automático de 5 segundos no card
+                    const wrapper = card.querySelector('.card-img-wrapper');
+                    iniciarSlideshow(wrapper);
+
+                    card.addEventListener('click', () => abrirModal(noticia, titulo, imagens));
+                    grid.appendChild(card);
+                });
+
+            } catch (erro) {
+                console.error("Erro ao carregar notícias:", erro);
+            }
+        }
+
+        function abrirModal(noticia, tituloFallback, imagens) {
+            const body = document.getElementById('modal-body');
+            const titulo = noticia.Chamada && noticia.Chamada.trim() !== '' ? noticia.Chamada : tituloFallback;
+
+            // Limpa o timer do modal anterior se existir
+            if (modalInterval) clearInterval(modalInterval);
+
+            body.innerHTML = `
+                <h2 style="font-size: 1.5rem; color: #0d1b2a; margin-bottom: 8px;">${titulo}</h2>
+                <p style="color: #64748b; font-size: 0.9rem;">
+                    Por: <strong>${noticia.Redator || 'Redação'}</strong>
+                </p>
+
+                ${criarHtmlCarrossel(imagens, titulo, 'modal-img-wrapper')}
+
+                <p style="margin-top: 16px; line-height: 1.6; color: #334155;">
+                    ${noticia.Noticia || ''}
+                </p>
+            `;
+
+            // Ativa o carrossel de 5s dentro do modal também
+            const modalWrapper = body.querySelector('.modal-img-wrapper');
+            modalInterval = iniciarSlideshow(modalWrapper);
+
+            document.getElementById('modal-overlay').style.display = 'flex';
+        }
+
+        function fecharModal(e) {
+            document.getElementById('modal-overlay').style.display = 'none';
+            if (modalInterval) clearInterval(modalInterval);
+        }
+
+        // Inicia o carregamento
+        carregarNoticias();
+    </script>
 </body>
 </html>
