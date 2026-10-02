@@ -101,7 +101,6 @@ header {
   box-shadow: 0 12px 24px rgba(0,0,0,0.08);
 }
 
-/* CARROSSEL E CAPA DE IMAGENS NOS CARDS */
 .card-img-wrapper {
   position: relative;
   width: 100%;
@@ -121,7 +120,6 @@ header {
   opacity: 1;
 }
 
-/* Indicadores de pontinhos no carrossel */
 .carousel-dots {
   position: absolute;
   bottom: 10px;
@@ -319,7 +317,6 @@ footer {
   padding-bottom: 20px;
 }
 
-/* ESTILOS DO MODAL E VÍDEO */
 .modal {
   position: fixed;
   top: 0; left: 0;
@@ -364,7 +361,6 @@ footer {
   white-space: pre-wrap;
 }
 
-/* CARROSSEL NO MODAL */
 .modal-carrossel-wrapper {
   position: relative;
   width: 100%;
@@ -377,9 +373,8 @@ footer {
 .modal-carrossel-wrapper img {
   position: absolute;
   top: 0; left: 0;
-  width: 100%; 
-  height: 100%;
-  object-fit: cover; /* <-- Preenche todo o espaço (pode cortar bordas da foto) */
+  width: 100%; height: 100%;
+  object-fit: contain; /* Enquadra a imagem inteira no modal sem cortar */
   opacity: 0;
   transition: opacity 0.8s ease-in-out;
 }
@@ -387,11 +382,10 @@ footer {
   opacity: 1;
 }
 
-/* CONTAINER DE VÍDEO RESPONSIVO */
 .video-container {
   position: relative;
   width: 100%;
-  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  padding-bottom: 56.25%;
   height: 0;
   margin: 20px 0;
   border-radius: 12px;
@@ -422,7 +416,8 @@ footer {
   .modal-carrossel-wrapper { height: 240px; }
 }
 </style>
-</head><body>
+</head>
+<body>
 
 <header>
   <div class="header-content">
@@ -492,9 +487,8 @@ const IMAGEM_FALLBACK = 'https://placehold.co/600x400/0f2338/ffffff?text=E.E.+No
 
 let todasNoticias = [];
 let noticiasExibidas = LIMITE_INICIAL;
-let modalInterval = null; // Timer do carrossel do modal
+let modalInterval = null;
 
-// ✅ NORMALIZAÇÃO E CONVERSÃO DE LINKS DO GOOGLE DRIVE E MÍDIAS
 function normalizarLinkImagem(link) {
   if (!link || typeof link !== 'string') return '';
   link = link.trim();
@@ -513,7 +507,6 @@ function normalizarLinkImagem(link) {
   return link;
 }
 
-// Extrai todas as imagens válidas da notícia (combina Imagem e Imagens_Galeria)
 function obterListaImagens(noticia) {
   let lista = [];
   
@@ -529,25 +522,21 @@ function obterListaImagens(noticia) {
     .filter(s => s && s.length > 0 && !ehUrlVideo(s));
 }
 
-// Tolera diferentes nomes para a coluna de vídeo (Vídeo, Video, video, VIDEO)
 function obterUrlVideo(noticia) {
   const v = noticia.Vídeo || noticia.Video || noticia.video || noticia.VIDEO;
   return (v && typeof v === 'string') ? v.trim() : '';
 }
 
-// Deteta se o link é um vídeo
 function ehUrlVideo(url) {
   if (!url || typeof url !== 'string') return false;
   const u = url.toLowerCase();
   return u.includes('.mp4') || u.includes('.webm') || u.includes('youtube.com') || u.includes('youtu.be');
 }
 
-// Processa a URL do vídeo
 function processarUrlVideo(url) {
   if (!url) return null;
   url = url.trim();
 
-  // 1. YouTube
   const matchYT = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
   if (matchYT) {
     return {
@@ -556,7 +545,6 @@ function processarUrlVideo(url) {
     };
   }
 
-  // 2. Google Drive Vídeo
   const matchDrive = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)|[?&]id=([a-zA-Z0-9_-]+)/);
   const fileId = matchDrive ? (matchDrive[1] || matchDrive[2]) : null;
   if (fileId) {
@@ -567,14 +555,12 @@ function processarUrlVideo(url) {
     };
   }
 
-  // 3. Link direto (ex: arquivo.mp4)
   return {
     tipo: 'direto',
     urlStream: url
   };
 }
 
-// Inicia rotação automática de 3 segundos no container de imagens
 function iniciarAlternanciaImagens(container) {
   const imagens = container.querySelectorAll('img');
   const pontos = container.querySelectorAll('.dot');
@@ -591,29 +577,79 @@ function iniciarAlternanciaImagens(container) {
 
     imagens[indice].classList.add('active');
     if (pontos[indice]) pontos[indice].classList.add('active');
-  }, 3000); // 3 SEGUNDOS
+  }, 3000);
 }
 
-async function carregarNoticias() {
-  try {
-    const resposta = await fetch(API_URL);
-    todasNoticias = await resposta.json();
+function renderizarNoticias(de, ate) {
+  const grid = document.getElementById('news-grid');
+  
+  // Limpa o texto "Carregando edições..." no primeiro carregamento
+  if (de === 0) {
+    grid.innerHTML = '';
+  }
+  
+  for (let i = de; i < ate && i < todasNoticias.length; i++) {
+    const noticia = todasNoticias[i];
+    const card = document.createElement('article');
+    card.className = 'card';
     
-    renderizarNoticias(0, LIMITE_INICIAL);
+    if (i === 0) card.classList.add('card-destaque-2col');
+    else if (i === 2) card.classList.add('card-banner-full');
+    else if (i === 6) card.classList.add('card-destaque-2col');
+
+    const imagens = obterListaImagens(noticia);
+    const urlVideo = obterUrlVideo(noticia);
+    const temVideo = urlVideo !== '';
+    const temGaleria = imagens.length > 1;
+    const temDrive = (noticia.Imagem || '').includes('drive.google.com') || 
+                     (noticia.Imagens_Galeria || '').includes('drive.google.com') ||
+                     urlVideo.includes('drive.google.com');
     
-    if (todasNoticias.length > LIMITE_INICIAL) {
-      adicionarBotaoVerMais();
-    }
-  } catch (erro) {
-    console.error("Erro ao carregar dados:", erro);
-    document.getElementById('news-grid').innerHTML = `
-      <p style="grid-column: 1 / -1; text-align: center; color: #ef4444; padding: 40px;">
-        Erro ao carregar as notícias. Verifique a conexão com a planilha.
-      </p>`;
+    let tags = '';
+    if (temVideo) tags += `<span class="tag-video">🎬 Vídeo</span>`;
+    if (temGaleria) tags += `<span class="tag-galeria">📸 Galeria (${imagens.length})</span>`;
+    if (temDrive) tags += `<span class="tag-drive">☁️ Drive</span>`;
+
+    const imagensParaExibir = imagens.length > 0 ? imagens : [IMAGEM_FALLBACK];
+
+    const imgsHtml = imagensParaExibir.map((img, idx) => `
+      <img class="${idx === 0 ? 'active' : ''}" src="${img}" alt="${noticia.Chamada || 'Notícia'}" onerror="this.src='${IMAGEM_FALLBACK}'">
+    `).join('');
+
+    const pontosHtml = imagensParaExibir.length > 1 ? `
+      <div class="carousel-dots">
+        ${imagensParaExibir.map((_, idx) => `<span class="dot ${idx === 0 ? 'active' : ''}"></span>`).join('')}
+      </div>
+    ` : '';
+
+    const titulo = noticia.Chamada && noticia.Chamada.trim() !== '' 
+      ? noticia.Chamada 
+      : (noticia.Noticia ? noticia.Noticia.slice(0, 60) + '...' : 'Registro Histórico');
+
+    card.innerHTML = `
+      <div class="card-img-wrapper">
+        ${imgsHtml}
+        ${pontosHtml}
+      </div>
+      <div class="card-body">
+        <div>
+          <div class="card-tag">
+            Reminiscência #${i + 1}
+            ${tags}
+          </div>
+          <h2 class="card-title">${titulo}</h2>
+        </div>
+        <p class="card-author">Por: ${noticia.Redator || 'Redação'}</p>
+      </div>
+    `;
+
+    const wrapper = card.querySelector('.card-img-wrapper');
+    iniciarAlternanciaImagens(wrapper);
+
+    card.addEventListener('click', () => abrirModal(noticia, titulo, imagens));
+    grid.appendChild(card);
   }
 }
-
-https://memorialnc.netlify.app
 
 function adicionarBotaoVerMais() {
   const grid = document.getElementById('news-grid');
@@ -657,7 +693,6 @@ function abrirModal(noticia, tituloFallback, imagens) {
   const urlVideo = obterUrlVideo(noticia);
   const videoObj = urlVideo ? processarUrlVideo(urlVideo) : null;
 
-  // Renderização de Mídia no Modal
   if (videoObj) {
     if (videoObj.tipo === 'drive') {
       midiaHtml = `
@@ -684,7 +719,6 @@ function abrirModal(noticia, tituloFallback, imagens) {
       `;
     }
   } else {
-    // Galeria de fotos rotativa de 3 segundos
     const imgsValidas = imagens.length > 0 ? imagens : [IMAGEM_FALLBACK];
     const imgsHtml = imgsValidas.map((img, idx) => `
       <img class="${idx === 0 ? 'active' : ''}" src="${img}" alt="${titulo}" onerror="this.src='${IMAGEM_FALLBACK}'">
@@ -717,13 +751,11 @@ function abrirModal(noticia, tituloFallback, imagens) {
     <p style="margin-top: 16px;">${noticia.Noticia || ''}</p>
   `;
 
-  // Forçar autoplay no vídeo
   const videoElem = document.getElementById('modal-video-element');
   if (videoElem) {
-    videoElem.play().catch(e => console.log("Autoplay aguardando interação do usuário:", e));
+    videoElem.play().catch(e => console.log("Autoplay aguardando interação:", e));
   }
 
-  // Ativar carrossel de 3 segundos no modal para imagens
   const modalWrapper = body.querySelector('.modal-carrossel-wrapper');
   if (modalWrapper) {
     modalInterval = iniciarAlternanciaImagens(modalWrapper);
@@ -732,21 +764,18 @@ function abrirModal(noticia, tituloFallback, imagens) {
   document.getElementById('modal-overlay').style.display = 'flex';
 }
 
-// FECHA O MODAL E INTERROMPE QUALQUER REPRODUÇÃO IMEDIATAMENTE
 function fecharModal(e) {
   const overlay = document.getElementById('modal-overlay');
   const body = document.getElementById('modal-body');
 
   if (modalInterval) clearInterval(modalInterval);
 
-  // Interrompe vídeos HTML5
   const videos = body.querySelectorAll('video');
   videos.forEach(v => {
     v.pause();
     v.currentTime = 0;
   });
 
-  // Limpa o src de iFrames para cancelar o som imediatamente
   const iframes = body.querySelectorAll('iframe');
   iframes.forEach(i => {
     i.src = '';
@@ -756,11 +785,30 @@ function fecharModal(e) {
   overlay.style.display = 'none';
 }
 
-// Fechar modal ao pressionar a tecla ESC
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') fecharModal();
 });
 
+async function carregarNoticias() {
+  try {
+    const resposta = await fetch(API_URL);
+    todasNoticias = await resposta.json();
+    
+    renderizarNoticias(0, LIMITE_INICIAL);
+    
+    if (todasNoticias.length > LIMITE_INICIAL) {
+      adicionarBotaoVerMais();
+    }
+  } catch (erro) {
+    console.error("Erro ao carregar dados:", erro);
+    document.getElementById('news-grid').innerHTML = `
+      <p style="grid-column: 1 / -1; text-align: center; color: #ef4444; padding: 40px;">
+        Erro ao carregar as notícias. Verifique a conexão com a planilha.
+      </p>`;
+  }
+}
+
 carregarNoticias();
 </script>
-</body></html>
+</body>
+</html>
