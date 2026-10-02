@@ -613,72 +613,7 @@ async function carregarNoticias() {
   }
 }
 
-function renderizarNoticias(de, ate) {
-  const grid = document.getElementById('news-grid');
-  
-  for (let i = de; i < ate && i < todasNoticias.length; i++) {
-    const noticia = todasNoticias[i];
-    const card = document.createElement('article');
-    card.className = 'card';
-    
-    if (i === 0) card.classList.add('card-destaque-2col');
-    else if (i === 2) card.classList.add('card-banner-full');
-    else if (i === 6) card.classList.add('card-destaque-2col');
-
-    const imagens = obterListaImagens(noticia);
-    const urlVideo = obterUrlVideo(noticia);
-    const temVideo = urlVideo !== '';
-    const temGaleria = imagens.length > 1;
-    const temDrive = (noticia.Imagem || '').includes('drive.google.com') || 
-                     (noticia.Imagens_Galeria || '').includes('drive.google.com') ||
-                     urlVideo.includes('drive.google.com');
-    
-    let tags = '';
-    if (temVideo) tags += `<span class="tag-video">🎬 Vídeo</span>`;
-    if (temGaleria) tags += `<span class="tag-galeria">📸 Galeria (${imagens.length})</span>`;
-    if (temDrive) tags += `<span class="tag-drive">☁️ Drive</span>`;
-
-    const imagensParaExibir = imagens.length > 0 ? imagens : [IMAGEM_FALLBACK];
-
-    const imgsHtml = imagensParaExibir.map((img, idx) => `
-      <img class="${idx === 0 ? 'active' : ''}" src="${img}" alt="${noticia.Chamada || 'Notícia'}" onerror="this.src='${IMAGEM_FALLBACK}'">
-    `).join('');
-
-    const pontosHtml = imagensParaExibir.length > 1 ? `
-      <div class="carousel-dots">
-        ${imagensParaExibir.map((_, idx) => `<span class="dot ${idx === 0 ? 'active' : ''}"></span>`).join('')}
-      </div>
-    ` : '';
-
-    const titulo = noticia.Chamada && noticia.Chamada.trim() !== '' 
-      ? noticia.Chamada 
-      : (noticia.Noticia ? noticia.Noticia.slice(0, 60) + '...' : 'Registro Histórico');
-
-    card.innerHTML = `
-      <div class="card-img-wrapper">
-        ${imgsHtml}
-        ${pontosHtml}
-      </div>
-      <div class="card-body">
-        <div>
-          <div class="card-tag">
-            Reminiscência #${i + 1}
-            ${tags}
-          </div>
-          <h2 class="card-title">${titulo}</h2>
-        </div>
-        <p class="card-author">Por: ${noticia.Redator || 'Redação'}</p>
-      </div>
-    `;
-
-    // Ativa a rotação de imagens a cada 3 segundos no card
-    const wrapper = card.querySelector('.card-img-wrapper');
-    iniciarAlternanciaImagens(wrapper);
-
-    card.addEventListener('click', () => abrirModal(noticia, titulo, imagens));
-    grid.appendChild(card);
-  }
-}
+https://memorialnc.netlify.app
 
 function adicionarBotaoVerMais() {
   const grid = document.getElementById('news-grid');
