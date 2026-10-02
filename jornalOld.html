@@ -434,7 +434,7 @@
                 <h3>Você tem fotos, cartas ou memórias da escola?</h3>
                 <p>Envie sua sugestão de pauta ou registro histórico para a equipe do jornal escolar.</p>
             </div>
-            <a href="https://novacontagem.netlify.app/" target="_blank" rel="noopener" class="cta-button">Enviar Registro</a>
+            <a href="https://forms.google.com" target="_blank" rel="noopener" class="cta-button">Enviar Registro</a>
         </div>
 
         <div class="stats-grid">
@@ -475,7 +475,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxKQAWe2eGEnxUttQWHX_F12WalG4X6niIYuqU7Azsrntw7taJXUlq-QzEi_nO9mbLK/exec";
+        const API_URL = "URL_DA_SUA_API_DO_GOOGLE_APPS_SCRIPT";
 
         async function carregarNoticias() {
             try {
@@ -504,7 +504,7 @@
                         <img class="card-img" src="${noticia.Imagem || imagemFallback}" alt="${noticia.Chamada || 'Imagem da notícia'}">
                         <div class="card-body">
                             <div>
-                                <div class="card-tag">Reminiscência #${index + 1}</div>
+                                <div class="card-tag">Notícia #${index + 1}</div>
                                 <h2 class="card-title">${noticia.Chamada}</h2>
                             </div>
                             <p class="card-author">Por: ${noticia.Redator || 'Redação'}</p>
