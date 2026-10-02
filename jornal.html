@@ -374,7 +374,7 @@ footer {
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  object-fit: contain; /* Enquadra a imagem inteira no modal sem cortar */
+  object-fit: contain;
   opacity: 0;
   transition: opacity 0.8s ease-in-out;
 }
@@ -561,7 +561,7 @@ function processarUrlVideo(url) {
   };
 }
 
-// Agora aceita o parâmetro 'tempo' (padrão 3000ms se não for informado)
+// Aceita o parâmetro de tempo (padrão 3000ms caso não informado)
 function iniciarAlternanciaImagens(container, tempo = 3000) {
   const imagens = container.querySelectorAll('img');
   const pontos = container.querySelectorAll('.dot');
@@ -578,7 +578,7 @@ function iniciarAlternanciaImagens(container, tempo = 3000) {
 
     imagens[indice].classList.add('active');
     if (pontos[indice]) pontos[indice].classList.add('active');
-  }, tempo); // <--- Usa o tempo dinâmico informado
+  }, tempo);
 }
 
 function renderizarNoticias(de, ate) {
@@ -589,6 +589,9 @@ function renderizarNoticias(de, ate) {
     grid.innerHTML = '';
   }
   
+  // Tempos variados para os carrosséis da tela principal: 3s, 3.5s e 4s
+  const tempos = [3000, 3500, 4000];
+
   for (let i = de; i < ate && i < todasNoticias.length; i++) {
     const noticia = todasNoticias[i];
     const card = document.createElement('article');
@@ -645,7 +648,9 @@ function renderizarNoticias(de, ate) {
     `;
 
     const wrapper = card.querySelector('.card-img-wrapper');
-    iniciarAlternanciaImagens(wrapper);
+    // Aplica tempo alternado entre 3s, 3.5s e 4s
+    const tempoCard = tempos[i % tempos.length];
+    iniciarAlternanciaImagens(wrapper, tempoCard);
 
     card.addEventListener('click', () => abrirModal(noticia, titulo, imagens));
     grid.appendChild(card);
@@ -759,7 +764,10 @@ function abrirModal(noticia, tituloFallback, imagens) {
 
   const modalWrapper = body.querySelector('.modal-carrossel-wrapper');
   if (modalWrapper) {
-    modalInterval = iniciarAlternanciaImagens(modalWrapper);
+    // Sorteia entre 3s (3000ms), 3.5s (3500ms) e 4s (4000ms) para cada abertura de modal
+    const temposModal = [3000, 3500, 4000];
+    const tempoSorteado = temposModal[Math.floor(Math.random() * temposModal.length)];
+    modalInterval = iniciarAlternanciaImagens(modalWrapper, tempoSorteado);
   }
 
   document.getElementById('modal-overlay').style.display = 'flex';
