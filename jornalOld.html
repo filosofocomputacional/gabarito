@@ -480,29 +480,26 @@
        const API_URL = "https://script.google.com/macros/s/AKfycbxKQAWe2eGEnxUttQWHX_F12WalG4X6niIYuqU7Azsrntw7taJXUlq-QzEi_nO9mbLK/exec";
 
     // Converte links do Google Drive para o link direto de exibição (thumbnail de alta resolução)
-    function formatarUrlImagem(url) {
-        if (!url || typeof url !== 'string') return '';
-        url = url.trim();
+   function formatarUrlImagem(url) {
+    if (!url || typeof url !== 'string') return '';
+    url = url.trim();
 
-        // Extrai o ID do arquivo do Google Drive
-        const matchDrive = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)|[?&]id=([a-zA-Z0-9_-]+)|drive\.google\.com\/d\/([a-zA-Z0-9_-]+)/);
-        if (matchDrive) {
-            const fileId = matchDrive[1] || matchDrive[2] || matchDrive[3];
-            return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
-        }
+    // Extrai o ID do ficheiro do Google Drive de vários formatos de link possíveis
+    const matchDrive = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)|[?&]id=([a-zA-Z0-9_-]+)|drive\.google\.com\/d\/([a-zA-Z0-9_-]+)/);
+    const fileId = matchDrive ? (matchDrive[1] || matchDrive[2] || matchDrive[3]) : null;
 
-        // Se for colado apenas o ID isolado do arquivo
-        if (/^[a-zA-Z0-9_-]{25,}$/.test(url)) {
-            return `https://drive.google.com/thumbnail?id=${url}&sz=w1000`;
-        }
-
-        if (url.startsWith('http://') || url.startsWith('https://')) {
-            return url;
-        }
-
-        return '';
+    if (fileId) {
+        // Retorna o link direto do servidor de imagens do Google (evita erros de API gapi e 400 Bad Request)
+        return `https://lh3.googleusercontent.com/d/${fileId}`;
     }
 
+    // Se a célula contiver apenas o ID isolado
+    if (/^[a-zA-Z0-9_-]{25,}$/.test(url)) {
+        return `https://lh3.googleusercontent.com/d/${url}`;
+    }
+
+    return url.startsWith('http') ? url : '';
+}
     async function carregarNoticias() {
         try {
             const resposta = await fetch(API_URL);
