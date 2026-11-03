@@ -522,7 +522,7 @@ window.fecharModalCamera = function() {
     carregarAlunos();
 };
 
-function processarPerspectivaCompleta(src) {
+ function processarPerspectivaCompleta(src) {
     let gray = new cv.Mat(), blurred = new cv.Mat(), thresh = new cv.Mat(), morphed = new cv.Mat();
     let kernel = null, contours = new cv.MatVector(), hierarchy = new cv.Mat();
 
@@ -660,7 +660,7 @@ function tentarCapturaEmLoop() {
     }
 }
 
-function processarCorrecaoFinal(warped) {
+/* function processarCorrecaoFinal(warped) {
     let dW = warped.cols;
     let dH = warped.rows;
 
@@ -802,8 +802,163 @@ function processarCorrecaoFinal(warped) {
 
     maskCircular.delete();
     warped.delete(); warpedGray.delete(); warpedBlur.delete(); warpedThresh.delete();
-}
+}*/
 
+function processarCorrecaoFinal(warped) {
+    let dW = warped.cols;
+    let dH = warped.rows;
+
+    let warpedGray = new cv.Mat();
+    cv.cvtColor(warped, warpedGray, cv.COLOR_RGBA2GRAY);
+
+    // 1. REFORÇO DE CONTRAS-TE (Ganha visibilidade em traços fracos/claros)
+    // alpha = 1.4 (aumenta contraste), beta = -30 (escurece o tom geral)
+    cv.convertScaleAbs(warpedGray, warpedGray, 1.4, -30);
+
+    let warpedBlur = new cv.Mat();
+    let warpedThresh = new cv.Mat();
+    cv.GaussianBlur(warpedGray, warpedBlur, new cv.Size(3, 3), 0);
+
+    // 2. THRESHOLD COM SENSIBILIDADE AUMENTADA (Otsu com ajuste)
+    cv.threshold(warpedBlur, warpedThresh, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
+
+    let stringGabarito = configCalib.gabarito;
+    let numOpcoes = configCalib.numOpcoes || 5;
+    let numQuestoes = configCalib.numQuestoes || 10;
+    let numColunas = configCalib.numColunas || 2;
+    let valorProva = configCalib.valorProva || 10.0;
+    
+    let qPorColuna = Math.ceil(numQuestoes / numColunas);
+    let acertos = 0;
+    let respostasLidas = [];
+
+    // 3. LIMIAR DE TINTA REDUZIDO (Leitura de canetas finas/claras)
+    const LIMIAR_MINIMO_TINTA = 40; // Reduzido de 120 para 40
+    
+    let greenColor = new cv.Scalar(0, 255, 0, 255);
+    let redColor = new cv.Scalar(255, 0, 0, 255);
+    let grayColor = new cv.Scalar(200, 200, 200, 255);
+
+    let scaleFactor = dW / BASE_W;
+    let roiSize = Math.round(24 * scaleFactor);
+    let halfRoi = Math.floor(roiSize / 2);
+    let raioMascara = Math.round(9 * scaleFactor);
+
+    let maskCircular = cv.Mat.zeros(roiSize, roiSize, cv.CV_8UC1);
+    cv.circle(maskCircular, new cv.Point(halfRoi, halfRoi), raioMascara, new cv.Scalar(255), -1);
+
+    for (let q = 0; q < numQuestoes; q++) {
+        let isCol2 = (numColunas === 2) && (q >= qPorColuna);
+        
+        let propBaseX = isCol2 ? configCalib.x2 : configCalib.x1;
+        let propBaseY = isCol2 ? configCalib.y2 : configCalib.y1;
+        
+        let colBaseX = Math.round(propBaseX * dW);
+        let colBaseY = Math.round(propBaseY * dH);
+        
+        let spX_real = configCalib.spX * dW;
+        let spY_real = configCalib.spY * dH;
+
+        let linhaIdx = isCol2 ? (q - qPorColuna) : q;
+        let yPonto = Math.round(colBaseY + (linhaIdx * spY_real));
+
+        let valoresAlternativas = [];
+        let coords = [];
+
+        for (let i = 0; i < numOpcoes; i++) {
+            let xPonto = Math.round(colBaseX + (i * spX_real));
+            coords.push({ x: xPonto, y: yPonto });
+
+            let totalPixels = 0;
+            if (yPonto >= halfRoi && yPonto < dH - halfRoi && xPonto >= halfRoi && xPonto < dW - halfRoi) {
+                let roi = warpedThresh.roi(new cv.Rect(xPonto - halfRoi, yPonto - halfRoi, roiSize, roiSize));
+                let roiFiltrada = new cv.Mat();
+                cv.bitwise_and(roi, roi, roiFiltrada, maskCircular);
+                
+                totalPixels = cv.countNonZero(roiFiltrada);
+                
+                roi.delete();
+                roiFiltrada.delete();
+            }
+            valoresAlternativas.push(totalPixels);
+        }
+
+        let ordenados = [...valoresAlternativas].sort((a, b) => b - a);
+        let maior = ordenados[0];
+        let segundaMaior = ordenados[1];
+
+        let idxMarcado = valoresAlternativas.indexOf(maior);
+        let respostaAluno = "-";
+
+        if (maior > LIMIAR_MINIMO_TINTA) {
+            // 4. RAZÃO DE COMPARAÇÃO SUAVIZADA (Aceita marcações mais fracas)
+            if (segundaMaior > LIMIAR_MINIMO_TINTA && segundaMaior > (maior * 0.70)) {
+                respostaAluno = "*"; // Anulada (duas marcações)
+            } else {
+                let outras = valoresAlternativas.filter((_, idx) => idx !== idxMarcado);
+                let mediaOutras = outras.reduce((a, b) => a + b, 0) / (outras.length || 1);
+                
+                // Reduzido o fator multiplicador de 1.8 para 1.3
+                if (maior > (mediaOutras * 1.3)) {
+                    respostaAluno = LETRAS_TODAS[idxMarcado];
+                }
+            }
+        }
+
+        respostasLidas.push(respostaAluno);
+        let acertou = (respostaAluno === stringGabarito[q]);
+        if (acertou) acertos++;
+
+        coords.forEach((c, idx) => {
+            let center = new cv.Point(c.x, c.y);
+            let radiusCircle = Math.round(8 * scaleFactor);
+            let radiusDot = Math.round(3 * scaleFactor);
+
+            if (idx === idxMarcado && respostaAluno !== "-") {
+                let color = acertou ? greenColor : redColor;
+                cv.circle(warped, center, radiusCircle, color, -1);
+            } else if (respostaAluno === "*" && valoresAlternativas[idx] > LIMIAR_MINIMO_TINTA) {
+                cv.circle(warped, center, radiusCircle, redColor, -1);
+            } else {
+                cv.circle(warped, center, radiusDot, grayColor, -1);
+            }
+        });
+    }
+
+    let notaFinal = (acertos / numQuestoes) * valorProva;
+    
+    // Grava o objeto completo no banco (Nota + Respostas em array)
+    const chaveNota = `${alunoAtualParaCaptura.turma}_${alunoAtualParaCaptura.nome}`;
+    bancoNotasLocais[chaveNota] = {
+        nota: notaFinal,
+        respostas: respostasLidas
+    };
+    localStorage.setItem('corrigePro_notas_alunos', JSON.stringify(bancoNotasLocais));
+
+    cv.imshow('canvasScanResult', warped);
+    document.getElementById('webcamScan').style.display = 'none';
+    document.getElementById('canvasScanResult').style.display = 'block';
+
+    const banner = document.getElementById('notaBannerModal');
+    banner.innerText = `NOTA: ${notaFinal.toFixed(1)} / ${valorProva.toFixed(1)} (${acertos} acertos)`;
+    banner.style.display = 'block';
+
+    const btnEsc = document.getElementById('btnEscanearAluno');
+    btnEsc.innerText = "✅ CONCLUÍDO (FECHAR)";
+    btnEsc.style.background = "#007bff";
+    jaDigitalizado = true;
+
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        osc.connect(audioCtx.destination); osc.frequency.value = 800; osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+    } catch(e) {}
+
+    if (streamVideoGlobal) streamVideoGlobal.getTracks().forEach(track => track.stop());
+
+    maskCircular.delete();
+    warped.delete(); warpedGray.delete(); warpedBlur.delete(); warpedThresh.delete();
+}
 // ================= 7. EXPORTAÇÃO E GERENCIAMENTO =================
 function atualizarListaTurmasAlteradas() {
     const ul = document.getElementById('listaTurmasAlteradas');
