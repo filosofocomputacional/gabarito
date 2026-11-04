@@ -522,7 +522,7 @@ window.fecharModalCamera = function() {
     carregarAlunos();
 };
 
- function processarPerspectivaCompleta(src) {
+function processarPerspectivaCompleta(src) {
     let gray = new cv.Mat(), blurred = new cv.Mat(), thresh = new cv.Mat(), morphed = new cv.Mat();
     let kernel = null, contours = new cv.MatVector(), hierarchy = new cv.Mat();
 
@@ -660,7 +660,7 @@ function tentarCapturaEmLoop() {
     }
 }
 
- function processarCorrecaoFinal(warped) {
+function processarCorrecaoFinal(warped) {
     let dW = warped.cols;
     let dH = warped.rows;
 
@@ -985,7 +985,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 textoEmail += `TURMA: ${turma} (${etapa})\n`;
                 textoEmail += `===============================\n`;
                 textoEmail += `Nome do Aluno;Nota\n`;
- 
+
                 // Alunos e Notas
                 DADOS_ALUNOS[etapa][turma].forEach(aluno => {
                     const chave = `${turma}_${aluno}`;
