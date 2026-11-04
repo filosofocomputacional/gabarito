@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -525,7 +525,7 @@
 <body>
 
 <header>
-    <h2>🎓 Corretor </h2>
+    <h2>🎓 CorrigePro</h2>
     <p>Gestão Inteligente de Correção e Leitura de Gabaritos</p>
 </header>
 
@@ -1258,7 +1258,7 @@ function processarCorrecaoFinal(warped) {
     warped.delete(); warpedGray.delete(); warpedBlur.delete(); warpedThresh.delete();
 }
 
-// ================= 7. EXPORTAÇÃO E GERENCIAMENTO (CORRIGIDOS) =================
+// ================= 7. EXPORTAÇÃO E GERENCIAMENTO (AJUSTADO PARA FIREFOX E FILE://) =================
 function atualizarListaTurmasAlteradas() {
     const ul = document.getElementById('listaTurmasAlteradas');
     if (!ul) return;
@@ -1281,29 +1281,39 @@ function atualizarListaTurmasAlteradas() {
     });
 }
 
-// FIX: Uso de Blob nativo com BOM UTF-8 para garantir download instantâneo e acentuação no Excel
 window.exportarCSV = function() {
-    if (!DADOS_ALUNOS || Object.keys(DADOS_ALUNOS).length === 0) {
-        alert("⚠️ Nenhum dado de aluno carregado no sistema.");
-        return;
-    }
-
     let csvContent = "\uFEFFEtapa;Turma;Nome do Aluno;Nota\n";
     let linhasInseridas = 0;
 
-    Object.keys(DADOS_ALUNOS).forEach(etapa => {
-        Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
-            DADOS_ALUNOS[etapa][turma].forEach(aluno => {
-                const chave = `${turma}_${aluno}`;
-                const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "";
-                csvContent += `"${etapa}";"${turma}";"${aluno}";"${nota}"\n`;
-                linhasInseridas++;
+    const temDadosAlunos = DADOS_ALUNOS && Object.keys(DADOS_ALUNOS).length > 0;
+
+    if (temDadosAlunos) {
+        Object.keys(DADOS_ALUNOS).forEach(etapa => {
+            Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
+                DADOS_ALUNOS[etapa][turma].forEach(aluno => {
+                    const chave = `${turma}_${aluno}`;
+                    const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "";
+                    csvContent += `"${etapa}";"${turma}";"${aluno}";"${nota}"\n`;
+                    linhasInseridas++;
+                });
             });
         });
-    });
+    }
+
+    // Fallback: Se alunos.json não foi carregado via fetch local, exporta as notas armazenadas
+    if (linhasInseridas === 0 && Object.keys(bancoNotasLocais).length > 0) {
+        Object.keys(bancoNotasLocais).forEach(chave => {
+            const partes = chave.split('_');
+            const turma = partes[0] || 'Geral';
+            const aluno = partes.slice(1).join('_') || 'Aluno';
+            const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "";
+            csvContent += `"Geral";"${turma}";"${aluno}";"${nota}"\n`;
+            linhasInseridas++;
+        });
+    }
 
     if (linhasInseridas === 0) {
-        alert("⚠️ Nenhum registro encontrado para exportação.");
+        alert("⚠️ Nenhum registro de aluno ou nota encontrado para exportar.");
         return;
     }
 
@@ -1311,19 +1321,23 @@ window.exportarCSV = function() {
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.setAttribute("href", url);
+        link.href = url;
         link.setAttribute("download", `notas_corrigidas_${new Date().toISOString().slice(0,10)}.csv`);
+        
         document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+
+        // O Firefox necessita que o objeto permaneça vivo durante a requisição de download
+        setTimeout(() => {
+            if (link.parentNode) link.parentNode.removeChild(link);
+            URL.revokeObjectURL(url);
+        }, 500);
     } catch (err) {
         console.error("Erro ao gerar arquivo CSV:", err);
         alert("⚠️ Não foi possível iniciar o download do arquivo CSV.");
     }
 };
 
-// FIX: Trata mailto:, aplica encodeURIComponent e copia para o Clipboard como fallback
 window.enviarPorEmail = function() {
     const emailInput = document.getElementById('inputEmailExport')?.value.trim();
     if (!emailInput) {
@@ -1331,44 +1345,62 @@ window.enviarPorEmail = function() {
         return;
     }
 
-    if (!DADOS_ALUNOS || Object.keys(DADOS_ALUNOS).length === 0) {
-        alert("⚠️ Nenhum dado de aluno carregado para enviar.");
-        return;
+    let textoEmail = "RELATÓRIO DE NOTAS - CORRIGEPRO\n\n";
+    let temConteudo = false;
+
+    if (DADOS_ALUNOS && Object.keys(DADOS_ALUNOS).length > 0) {
+        Object.keys(DADOS_ALUNOS).forEach(etapa => {
+            Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
+                textoEmail += `===============================\n`;
+                textoEmail += `TURMA: ${turma} (${etapa})\n`;
+                textoEmail += `===============================\n`;
+                textoEmail += `Nome do Aluno         | Nota\n`;
+
+                DADOS_ALUNOS[etapa][turma].forEach(aluno => {
+                    const chave = `${turma}_${aluno}`;
+                    const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "---";
+                    textoEmail += `${aluno.padEnd(20, ' ')} ${nota}\n`;
+                    temConteudo = true;
+                });
+                textoEmail += `\n`;
+            });
+        });
     }
 
-    let textoEmail = "RELATÓRIO DE NOTAS - CORRIGEPRO\n\n";
-
-    Object.keys(DADOS_ALUNOS).forEach(etapa => {
-        Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
-            textoEmail += `===============================\n`;
-            textoEmail += `TURMA: ${turma} (${etapa})\n`;
-            textoEmail += `===============================\n`;
-            textoEmail += `Nome do Aluno   | Nota\n`;
-
-            DADOS_ALUNOS[etapa][turma].forEach(aluno => {
-                const chave = `${turma}_${aluno}`;
-                const nota = bancoNotasLocais[chave] !== undefined ? bancoNotasLocais[chave].toFixed(1) : "---";
-                textoEmail += `${aluno.padEnd(20, ' ')} ${nota}\n`;
-            });
-
-            textoEmail += `\n`;
+    if (!temConteudo && Object.keys(bancoNotasLocais).length > 0) {
+        textoEmail += `===============================\n`;
+        textoEmail += `NOTAS REGISTRADAS\n`;
+        textoEmail += `===============================\n`;
+        Object.keys(bancoNotasLocais).forEach(chave => {
+            const partes = chave.split('_');
+            const turma = partes[0];
+            const aluno = partes.slice(1).join('_');
+            const nota = bancoNotasLocais[chave].toFixed(1);
+            textoEmail += `[Turma ${turma}] ${aluno}: ${nota}\n`;
+            temConteudo = true;
         });
-    });
+    }
+
+    if (!temConteudo) {
+        alert("⚠️ Nenhum dado de aluno ou nota encontrado para enviar.");
+        return;
+    }
 
     const assunto = encodeURIComponent("Relatório de Notas por Turma - CorrigePro");
     const corpo = encodeURIComponent(textoEmail);
     const mailtoUrl = `mailto:${emailInput}?subject=${assunto}&body=${corpo}`;
 
-    // Tenta disparar o leitor padrão do sistema
-    window.location.href = mailtoUrl;
+    // Execução compatível com o bloqueador de janelas do Firefox
+    const mailLink = document.createElement('a');
+    mailLink.href = mailtoUrl;
+    document.body.appendChild(mailLink);
+    mailLink.click();
+    setTimeout(() => { if (mailLink.parentNode) mailLink.parentNode.removeChild(mailLink); }, 300);
 
-    // Garante que o usuário receba os dados na área de transferência
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(textoEmail).then(() => {
-            alert("📧 Tentativa de abertura do e-mail realizada!\n\nCopiei o relatório completo para a sua Área de Transferência (Ctrl+V) para o caso do leitor de e-mail não abrir automaticamente.");
-        }).catch(() => {
-            alert("📧 Tentativa de abertura do le-mail realizada.");
-        });
+            alert("📧 Cliente de e-mail acionado!\n\nO relatório completo também foi copiado para a sua Área de Transferência (Ctrl+V).");
+        }).catch(() => {});
     }
 };
 
