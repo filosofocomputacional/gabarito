@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CorrigePro - Leitor de Gabaritos</title>
+    <style>
+        :root {
+            /* Impeccable Design System: Modo "Operate" */
+            --primary: #2563eb;       /* Blue 600 */
+            --primary-hover: #1d4ed8; /* Blue 700 */
+            --success: #16a34a;       /* Green 600 */
+            --success-hover: #15803d; /* Green 700 */
+            --danger: #dc2626;        /* Red 600 */
+            --danger-hover: #b91c1c;  /* Red 700 */
+            --bg-color: #f8fafc;      /* Slate 50 */
+            --surface: #ffffff;
+            --text-main: #0f172a;     /* Slate 900 */
+            --text-muted: #64748b;    /* Slate 500 */
+            --border: #e2e8f0;        /* Slate 200 */
+            --radius-md: 8px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px 16px;
+            line-height: 1.5;
+        }
+
+        /* Header e Abas */
+        .app-header {
+            max-width: 1000px;
+            margin: 0 auto 24px auto;
+            display: flex;
+            align-items: center;
+        }
+        
+        .app-title { font-size: 1.25rem; font-weight: 700; margin: 0; letter-spacing: -0.025em; }
+
+        .tabs-container {
+            max-width: 1000px;
+            margin: 0 auto 24px auto;
+            display: flex;
+            gap: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            padding: 10px 4px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: -1px;
+        }
+        .tab-btn:hover { color: var(--text-main); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Contêiner Base */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--surface);
+            padding: 32px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+
+        /* Formulários */
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 0.875rem; font-weight: 500; color: var(--text-main); margin-bottom: 6px; }
+        input[type="text"], input[type="email"], input[type="number"], select {
+            width: 100%; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); font-size: 0.95rem; color: var(--text-main);
+            transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+
+        /* Botões */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; padding: 10px 16px;
+            font-size: 0.95rem; font-weight: 500; border-radius: var(--radius-sm); cursor: pointer;
+            border: 1px solid transparent; transition: all 0.2s; white-space: nowrap;
+        }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-secondary { background-color: var(--surface); color: var(--text-main); border-color: var(--border); }
+        .btn-secondary:hover { background-color: var(--bg-color); }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-success:hover { background-color: var(--success-hover); }
+        .btn-danger-outline { background-color: transparent; color: var(--danger); border-color: var(--danger); }
+        .btn-danger-outline:hover { background-color: var(--danger); color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; }
+
+        /* Grids Genéricos */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+
+        /* Aba de Gabaritos (Gerenciador) */
+        .gabarito-card {
+            border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px;
+            display: flex; flex-direction: column; gap: 8px; transition: border-color 0.2s;
+        }
+        .gabarito-card:hover { border-color: var(--text-muted); }
+        .gabarito-title { font-weight: 600; font-size: 1.05rem; margin: 0; color: var(--text-main); }
+        .gabarito-meta { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+        .gabarito-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 16px; }
+        
+        .grid-gabarito { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px; margin-top: 12px; }
+        .gab-item { display: flex; flex-direction: column; gap: 4px; }
+        .gab-item select { padding: 6px; font-size: 0.85rem; }
+
+        /* Sliders Customizados */
+        .slider-control { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .slider-label { width: 85px; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); }
+        .slider-val { width: 40px; text-align: right; font-size: 0.85rem; font-family: monospace; color: var(--text-muted); }
+        .slider-control input[type=range] { flex-grow: 1; cursor: pointer; }
+
+        /* Tabela e Badges */
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; font-size: 0.875rem; color: var(--text-muted); background: var(--bg-color); }
+        td { font-size: 0.95rem; }
+        .nota-badge { padding: 4px 10px; border-radius: 12px; background: var(--bg-color); font-weight: 600; font-size: 0.85rem; color: var(--text-muted); }
+        .nota-badge.tem-nota { background: #dcfce7; color: #166534; }
+        .btn-cam { background: var(--bg-color); border: 1px solid var(--border); padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; transition: 0.2s; }
+        .btn-cam:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Modals & Alertas */
+        .alert { padding: 12px 16px; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 500; margin-bottom: 20px; }
+        .alert-warning { background: #fffbeb; color: #b45309; border: 1px solid #fef3c7; }
+        .alert-info { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; text-align: center; }
+        
+        .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--surface); padding: 24px; border-radius: 12px; max-width: 640px; width: 90%; text-align: center; box-shadow: var(--shadow-md); }
+        video, canvas { max-width: 100%; border-radius: var(--radius-sm); background: #000; display: block; }
+        
+        .divider { border: 0; border-top: 1px solid var(--border); margin: 24px 0; }
+    </style>
+    <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+</head>
+<body>
+
+<header class="app-header">
+    <h1 class="app-title">CorrigePro</h1>
+</header>
+
+<nav class="tabs-container">
+    <button class="tab-btn active" onclick="trocarAba('abaAlunos', event)">📝 Correção e Alunos</button>
+    <button class="tab-btn" onclick="trocarAba('abaGabaritos', event)">⚙️ Meus Gabaritos</button>
+    <button class="tab-btn" onclick="trocarAba('abaExportar', event)">📤 Relatórios e Exportação</button>
+</nav>
+
+<main class="container">
+    <div id="statusCv" class="alert alert-warning" style="text-align:center;">⏳ Carregando motor de visão computacional...</div>
+
+    <!-- ABA 1: CORREÇÃO -->
+    <div id="abaAlunos" class="tab-content active">
+        <div id="avisoSemGabarito" class="alert alert-warning" style="display:none;">
+            ⚠️ Nenhum gabarito ativo. Acesse a aba "Meus Gabaritos" para criar um e iniciar a correção.
+        </div>
+        
+        <div class="grid-3">
+            <div class="form-group">
+                <label>Gabarito Ativo (Aplicação):</label>
+                <select id="selectGabaritoAtivo"></select>
+            </div>
+            <div class="form-group">
+                <label>Etapa de Ensino:</label>
+                <select id="selectEtapa" onchange="carregarTurmas()"></select>
+            </div>
+            <div class="form-group">
+                <label>Turma:</label>
+                <select id="selectTurma" onchange="carregarAlunos()"></select>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome do Aluno</th>
+                    <th style="text-align:center; width: 120px;">Escanear</th>
+                    <th style="text-align:center; width: 100px;">Nota</th>
+                </tr>
+            </thead>
+            <tbody id="listaAlunosBody">
+                <tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Carregando dados...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ABA 2: GERENCIADOR DE GABARITOS -->
+    <div id="abaGabaritos" class="tab-content">
+        <!-- Lista de Gabaritos -->
+        <div id="viewListaGabaritos">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div>
+                    <h2 style="margin:0; font-size:1.25rem;">Gabaritos Salvos</h2>
+                    <p style="margin:4px 0 0 0; font-size:0.85rem; color:var(--text-muted);">Você pode manter até 4 configurações de gabaritos diferentes na memória.</p>
+                </div>
+                <button id="btnNovoGabarito" class="btn btn-primary" onclick="novoGabarito()">+ Novo Gabarito</button>
+            </div>
+            
+            <div class="grid-2" id="listaGabaritosCards"></div>
+        </div>
+
+        <!-- Editor de Gabarito -->
+        <div id="viewEditorGabarito" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="margin:0; font-size:1.25rem;">Configurar Gabarito</h2>
+                <button class="btn btn-secondary btn-sm" onclick="fecharEditorGabarito()">Voltar para a Lista</button>
+            </div>
+
+            <div class="form-group">
+                <label>Identificação / Nome do Gabarito:</label>
+                <input type="text" id="input_nomeGabarito" placeholder="Ex: Avaliação Bimestral - 9º Ano Matemática">
+            </div>
+
+            <div class="grid-2">
+                <div>
+                    <label>1. Posicione a Folha e Capture</label>
+                    <video id="webcamCalib" autoplay playsinline></video>
+                    <button id="btnCapturarModelo" class="btn btn-primary" style="width:100%; margin-top:8px;" disabled>📸 Capturar Base da Folha</button>
+                </div>
+                <div>
+                    <label>2. Estrutura da Prova</label>
+                    <div class="grid-2" style="gap:12px; margin-bottom:16px;">
+                        <div><label>Nº Questões:</label><input type="number" id="input_numQuestoes" value="10" min="1" max="100"></div>
+                        <div><label>Colunas:</label><select id="select_numColunas"><option value="1">1 Col</option><option value="2" selected>2 Cols</option></select></div>
+                        <div><label>Opções:</label><select id="selectNumOpcoes"><option value="4">4 (A-D)</option><option value="5" selected>5 (A-E)</option></select></div>
+                        <div><label>Valor Total:</label><input type="number" id="input_valorProva" value="10.0" step="0.5"></div>
+                    </div>
+                    
+                    <label>3. Respostas Oficiais</label>
+                    <div class="grid-gabarito" id="containerGabaritoCalib"></div>
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <div id="painelSliders">
+                <label>4. Ajuste Fino dos Marcadores na Folha</label>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Deslize os controles para alinhar os círculos vermelhos com o centro geométrico exato das bolhas da foto capturada.</p>
+                
+                <div class="grid-2">
+                    <canvas id="canvasCalibPreview" style="border:1px solid var(--border);"></canvas>
+                    <div>
+                        <div class="slider-control"><span class="slider-label">Col 1 - Eixo X</span><input type="range" id="input_x1" min="0" max="600"><span class="slider-val" id="val_x1">100</span></div>
+                        <div class="slider-control"><span class="slider-label">Col 1 - Eixo Y</span><input type="range" id="input_y1" min="0" max="450"><span class="slider-val" id="val_y1">104</span></div>
+                        <div class="slider-control"><span class="slider-label">Col 2 - Eixo X</span><input type="range" id="input_x2" min="0" max="600"><span class="slider-val" id="val_x2">356</span></div>
+                        <div class="slider-control"><span class="slider-label">Col 2 - Eixo Y</span><input type="range" id="input_y2" min="0" max="450"><span class="slider-val" id="val_y2">105</span></div>
+                        <div class="slider-control"><span class="slider-label">Espaço Horiz.</span><input type="range" id="input_spX" min="10" max="100"><span class="slider-val" id="val_spX">33</span></div>
+                        <div class="slider-control"><span class="slider-label">Espaço Vert.</span><input type="range" id="input_spY" min="10" max="100"><span class="slider-val" id="val_spY">51</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border); text-align:right;">
+                <button class="btn btn-success" onclick="salvarGabaritoEdicao()">💾 Salvar Definições do Gabarito</button>
+            </div>
+            
+            <canvas id="canvasFotoOriginalAjuste" style="display:none;"></canvas>
+        </div>
+    </div>
+
+    <!-- ABA 3: EXPORTAR -->
+    <div id="abaExportar" class="tab-content">
+        <h2 style="font-size:1.25rem; margin-top:0;">Exportação de Resultados</h2>
+        <p style="color:var(--text-muted);">As turmas listadas abaixo possuem provas corrigidas e salvas na memória local.</p>
+        
+        <ul id="listaTurmasAlteradas" style="padding-left:20px; line-height:1.8;"></ul>
+
+        <hr class="divider">
+
+        <div class="form-group" style="max-width:500px;">
+            <label>Enviar Relatório Completo por E-mail (CSV Inline):</label>
+            <div style="display:flex; gap:12px;">
+                <input type="email" id="inputEmailExport" placeholder="coordenacao@escola.com">
+                <button onclick="enviarPorEmail()" class="btn btn-primary">📧 Enviar E-mail</button>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <div style="display:flex; gap:12px;">
+            <button onclick="exportarCSV()" class="btn btn-success">📥 Baixar Planilha CSV</button>
+            <button onclick="limparTodasNotas()" class="btn btn-danger-outline">🗑️ Limpar Banco de Notas Local</button>
+        </div>
+    </div>
+</main>
+
+<!-- MODAL CÂMERA SCAN (CORREÇÃO) -->
+<div id="modalCamera" class="modal">
+    <div class="modal-content">
+        <h3 id="nomeAlunoModal" style="margin-top:0; color:var(--text-main);">Corrigindo Prova</h3>
+        
+        <video id="webcamScan" autoplay playsinline></video>
+        <canvas id="canvasScanResult" style="display:none;"></canvas>
+        
+        <div id="notaBannerModal" class="alert alert-info" style="display:none; margin: 16px 0; font-size:1.25rem; font-weight:700;"></div>
+
+        <div style="margin-top:20px; display:flex; gap:12px; justify-content:center;">
+            <button id="btnEscanearAluno" class="btn btn-success">📸 INICIAR CAPTURA AUTOMÁTICA</button>
+            <button onclick="fecharModalCamera()" class="btn btn-secondary">Fechar Janela</button>
+        </div>
+    </div>
+</div>
+
+<canvas id="canvasHidden" style="display:none;"></canvas>
+
+<script>
+// ================= 1. INICIALIZAÇÃO, ESCOPO GLOBAL E MOTOR CV =================
+window.cvReady = false;
+
+window.Module = {
+    onRuntimeInitialized: function() {
+        window.cvReady = true;
+        const statusEl = document.getElementById('statusCv');
+        if (statusEl) {
+            statusEl.innerText = "✅ Motor de visão computacional pronto!";
+            statusEl.className = "alert alert-info";
+            statusEl.style.background = "#dcfce7";
+            statusEl.style.color = "#166534";
+            statusEl.style.border = "1px solid #bbf7d0";
+            setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+        }
+        const btnCap = document.getElementById('btnCapturarModelo');
+        if (btnCap) btnCap.disabled = false;
+    }
+};
+
+const LETRAS_TODAS = ["A", "B", "C", "D", "E"];
+const BASE_W = 600;
+const BASE_H = 450;
+
+let DADOS_ALUNOS = {};
+let bancoNotasLocais = JSON.parse(localStorage.getItem('corrigePro_notas_alunos')) || {};
+let streamVideoGlobal = null;
+let imagemBaseWarpedCanvas = document.createElement('canvas');
+
+// Gestão de Múltiplos Gabaritos
+const MAX_GABARITOS = 4;
+let gabaritosSalvos = JSON.parse(localStorage.getItem('corrigePro_gabaritos')) || [];
+let gabaritoEdicao = null;
+
+// Controle de Scanner
+let alunoAtualParaCaptura = null;
+let jaDigitalizado = false;
+let isBuscandoGabarito = false;
+let contagemIntervalo = null;
+let loopCapturaTimeout = null;
+let tentativasCount = 0;
+const MAX_TENTATIVAS = 10;
+
+// ================= 2. CARREGAMENTO JSON E NAVEGAÇÃO =================
+document.addEventListener('DOMContentLoaded', () => {
+    carregarDadosJSON();
+    inicializarSistemaGabaritos();
+
+    // Event Listeners de Mudança Rápida no Editor
+    const dependenciasUI = ['input_numQuestoes', 'select_numColunas', 'selectNumOpcoes'];
+    dependenciasUI.forEach(id => {
+        document.getElementById(id)?.addEventListener('change', () => {
+            renderizarGridGabarito();
+            desenharPreviewAjuste();
+        });
+    });
+
+    ['x1', 'y1', 'x2', 'y2', 'spX', 'spY'].forEach(s => {
+        const el = document.getElementById(`input_${s}`);
+        const valEl = document.getElementById(`val_${s}`);
+        if (el) {
+            el.addEventListener('input', (e) => {
+                if (valEl) valEl.innerText = e.target.value;
+                desenharPreviewAjuste();
+            });
+        }
+    });
+
+    document.getElementById('btnCapturarModelo')?.addEventListener('click', acionarCapturaModelo);
+    document.getElementById('btnEscanearAluno')?.addEventListener('click', acionarCapturaAluno);
+});
+
+async function carregarDadosJSON() {
+    try {
+        const resposta = await fetch('js/alunos.json');
+        if (!resposta.ok) throw new Error();
+        DADOS_ALUNOS = await resposta.json();
+    } catch (erro) {
+        // Mock se o arquivo não existir localmente
+        DADOS_ALUNOS = {
+            "Ensino Fundamental": { "901": ["Alice Ferreira", "Bruno Silva"] },
+            "Ensino Médio": { "1001": ["Carla Souza", "Daniel Lima"], "1002": ["Eduardo Gomes"] }
+        };
+    }
+    inicializarSelectsTurmas();
+}
+
+window.trocarAba = function(idAba, event) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    
+    document.getElementById(idAba).classList.add('active');
+    if (event && event.target) event.target.classList.add('active');
+
+    fecharEditorGabarito(); // Desliga a câmera se estivesse editando
+    if (idAba === 'abaExportar') atualizarListaTurmasAlteradas();
+};
+
+function inicializarSelectsTurmas() {
+    const selectEtapa = document.getElementById('selectEtapa');
+    if (!selectEtapa) return;
+    selectEtapa.innerHTML = "";
+    Object.keys(DADOS_ALUNOS).forEach(etapa => {
+        selectEtapa.innerHTML += `<option value="${etapa}">${etapa}</option>`;
+    });
+    carregarTurmas();
+}
+
+window.carregarTurmas = function() {
+    const etapa = document.getElementById('selectEtapa').value;
+    const selectTurma = document.getElementById('selectTurma');
+    selectTurma.innerHTML = "";
+    if (DADOS_ALUNOS[etapa]) {
+        Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
+            selectTurma.innerHTML += `<option value="${turma}">Turma ${turma}</option>`;
+        });
+    }
+    carregarAlunos();
+};
+
+window.carregarAlunos = function() {
+    const etapa = document.getElementById('selectEtapa').value;
+    const turma = document.getElementById('selectTurma').value;
+    const tbody = document.getElementById('listaAlunosBody');
+    tbody.innerHTML = "";
+    
+    const lista = DADOS_ALUNOS[etapa]?.[turma] || [];
+    if (lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Nenhum aluno encontrado.</td></tr>';
+        return;
+    }
+
+    lista.forEach(aluno => {
+        const chave = `${turma}_${aluno}`;
+        const registro = bancoNotasLocais[chave];
+        const notaVal = (registro && typeof registro === 'object') ? registro.nota : registro;
+        const notaSalva = (notaVal !== undefined && notaVal !== null) ? Number(notaVal).toFixed(1) : "---";
+        const badgeClass = (notaVal !== undefined && notaVal !== null) ? "tem-nota" : "";
+
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>${aluno}</strong></td>
+                <td style="text-align:center;"><button class="btn-cam" onclick="abrirModalScan('${aluno}', '${turma}')">📷 Ler Cartão</button></td>
+                <td style="text-align:center;"><span class="nota-badge ${badgeClass}">${notaSalva}</span></td>
+            </tr>
+        `;
+    });
+};
+
+// ================= 3. SISTEMA DE MÚLTIPLOS GABARITOS =================
+function gerarId() {
+    return 'gab_' + Math.random().toString(36).substr(2, 9);
+}
+
+function inicializarSistemaGabaritos() {
+    // Tenta migrar o cookie antigo se a lista de gabaritos estiver vazia
+    if (gabaritosSalvos.length === 0) {
+        let cookieVal = document.cookie.split('; ').find(row => row.startsWith('corrigePro_calib_v1='));
+        if (cookieVal) {
+            try {
+                let antigo = JSON.parse(cookieVal.split('=')[1]);
+                antigo.id = gerarId();
+                antigo.nome = "Gabarito Padrão (Migrado)";
+                
+                // Normaliza para % se vier em pixels brutos do código velho
+                ['x1','y1','x2','y2','spX','spY'].forEach(s => {
+                    if (antigo[s] > 1.0) antigo[s] = antigo[s] / (s.includes('Y') ? BASE_H : BASE_W);
+                });
+                
+                gabaritosSalvos.push(antigo);
+                localStorage.setItem('corrigePro_gabaritos', JSON.stringify(gabaritosSalvos));
+            } catch(e) {}
+        }
+    }
+    
+    atualizarSelectGabaritoAtivo();
+    renderizarListaGabaritos();
+}
+
+function atualizarSelectGabaritoAtivo() {
+    const select = document.getElementById('selectGabaritoAtivo');
+    const aviso = document.getElementById('avisoSemGabarito');
+    select.innerHTML = "";
+    
+    if (gabaritosSalvos.length === 0) {
+        select.innerHTML = '<option value="">(Nenhum - Cadastre na aba Meus Gabaritos)</option>';
+        select.disabled = true;
+        aviso.style.display = 'block';
+    } else {
+        gabaritosSalvos.forEach(g => {
+            select.innerHTML += `<option value="${g.id}">${g.nome}</option>`;
+        });
+        select.disabled = false;
+        aviso.style.display = 'none';
+    }
+}
+
+function getGabaritoAtivo() {
+    const id = document.getElementById('selectGabaritoAtivo').value;
+    return gabaritosSalvos.find(g => g.id === id) || null;
+}
+
+function renderizarListaGabaritos() {
+    const container = document.getElementById('listaGabaritosCards');
+    const btnNovo = document.getElementById('btnNovoGabarito');
+    container.innerHTML = "";
+
+    if (gabaritosSalvos.length >= MAX_GABARITOS) {
+        btnNovo.disabled = true;
+        btnNovo.title = "Limite de 4 gabaritos atingido.";
+    } else {
+        btnNovo.disabled = false;
+    }
+
+    if (gabaritosSalvos.length === 0) {
+        container.innerHTML = "<p style='grid-column: 1/-1; color:var(--text-muted);'>Nenhum gabarito salvo ainda.</p>";
+        return;
+    }
+
+    gabaritosSalvos.forEach(g => {
+        container.innerHTML += `
+            <div class="gabarito-card">
+                <h3 class="gabarito-title">${g.nome}</h3>
+                <p class="gabarito-meta"><strong>${g.numQuestoes}</strong> questões | <strong>${g.numOpcoes}</strong> alternativas | Valor <strong>${g.valorProva.toFixed(1)}</strong></p>
+                <div class="gabarito-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="editarGabarito('${g.id}')">✏️ Editar Config.</button>
+                    <button class="btn btn-danger-outline btn-sm" onclick="excluirGabarito('${g.id}')">Excluir</button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+// ---------------- Lógica do Editor ----------------
+window.novoGabarito = function() {
+    gabaritoEdicao = {
+        id: gerarId(), nome: "", numOpcoes: 5, numQuestoes: 10, numColunas: 2, valorProva: 10.0,
+        x1: 100/BASE_W, y1: 104/BASE_H, x2: 356/BASE_W, y2: 105/BASE_H, spX: 33/BASE_W, spY: 51/BASE_H,
+        gabarito: ['A','B','C','D','E','A','B','C','D','E']
+    };
+    abrirInterfaceEditor();
+};
+
+window.editarGabarito = function(id) {
+    const existente = gabaritosSalvos.find(g => g.id === id);
+    if (!existente) return;
+    gabaritoEdicao = JSON.parse(JSON.stringify(existente)); // Clone profundo
+    abrirInterfaceEditor();
+};
+
+window.excluirGabarito = function(id) {
+    if (!confirm("Tem certeza que deseja apagar este gabarito em definitivo?")) return;
+    gabaritosSalvos = gabaritosSalvos.filter(g => g.id !== id);
+    localStorage.setItem('corrigePro_gabaritos', JSON.stringify(gabaritosSalvos));
+    atualizarSelectGabaritoAtivo();
+    renderizarListaGabaritos();
+};
+
+function abrirInterfaceEditor() {
+    document.getElementById('viewListaGabaritos').style.display = 'none';
+    document.getElementById('viewEditorGabarito').style.display = 'block';
+    
+    // Preenche campos
+    document.getElementById('input_nomeGabarito').value = gabaritoEdicao.nome;
+    document.getElementById('input_numQuestoes').value = gabaritoEdicao.numQuestoes;
+    document.getElementById('select_numColunas').value = gabaritoEdicao.numColunas;
+    document.getElementById('selectNumOpcoes').value = gabaritoEdicao.numOpcoes;
+    document.getElementById('input_valorProva').value = gabaritoEdicao.valorProva;
+
+    document.getElementById('input_x1').value = Math.round(gabaritoEdicao.x1 * BASE_W);
+    document.getElementById('input_y1').value = Math.round(gabaritoEdicao.y1 * BASE_H);
+    document.getElementById('input_x2').value = Math.round(gabaritoEdicao.x2 * BASE_W);
+    document.getElementById('input_y2').value = Math.round(gabaritoEdicao.y2 * BASE_H);
+    document.getElementById('input_spX').value = Math.round(gabaritoEdicao.spX * BASE_W);
+    document.getElementById('input_spY').value = Math.round(gabaritoEdicao.spY * BASE_H);
+    
+    ['x1', 'y1', 'x2', 'y2', 'spX', 'spY'].forEach(s => {
+        document.getElementById(`val_${s}`).innerText = document.getElementById(`input_${s}`).value;
+    });
+
+    imagemBaseWarpedCanvas.width = 0; // Reseta a imagem de fundo do preview para evitar confusões
+    renderizarGridGabarito();
+    desenharPreviewAjuste();
+    
+    iniciarCamera('webcamCalib');
+}
+
+window.fecharEditorGabarito = function() {
+    document.getElementById('viewListaGabaritos').style.display = 'block';
+    document.getElementById('viewEditorGabarito').style.display = 'none';
+    if (streamVideoGlobal) streamVideoGlobal.getTracks().forEach(track => track.stop());
+};
+
+window.salvarGabaritoEdicao = function() {
+    const nome = document.getElementById('input_nomeGabarito').value.trim();
+    if (!nome) { alert("O gabarito precisa de um nome identificador."); return; }
+    
+    gabaritoEdicao.nome = nome;
+    gabaritoEdicao.numQuestoes = parseInt(document.getElementById('input_numQuestoes').value) || 10;
+    gabaritoEdicao.numColunas = parseInt(document.getElementById('select_numColunas').value) || 2;
+    gabaritoEdicao.numOpcoes = parseInt(document.getElementById('selectNumOpcoes').value) || 5;
+    gabaritoEdicao.valorProva = parseFloat(document.getElementById('input_valorProva').value) || 10.0;
+    
+    gabaritoEdicao.x1 = parseInt(document.getElementById('input_x1').value) / BASE_W;
+    gabaritoEdicao.y1 = parseInt(document.getElementById('input_y1').value) / BASE_H;
+    gabaritoEdicao.x2 = parseInt(document.getElementById('input_x2').value) / BASE_W;
+    gabaritoEdicao.y2 = parseInt(document.getElementById('input_y2').value) / BASE_H;
+    gabaritoEdicao.spX = parseInt(document.getElementById('input_spX').value) / BASE_W;
+    gabaritoEdicao.spY = parseInt(document.getElementById('input_spY').value) / BASE_H;
+    
+    gabaritoEdicao.gabarito = [];
+    for (let i = 0; i < gabaritoEdicao.numQuestoes; i++) {
+        const el = document.getElementById(`qc_${i}`);
+        gabaritoEdicao.gabarito.push(el ? el.value : "A");
+    }
+    
+    const idx = gabaritosSalvos.findIndex(g => g.id === gabaritoEdicao.id);
+    if (idx !== -1) gabaritosSalvos[idx] = gabaritoEdicao;
+    else gabaritosSalvos.push(gabaritoEdicao);
+    
+    localStorage.setItem('corrigePro_gabaritos', JSON.stringify(gabaritosSalvos));
+    
+    fecharEditorGabarito();
+    atualizarSelectGabaritoAtivo();
+    renderizarListaGabaritos();
+};
+
+function renderizarGridGabarito() {
+    const container = document.getElementById('containerGabaritoCalib');
+    if (!container) return;
+    
+    const numOpcoes = parseInt(document.getElementById('selectNumOpcoes').value) || 5;
+    const numQuestoes = parseInt(document.getElementById('input_numQuestoes').value) || 10;
+    const letrasAtivas = LETRAS_TODAS.slice(0, numOpcoes);
+
+    container.innerHTML = "";
+    for (let i = 0; i < numQuestoes; i++) {
+        let gabVal = (gabaritoEdicao && gabaritoEdicao.gabarito && gabaritoEdicao.gabarito[i]) ? gabaritoEdicao.gabarito[i] : "A";
+        if (!letrasAtivas.includes(gabVal)) gabVal = "A";
+
+        container.innerHTML += `
+            <div class="gab-item">
+                <label style="margin:0; font-size:0.8rem; color:var(--text-muted);">Q${(i+1).toString().padStart(2, '0')}</label>
+                <select id="qc_${i}" onchange="desenharPreviewAjuste()">
+                    ${letrasAtivas.map(l => `<option value="${l}" ${l === gabVal ? 'selected' : ''}>${l}</option>`).join('')}
+                </select>
+            </div>`;
+    }
+}
+
+function desenharPreviewAjuste() {
+    const canvas = document.getElementById('canvasCalibPreview');
+    if (!canvas) return;
+    canvas.width = BASE_W; canvas.height = BASE_H;
+    const ctx = canvas.getContext('2d');
+    
+    if (imagemBaseWarpedCanvas.width > 0) {
+        ctx.drawImage(imagemBaseWarpedCanvas, 0, 0);
+    } else {
+        ctx.fillStyle = "#f1f5f9";
+        ctx.fillRect(0,0, canvas.width, canvas.height);
+        ctx.fillStyle = "#64748b";
+        ctx.font = "14px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Capture a folha da prova na câmera ao lado", canvas.width/2, canvas.height/2 - 10);
+        ctx.fillText("para ver o alinhamento visual.", canvas.width/2, canvas.height/2 + 10);
+    }
+
+    const v_x1 = parseInt(document.getElementById('input_x1').value);
+    const v_y1 = parseInt(document.getElementById('input_y1').value);
+    const v_x2 = parseInt(document.getElementById('input_x2').value);
+    const v_y2 = parseInt(document.getElementById('input_y2').value);
+    const v_spX = parseInt(document.getElementById('input_spX').value);
+    const v_spY = parseInt(document.getElementById('input_spY').value);
+    
+    const numOpcoes = parseInt(document.getElementById('selectNumOpcoes').value) || 5;
+    const numQuestoes = parseInt(document.getElementById('input_numQuestoes').value) || 10;
+    const numColunas = parseInt(document.getElementById('select_numColunas').value) || 2;
+    const qPorColuna = Math.ceil(numQuestoes / numColunas);
+
+    document.getElementById('input_x2').parentElement.style.display = (numColunas === 2) ? 'flex' : 'none';
+    document.getElementById('input_y2').parentElement.style.display = (numColunas === 2) ? 'flex' : 'none';
+
+    ctx.strokeStyle = "rgba(220, 38, 38, 0.85)"; // Vermelho visível
+    ctx.lineWidth = 2;
+
+    for (let q = 0; q < numQuestoes; q++) {
+        let isCol2 = (numColunas === 2) && (q >= qPorColuna);
+        let colBaseX = isCol2 ? v_x2 : v_x1;
+        let colBaseY = isCol2 ? v_y2 : v_y1;
+        let linhaIdx = isCol2 ? (q - qPorColuna) : q;
+        let yPonto = colBaseY + (linhaIdx * v_spY);
+
+        for (let i = 0; i < numOpcoes; i++) {
+            let xPonto = colBaseX + (i * v_spX);
+            ctx.beginPath();
+            ctx.arc(xPonto, yPonto, 10, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+    }
+}
+
+// ================= 4. ACIONAMENTO E PROCESSAMENTO VISUAL =================
+function iniciarCamera(elementId) {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } })
+            .then(stream => {
+                streamVideoGlobal = stream;
+                const videoEl = document.getElementById(elementId);
+                if (videoEl) videoEl.srcObject = stream;
+            })
+            .catch(err => console.log("Erro na câmera:", err));
+    }
+}
+
+window.abrirModalScan = function(aluno, turma) {
+    if (!getGabaritoAtivo()) {
+        alert("⚠️ Por favor, selecione um Gabarito Ativo antes de iniciar a correção.");
+        return;
+    }
+
+    alunoAtualParaCaptura = { nome: aluno, turma: turma };
+    jaDigitalizado = false;
+    isBuscandoGabarito = false;
+    if (contagemIntervalo) clearInterval(contagemIntervalo);
+    if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
+
+    document.getElementById('nomeAlunoModal').innerText = `Corrigindo: ${aluno} (${turma})`;
+    document.getElementById('webcamScan').style.display = 'block';
+    document.getElementById('canvasScanResult').style.display = 'none';
+    document.getElementById('notaBannerModal').style.display = 'none';
+    
+    const btnEsc = document.getElementById('btnEscanearAluno');
+    btnEsc.innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
+    btnEsc.className = "btn btn-success";
+
+    document.getElementById('modalCamera').style.display = 'flex';
+    iniciarCamera('webcamScan');
+};
+
+window.fecharModalCamera = function() {
+    document.getElementById('modalCamera').style.display = 'none';
+    isBuscandoGabarito = false;
+    if (contagemIntervalo) clearInterval(contagemIntervalo);
+    if (loopCapturaTimeout) clearTimeout(loopCapturaTimeout);
+    if (streamVideoGlobal) streamVideoGlobal.getTracks().forEach(track => track.stop());
+    carregarAlunos();
+};
+
+function processarPerspectivaCompleta(src) {
+    let gray = new cv.Mat(), blurred = new cv.Mat(), thresh = new cv.Mat(), morphed = new cv.Mat();
+    let kernel = null, contours = new cv.MatVector(), hierarchy = new cv.Mat();
+    try {
+        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
+        cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
+        
+        // Uso de C=3 para folhas claras/marcas suaves
+        cv.adaptiveThreshold(blurred, thresh, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 15, 3);
+        
+        kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
+        cv.morphologyEx(thresh, morphed, cv.MORPH_CLOSE, kernel);
+
+        cv.findContours(morphed, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+        
+        let anchors = [];
+        for (let i = 0; i < contours.size(); i++) {
+            let cnt = contours.get(i);
+            let peri = cv.arcLength(cnt, true);
+            let approx = new cv.Mat();
+            cv.approxPolyDP(cnt, approx, 0.04 * peri, true);
+            if (approx.rows === 4) {
+                let rect = cv.boundingRect(approx);
+                let area = rect.width * rect.height;
+                let ar = rect.width / rect.height;
+                if (area > 300 && area < 60000 && ar > 0.7 && ar < 1.3) {
+                    let M = cv.moments(cnt);
+                    if (M.m00 !== 0) anchors.push({ x: Math.round(M.m10 / M.m00), y: Math.round(M.m01 / M.m00) });
+                }
+            }
+            approx.delete(); cnt.delete();
+        }
+
+        if (anchors.length !== 4) return null;
+
+        let sum = anchors.map(p => p.x + p.y);
+        let diff = anchors.map(p => p.y - p.x);
+        let tl = anchors[sum.indexOf(Math.min(...sum))], br = anchors[sum.indexOf(Math.max(...sum))];
+        let tr = anchors[diff.indexOf(Math.min(...diff))], bl = anchors[diff.indexOf(Math.max(...diff))];
+
+        let srcComPontos = src.clone();
+        let srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [tl.x, tl.y, tr.x, tr.y, bl.x, bl.y, br.x, br.y]);
+        let dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, BASE_W, 0, 0, BASE_H, BASE_W, BASE_H]);
+        let M_warp = cv.getPerspectiveTransform(srcTri, dstTri);
+        let warped = new cv.Mat();
+        cv.warpPerspective(src, warped, M_warp, new cv.Size(BASE_W, BASE_H));
+
+        srcTri.delete(); dstTri.delete(); M_warp.delete();
+        return { warped, srcComPontos };
+    } finally {
+        gray.delete(); blurred.delete(); thresh.delete(); morphed.delete();
+        if (kernel) kernel.delete();
+        contours.delete(); hierarchy.delete();
+    }
+}
+
+// ---------------- Fluxos de Captura ----------------
+function acionarCapturaModelo() {
+    if (!window.cvReady) return alert("Motor OpenCV carregando...");
+    const video = document.getElementById('webcamCalib');
+    if (video.videoWidth === 0) return alert("Aguarde a câmera abrir.");
+
+    const canvasHidden = document.getElementById('canvasHidden');
+    canvasHidden.width = video.videoWidth; canvasHidden.height = video.videoHeight;
+    canvasHidden.getContext('2d').drawImage(video, 0, 0);
+
+    let src = cv.imread(canvasHidden);
+    let res = processarPerspectivaCompleta(src);
+    src.delete();
+
+    if (res) {
+        imagemBaseWarpedCanvas.width = BASE_W; imagemBaseWarpedCanvas.height = BASE_H;
+        cv.imshow(imagemBaseWarpedCanvas, res.warped);
+        desenharPreviewAjuste();
+        res.srcComPontos.delete(); res.warped.delete();
+    } else {
+        alert("⚠️ Os 4 cantos quadrados do gabarito não foram identificados. Evite reflexos ou aproxime a folha.");
+    }
+}
+
+function acionarCapturaAluno() {
+    if (jaDigitalizado) return fecharModalCamera();
+    if (isBuscandoGabarito) {
+        isBuscandoGabarito = false;
+        clearInterval(contagemIntervalo); clearTimeout(loopCapturaTimeout);
+        document.getElementById('btnEscanearAluno').innerText = "📸 INICIAR CAPTURA AUTOMÁTICA";
+        document.getElementById('btnEscanearAluno').className = "btn btn-success";
+        return;
+    }
+    
+    isBuscandoGabarito = true;
+    tentativasCount = 0;
+    
+    const btnEsc = document.getElementById('btnEscanearAluno');
+    let contador = 1; 
+    btnEsc.className = "btn btn-secondary";
+    btnEsc.innerText = `⏳ APONTE A CÂMERA... (${contador})`;
+
+    contagemIntervalo = setInterval(() => {
+        contador--;
+        if (contador > 0) btnEsc.innerText = `⏳ APONTE A CÂMERA... (${contador})`;
+        else { clearInterval(contagemIntervalo); tentarCapturaAlunoLoop(); }
+    }, 1000);
+}
+
+function tentarCapturaAlunoLoop() {
+    if (!isBuscandoGabarito || jaDigitalizado) return;
+
+    const video = document.getElementById('webcamScan');
+    const btnEsc = document.getElementById('btnEscanearAluno');
+
+    tentativasCount++;
+    btnEsc.innerText = `🔍 TENTATIVA ${tentativasCount}/${MAX_TENTATIVAS}...`;
+
+    const canvasHidden = document.getElementById('canvasHidden');
+    canvasHidden.width = video.videoWidth; canvasHidden.height = video.videoHeight;
+    canvasHidden.getContext('2d').drawImage(video, 0, 0);
+
+    let src = cv.imread(canvasHidden);
+    let res = processarPerspectivaCompleta(src);
+    src.delete();
+
+    if (res) {
+        isBuscandoGabarito = false;
+        processarCorrecaoFinal(res.warped);
+        res.srcComPontos.delete();
+        return;
+    }
+
+    if (tentativasCount < MAX_TENTATIVAS) {
+        loopCapturaTimeout = setTimeout(tentarCapturaAlunoLoop, 500);
+    } else {
+        isBuscandoGabarito = false;
+        btnEsc.innerText = "❌ FALHA. TENTAR NOVAMENTE";
+        btnEsc.className = "btn btn-danger-outline";
+    }
+}
+
+function processarCorrecaoFinal(warped) {
+    const configAtual = getGabaritoAtivo();
+    if (!configAtual) return; // Segurança
+
+    let dW = warped.cols;
+    let dH = warped.rows;
+
+    let warpedGray = new cv.Mat();
+    cv.cvtColor(warped, warpedGray, cv.COLOR_RGBA2GRAY);
+    // Reforço de contraste p/ canetas finas ou folhas muito claras
+    cv.convertScaleAbs(warpedGray, warpedGray, 1.4, -30);
+
+    let warpedBlur = new cv.Mat();
+    let warpedThresh = new cv.Mat();
+    cv.GaussianBlur(warpedGray, warpedBlur, new cv.Size(3, 3), 0);
+    cv.threshold(warpedBlur, warpedThresh, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
+
+    let qPorColuna = Math.ceil(configAtual.numQuestoes / configAtual.numColunas);
+    let acertos = 0;
+    let respostasLidas = [];
+
+    const LIMIAR_MINIMO_TINTA = 40; // Sensibilidade alta para qualquer rabisco legível
+    let greenColor = new cv.Scalar(0, 200, 0, 255);
+    let redColor = new cv.Scalar(220, 38, 38, 255);
+    let grayColor = new cv.Scalar(200, 200, 200, 255);
+
+    let scaleFactor = dW / BASE_W;
+    let roiSize = Math.round(24 * scaleFactor);
+    let halfRoi = Math.floor(roiSize / 2);
+    let raioMascara = Math.round(9 * scaleFactor);
+
+    let maskCircular = cv.Mat.zeros(roiSize, roiSize, cv.CV_8UC1);
+    cv.circle(maskCircular, new cv.Point(halfRoi, halfRoi), raioMascara, new cv.Scalar(255), -1);
+
+    for (let q = 0; q < configAtual.numQuestoes; q++) {
+        let isCol2 = (configAtual.numColunas === 2) && (q >= qPorColuna);
+        let propBaseX = isCol2 ? configAtual.x2 : configAtual.x1;
+        let propBaseY = isCol2 ? configAtual.y2 : configAtual.y1;
+        
+        let colBaseX = Math.round(propBaseX * dW);
+        let colBaseY = Math.round(propBaseY * dH);
+        let spX_real = configAtual.spX * dW;
+        let spY_real = configAtual.spY * dH;
+
+        let linhaIdx = isCol2 ? (q - qPorColuna) : q;
+        let yPonto = Math.round(colBaseY + (linhaIdx * spY_real));
+
+        let valoresAlternativas = [];
+        let coords = [];
+
+        for (let i = 0; i < configAtual.numOpcoes; i++) {
+            let xPonto = Math.round(colBaseX + (i * spX_real));
+            coords.push({ x: xPonto, y: yPonto });
+
+            let totalPixels = 0;
+            if (yPonto >= halfRoi && yPonto < dH - halfRoi && xPonto >= halfRoi && xPonto < dW - halfRoi) {
+                let roi = warpedThresh.roi(new cv.Rect(xPonto - halfRoi, yPonto - halfRoi, roiSize, roiSize));
+                let roiFiltrada = new cv.Mat();
+                cv.bitwise_and(roi, roi, roiFiltrada, maskCircular);
+                totalPixels = cv.countNonZero(roiFiltrada);
+                roi.delete(); roiFiltrada.delete();
+            }
+            valoresAlternativas.push(totalPixels);
+        }
+
+        let ordenados = [...valoresAlternativas].sort((a, b) => b - a);
+        let maior = ordenados[0];
+        let segundaMaior = ordenados[1];
+
+        let idxMarcado = valoresAlternativas.indexOf(maior);
+        let respostaAluno = "-";
+
+        if (maior > LIMIAR_MINIMO_TINTA) {
+            // Regra de tolerância: aceita rabiscos mais claros (1.3)
+            if (segundaMaior > LIMIAR_MINIMO_TINTA && segundaMaior > (maior * 0.70)) {
+                respostaAluno = "*";
+            } else {
+                let outras = valoresAlternativas.filter((_, idx) => idx !== idxMarcado);
+                let mediaOutras = outras.reduce((a, b) => a + b, 0) / (outras.length || 1);
+                if (maior > (mediaOutras * 1.3)) {
+                    respostaAluno = LETRAS_TODAS[idxMarcado];
+                }
+            }
+        }
+
+        respostasLidas.push(respostaAluno);
+        let acertou = (respostaAluno === configAtual.gabarito[q]);
+        if (acertou) acertos++;
+
+        coords.forEach((c, idx) => {
+            let center = new cv.Point(c.x, c.y);
+            let radiusCircle = Math.round(8 * scaleFactor);
+            if (idx === idxMarcado && respostaAluno !== "-") {
+                cv.circle(warped, center, radiusCircle, acertou ? greenColor : redColor, -1);
+            } else if (respostaAluno === "*" && valoresAlternativas[idx] > LIMIAR_MINIMO_TINTA) {
+                cv.circle(warped, center, radiusCircle, redColor, -1);
+            } else {
+                cv.circle(warped, center, Math.round(3 * scaleFactor), grayColor, -1);
+            }
+        });
+    }
+
+    let notaFinal = (acertos / configAtual.numQuestoes) * configAtual.valorProva;
+    
+    const chaveNota = `${alunoAtualParaCaptura.turma}_${alunoAtualParaCaptura.nome}`;
+    bancoNotasLocais[chaveNota] = { nota: notaFinal, respostas: respostasLidas };
+    localStorage.setItem('corrigePro_notas_alunos', JSON.stringify(bancoNotasLocais));
+
+    cv.imshow('canvasScanResult', warped);
+    document.getElementById('webcamScan').style.display = 'none';
+    document.getElementById('canvasScanResult').style.display = 'block';
+
+    const banner = document.getElementById('notaBannerModal');
+    banner.innerText = `⭐ NOTA: ${notaFinal.toFixed(1)} / ${configAtual.valorProva.toFixed(1)} (${acertos} acertos)`;
+    banner.style.display = 'block';
+
+    const btnEsc = document.getElementById('btnEscanearAluno');
+    btnEsc.innerText = "✅ CONCLUÍDO (FECHAR)";
+    btnEsc.className = "btn btn-primary";
+    jaDigitalizado = true;
+
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        osc.connect(audioCtx.destination); osc.frequency.value = 800; osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+    } catch(e) {}
+
+    if (streamVideoGlobal) streamVideoGlobal.getTracks().forEach(track => track.stop());
+
+    maskCircular.delete();
+    warped.delete(); warpedGray.delete(); warpedBlur.delete(); warpedThresh.delete();
+}
+
+// ================= 5. EXPORTAÇÃO E E-MAIL =================
+function atualizarListaTurmasAlteradas() {
+    const ul = document.getElementById('listaTurmasAlteradas');
+    ul.innerHTML = "";
+
+    const turmas = new Set();
+    Object.keys(bancoNotasLocais).forEach(k => turmas.add(k.split('_')[0]));
+
+    if (turmas.size === 0) {
+        ul.innerHTML = "<li style='color:var(--text-muted);'>Nenhuma nota registrada ainda.</li>";
+        return;
+    }
+
+    turmas.forEach(turma => {
+        let total = Object.keys(bancoNotasLocais).filter(k => k.startsWith(turma + "_")).length;
+        ul.innerHTML += `<li><strong>Turma ${turma}:</strong> ${total} prova(s) corrigida(s)</li>`;
+    });
+}
+
+window.exportarCSV = function() {
+    const turmas = new Set();
+    Object.keys(bancoNotasLocais).forEach(k => turmas.add(k.split('_')[0]));
+    if (turmas.size === 0) return alert("Não há alterações para exportar.");
+
+    let csv = "data:text/csv;charset=utf-8,Etapa;Turma;Nome do Aluno;Nota;Opções Marcadas\n";
+    Object.keys(DADOS_ALUNOS).forEach(etapa => {
+        Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
+            if (turmas.has(turma)) {
+                DADOS_ALUNOS[etapa][turma].forEach(aluno => {
+                    const reg = bancoNotasLocais[`${turma}_${aluno}`];
+                    let nota = "---", resp = "Sem dados";
+                    if (reg !== undefined) {
+                        nota = Number(typeof reg === 'object' ? reg.nota : reg).toFixed(1);
+                        resp = typeof reg === 'object' && Array.isArray(reg.respostas) ? reg.respostas.join(' - ') : resp;
+                    }
+                    csv += `"${etapa}";"${turma}";"${aluno}";"${nota}";"${resp}"\n`;
+                });
+            }
+        });
+    });
+
+    const link = document.createElement("a");
+    link.href = encodeURI(csv);
+    link.download = `notas_${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
+};
+
+window.enviarPorEmail = function() {
+    const email = document.getElementById('inputEmailExport').value.trim();
+    if (!email) return alert("Informe um e-mail.");
+    
+    const turmas = new Set();
+    Object.keys(bancoNotasLocais).forEach(k => turmas.add(k.split('_')[0]));
+    if (turmas.size === 0) return alert("Não há notas para enviar.");
+
+    let texto = "RELATÓRIO DE NOTAS\n\n";
+    Object.keys(DADOS_ALUNOS).forEach(etapa => {
+        Object.keys(DADOS_ALUNOS[etapa]).forEach(turma => {
+            if (turmas.has(turma)) {
+                texto += `[ TURMA: ${turma} - ${etapa} ]\nAluno;Nota;Respostas\n`;
+                DADOS_ALUNOS[etapa][turma].forEach(aluno => {
+                    const reg = bancoNotasLocais[`${turma}_${aluno}`];
+                    let nota = "---", resp = "---";
+                    if (reg !== undefined) {
+                        nota = Number(typeof reg === 'object' ? reg.nota : reg).toFixed(1);
+                        resp = typeof reg === 'object' && Array.isArray(reg.respostas) ? reg.respostas.join('-') : resp;
+                    }
+                    texto += `${aluno}; ${nota}; ${resp}\n`;
+                });
+                texto += `\n`;
+            }
+        });
+    });
+
+    window.location.href = `mailto:${email}?subject=Notas de Correção&body=${encodeURIComponent(texto)}`;
+};
+
+window.limparTodasNotas = function() {
+    if (!confirm("⚠️ Tem certeza que deseja apagar TODAS as notas locais? Isso não pode ser desfeito.")) return;
+    localStorage.removeItem('corrigePro_notas_alunos');
+    bancoNotasLocais = {};
+    carregarAlunos();
+    atualizarListaTurmasAlteradas();
+};
+</script>
+</body>
+</html>
